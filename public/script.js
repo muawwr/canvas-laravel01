@@ -492,7 +492,7 @@
 // Add Product Step 3 - Custom Select
 (function() {
     function init() {
-        if (document.querySelector('[data-managed-add-page="custom"]')) return;
+        if (document.querySelector('[data-managed-add-page="custom"]') || document.querySelector('[data-managed-edit-page="custom"]')) return;
 
         const customSelects = document.querySelectorAll('.custom_select');
         if (customSelects.length === 0) return; // Exit if not on add page
@@ -646,6 +646,8 @@
 // Edit Page - Price Calculator
 (function() {
     function init() {
+        if (document.querySelector('[data-managed-edit-page="custom"]')) return;
+
         const priceYouGet = document.getElementById('editPriceYouGet');
         const priceBuyerPays = document.getElementById('editPriceBuyerPays');
         
@@ -679,6 +681,8 @@
 // Edit Page - Buttons and Modal
 (function() {
     function init() {
+        if (document.querySelector('[data-managed-edit-page="custom"]')) return;
+
         const cancelBtn = document.querySelector('.edit_btn_cancel');
         const submitBtn = document.querySelector('.edit_btn_submit');
         const successModal = document.getElementById('editSuccessModal');

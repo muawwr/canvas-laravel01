@@ -172,11 +172,25 @@
 })();
 </script>
 <style>
-.account_name_edit { font-size: 32px; font-weight: 400; color: #E0E0E0; margin: 20px 0 20px 27px; border: none !important; outline: none !important; background: transparent; border-bottom: 2px solid #E0E0E0 !important; max-width: 400px; }
+.account_name_edit {     font-family: 'Neue Haas Grotesk', sans-serif;
+    font-size: 32px;
+    font-weight: 400;
+    color: #E0E0E0;
+    margin: 20px 0 20px 27px;
+    border: none !important;
+    outline: none !important;
+    background: #0d0d0d;
+    border-bottom: 2px solid #E0E0E0;
+    max-width: 300px;
+ }
+    .account_name_edit:focus{ background-color: #0d0d0d;}
 .avatar_upload_overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; opacity: 0; }
 .account_avatar:hover .avatar_upload_overlay { opacity: 1; }
 .account_edit_btn { display: flex; align-items: center; justify-content: center; padding: 20px 50px; background-color: #e0e0e0; border: 1px solid #e0e0e0; border-radius: 25px; color: #1d1d1d; font-size: 16px; font-weight: 400; width: 235px; cursor: pointer; transition: all 0.3s; margin-bottom: 20px; }
 .account_edit_btn:hover { background-color: transparent; border: 1px solid #e0e0e0; color: #e0e0e0; }
+.account_edit_btn:hover img {
+        filter: brightness(0) saturate(100%) invert(88%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(150%) contrast(88%);
+    }
 @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 </style>
 <?php endif; ?>

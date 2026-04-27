@@ -256,6 +256,7 @@
     flex-direction: column;
     align-items: center;
     gap: 15px;
+        border-radius: 20px;
 }
 
 .field_invalid {

@@ -49,9 +49,9 @@
                             <img src="{{ asset('assets/images/header/user.svg') }}" alt="Профиль">
                         @endif
                     </div>
+                    @if(session()->has('user_id'))
                     <!-- Profile Dropdown Panel for Gallery -->
                     <div class="profile-dropdown-gallery" id="profileDropdownGallery">
-                        @if(session()->has('user_id'))
                         @if(session('user_role') == 2)
                             <a href="{{ url('/admin') }}" class="profile-dropdown-item">
                                 <img src="{{ asset('assets/images/admin/admin.svg') }}" alt="Админ-панель">
@@ -79,8 +79,8 @@
                                 <img src="{{ asset('assets/images/header/Logout.svg') }}" alt="Выход">
                             </a>
                         @endif
-                        @endif
                     </div>
+                    @endif
                 </div>
             </div>
             <div class="h_line"></div>

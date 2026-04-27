@@ -12,24 +12,43 @@
 </head>
 
 <body>
+    <?php
+        $manualHomeActive = trim((string) $__env->yieldContent('nav-home-active'));
+        $manualGalleryActive = trim((string) $__env->yieldContent('nav-gallery-active'));
+        $manualProfileActive = trim((string) $__env->yieldContent('nav-profile-active'));
+
+        $isHomeActive = trim(request()->path(), '/') === '' || request()->is('main');
+        $isGalleryActive = request()->is('gallery');
+        $isProfileActive = request()->is(
+            'admin',
+            'account',
+            'cart',
+            'fav',
+            'orders',
+            'add',
+            'edit/*',
+            'checkout'
+        ) || $manualProfileActive === 'active';
+    ?>
+
     <header class="header">
         <div class="container">
             <div class="header-content">
                 <a href="<?php echo e(url('/')); ?>" class="logo">
                     <img src="<?php echo e(asset('assets/images/header/logo.svg')); ?>" alt="Канвас" class="logo-icon">
                 </a>
-                
+
                 <nav class="navigation">
-                    <a href="<?php echo e(url('/')); ?>" class="nav-item <?php echo $__env->yieldContent('nav-home-active'); ?>">
+                    <a href="<?php echo e(url('/')); ?>" class="nav-item <?php echo e($isHomeActive ? 'active' : $manualHomeActive); ?>">
                         <img src="<?php echo e(asset('assets/images/header/home.svg')); ?>" alt="Главная">
                     </a>
-                    <a href="<?php echo e(url('/gallery')); ?>" class="nav-item <?php echo $__env->yieldContent('nav-gallery-active'); ?>">
+                    <a href="<?php echo e(url('/gallery')); ?>" class="nav-item <?php echo e($isGalleryActive ? 'active' : $manualGalleryActive); ?>">
                         <img src="<?php echo e(asset('assets/images/header/gallery.svg')); ?>" alt="Галерея">
                     </a>
-                    <div class="nav-item profile-toggle <?php echo $__env->yieldContent('nav-profile-active'); ?>" id="profileToggle">
+                    <div class="nav-item profile-toggle <?php echo e($isProfileActive ? 'active' : ''); ?>" id="profileToggle">
                         <?php if(session()->has('user_id')): ?>
-                            <img width="40" height="40" src="<?php echo e(asset(session('user_img', 'assets/images/account/mainUser.png'))); ?>" 
-                                 alt="<?php echo e(session('user_name')); ?>" 
+                            <img width="40" height="40" src="<?php echo e(asset(session('user_img', 'assets/images/account/mainUser.png'))); ?>"
+                                 alt="<?php echo e(session('user_name')); ?>"
                                  class="profile-avatar">
                         <?php else: ?>
                             <img src="<?php echo e(asset('assets/images/header/user.svg')); ?>" alt="Профиль">
@@ -37,10 +56,8 @@
                     </div>
                 </nav>
                 <?php if(session()->has('user_id')): ?>
-                <!-- Profile Dropdown Panel -->
                 <div class="profile-dropdown" id="profileDropdown">
                     <?php if(session('user_role') == 2): ?>
-                        <!-- Меню для администратора -->
                         <a href="<?php echo e(url('/admin')); ?>" class="profile-dropdown-item">
                             <img class="p_d_a" src="<?php echo e(asset('assets/images/admin/admin.svg')); ?>" alt="Админ-панель">
                         </a>
@@ -48,7 +65,6 @@
                             <img src="<?php echo e(asset('assets/images/header/Logout.svg')); ?>" alt="Выход">
                         </a>
                     <?php else: ?>
-                        <!-- Меню для обычного пользователя -->
                         <a href="<?php echo e(url('/cart')); ?>" class="profile-dropdown-item">
                             <img src="<?php echo e(asset('assets/images/header/Cart.svg')); ?>" alt="Корзина">
                         </a>
@@ -80,7 +96,6 @@
         </div>
     </header>
 
-    <!-- Mobile Header -->
     <header class="mobile-header">
         <div class="mobile-header-content">
             <a href="<?php echo e(url('/')); ?>" class="mobile-logo">
@@ -94,22 +109,20 @@
         </div>
     </header>
 
-    <!-- Mobile Sidebar Overlay -->
     <div class="mobile-overlay" id="mobileOverlay"></div>
 
-    <!-- Mobile Sidebar Menu -->
     <div class="mobile-sidebar" id="mobileSidebar">
         <div class="mobile-sidebar-content">
-            <a href="<?php echo e(url('/')); ?>" class="mobile-menu-item <?php echo $__env->yieldContent('nav-home-active'); ?>">
+            <a href="<?php echo e(url('/')); ?>" class="mobile-menu-item <?php echo e($isHomeActive ? 'active' : $manualHomeActive); ?>">
                 <img src="<?php echo e(asset('assets/images/header/home.svg')); ?>" alt="Главная">
             </a>
-            <a href="<?php echo e(url('/gallery')); ?>" class="mobile-menu-item <?php echo $__env->yieldContent('nav-gallery-active'); ?>">
+            <a href="<?php echo e(url('/gallery')); ?>" class="mobile-menu-item <?php echo e($isGalleryActive ? 'active' : $manualGalleryActive); ?>">
                 <img src="<?php echo e(asset('assets/images/header/gallery.svg')); ?>" alt="Галерея">
             </a>
-            <div class="mobile-menu-item mobile-profile-toggle" id="mobileProfileToggle">
+            <div class="mobile-menu-item mobile-profile-toggle <?php echo e($isProfileActive ? 'active' : ''); ?>" id="mobileProfileToggle">
                 <?php if(session()->has('user_id')): ?>
-                    <img src="<?php echo e(asset(session('user_img', 'assets/images/account/mainUser.png'))); ?>" 
-                         alt="<?php echo e(session('user_name')); ?>" 
+                    <img src="<?php echo e(asset(session('user_img', 'assets/images/account/mainUser.png'))); ?>"
+                         alt="<?php echo e(session('user_name')); ?>"
                          class="profile-avatar">
                 <?php else: ?>
                     <img src="<?php echo e(asset('assets/images/header/user.svg')); ?>" alt="Профиль">
@@ -119,10 +132,8 @@
     </div>
 
     <?php if(session()->has('user_id')): ?>
-    <!-- Mobile Profile Dropdown Panel -->
     <div class="mobile-profile-dropdown" id="mobileProfileDropdown">
         <?php if(session('user_role') == 2): ?>
-            <!-- Меню для администратора -->
             <a href="<?php echo e(url('/admin')); ?>" class="mobile-profile-dropdown-item">
                 <img class="p_d_a" src="<?php echo e(asset('assets/images/admin/admin.svg')); ?>" alt="Админ-панель">
             </a>
@@ -130,7 +141,6 @@
                 <img src="<?php echo e(asset('assets/images/header/Logout.svg')); ?>" alt="Выход">
             </a>
         <?php else: ?>
-            <!-- Меню для обычного пользователя -->
             <a href="<?php echo e(url('/cart')); ?>" class="mobile-profile-dropdown-item">
                 <img src="<?php echo e(asset('assets/images/header/Cart.svg')); ?>" alt="Корзина">
             </a>
@@ -172,14 +182,14 @@
                         <li><a href="<?php echo e(url('/account')); ?>">Настройки</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-column">
                     <h4 class="footer-title">Галерея</h4>
                     <ul class="footer-links">
                         <li><a href="<?php echo e(url('/gallery')); ?>">Галерея</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-column">
                     <p class="footer-year">2025</p>
                     <p class="footer-email">info@kanvas.ru</p>

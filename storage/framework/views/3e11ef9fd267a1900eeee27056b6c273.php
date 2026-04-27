@@ -49,9 +49,9 @@
                             <img src="<?php echo e(asset('assets/images/header/user.svg')); ?>" alt="Профиль">
                         <?php endif; ?>
                     </div>
+                    <?php if(session()->has('user_id')): ?>
                     <!-- Profile Dropdown Panel for Gallery -->
                     <div class="profile-dropdown-gallery" id="profileDropdownGallery">
-                        <?php if(session()->has('user_id')): ?>
                         <?php if(session('user_role') == 2): ?>
                             <a href="<?php echo e(url('/admin')); ?>" class="profile-dropdown-item">
                                 <img src="<?php echo e(asset('assets/images/admin/admin.svg')); ?>" alt="Админ-панель">
@@ -79,8 +79,8 @@
                                 <img src="<?php echo e(asset('assets/images/header/Logout.svg')); ?>" alt="Выход">
                             </a>
                         <?php endif; ?>
-                        <?php endif; ?>
                     </div>
+                    <?php endif; ?>
                 </div>
             </div>
             <div class="h_line"></div>

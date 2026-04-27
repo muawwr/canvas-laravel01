@@ -1,229 +1,647 @@
-
-
 <?php $__env->startSection('content'); ?>
 <main class="admin_main container">
-    <h1 class="admin_title">Админ-панель</h1>
-    
+
     <div class="admin_tabs">
-        <div class="admin_tab active" data-tab="moderation">Модерация <span class="admin_badge"><?php echo e($pending_pictures->count()); ?></span></div>
-        <div class="admin_tab" data-tab="deals">Сделки <span class="admin_badge"><?php echo e($deals->count()); ?></span></div>
-        <div class="admin_tab" data-tab="users">Пользователи <span class="admin_badge"><?php echo e($users->count()); ?></span></div>
-        <div class="admin_tab" data-tab="categories">Категории</div>
+        <button class="admin_tab admin_tab_active" type="button" data-tab="processing">
+            На обработку
+            <span class="admin_tab_badge"><?php echo e($pending_pictures->count()); ?></span>
+        </button>
+        <button class="admin_tab" type="button" data-tab="deals">
+            Сделки
+            <span class="admin_tab_badge"><?php echo e($deals->count()); ?></span>
+        </button>
+        <button class="admin_tab" type="button" data-tab="users">
+            Пользователи
+            <span class="admin_tab_badge"><?php echo e($users->count()); ?></span>
+        </button>
+        <button class="admin_tab" type="button" data-tab="categories">Категории</button>
     </div>
-    
-    <!-- Модерация -->
-    <div class="admin_content active" data-content="moderation">
-        <?php if($pending_pictures->isEmpty()): ?>
-            <div class="admin_empty">
-                <p>Нет картин для модерации</p>
+
+    <div class="admin_table_wrapper" data-table="processing">
+        <div class="admin_panel">
+            <div class="admin_panel_header">
+                <h2 class="admin_panel_title">Картины на модерации</h2>
             </div>
-        <?php else: ?>
-            <?php $__currentLoopData = $pending_pictures; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $picture): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-            <div class="moderate_card" id="moderateCard_<?php echo e($picture->id); ?>">
-                <div class="moderate_image">
-                    <img src="<?php echo e(asset($picture->img)); ?>" alt="<?php echo e($picture->name); ?>">
-                </div>
-                <div class="moderate_info">
-                    <h3><?php echo e($picture->name); ?></h3>
-                    <p class="moderate_author"><?php echo e($picture->user->name); ?></p>
-                    <p class="moderate_desc"><?php echo e(Str::limit($picture->description, 100)); ?></p>
-                    <p class="moderate_price"><?php echo e(number_format($picture->price, 0, '.', ' ')); ?> ₽</p>
-                </div>
-                <div class="moderate_actions">
-                    <button class="moderate_btn moderate_approve" onclick="moderatePicture(<?php echo e($picture->id); ?>, 'approve')">
-                        <img src="<?php echo e(asset('assets/images/admin/approve.svg')); ?>" alt="Одобрить">
-                    </button>
-                    <button class="moderate_btn moderate_reject" onclick="moderatePicture(<?php echo e($picture->id); ?>, 'reject')">
-                        <img src="<?php echo e(asset('assets/images/admin/reject.svg')); ?>" alt="Отклонить">
-                    </button>
-                </div>
+
+            <div class="admin_table_scroll">
+                <table class="admin_table">
+                    <thead>
+                        <tr>
+                            <th style="width: 100px;">ID</th>
+                            <th style="width: 180px;">Дата</th>
+                            <th style="width: 220px;">Автор</th>
+                            <th style="width: 220px;">Название</th>
+                            <th style="width: 180px;">Стоимость</th>
+                            <th style="width: 120px;">Просмотр</th>
+                            <th style="width: 220px;">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="processing_table_body">
+                        <?php $__empty_1 = true; $__currentLoopData = $pending_pictures; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $picture): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                            <tr data-picture-id="<?php echo e($picture->id); ?>">
+                                <td><?php echo e($picture->id); ?></td>
+                                <td><?php echo e(optional($picture->created_at)->format('d.m.Y')); ?></td>
+                                <td><?php echo e($picture->user->name ?? 'Неизвестно'); ?></td>
+                                <td>
+                                    <div class="admin_cell_stack">
+                                        <span><?php echo e($picture->name); ?></span>
+                                        <small><?php echo e(\Illuminate\Support\Str::limit($picture->description, 56)); ?></small>
+                                    </div>
+                                </td>
+                                <td><?php echo e(number_format($picture->price, 0, '.', ' ')); ?> ₽</td>
+                                <td class="admin_action_watch">
+                                    <button
+                                        class="admin_btn_watch js-view-picture"
+                                        type="button"
+                                        data-image="<?php echo e(asset($picture->img)); ?>"
+                                        data-name="<?php echo e($picture->name); ?>"
+                                        aria-label="Открыть изображение <?php echo e($picture->name); ?>"
+                                    >
+                                        <img src="<?php echo e(asset('assets/images/admin/watch.svg')); ?>" alt="Просмотр">
+                                    </button>
+                                </td>
+                                <td class="admin_actions">
+                                    <button class="admin_btn admin_btn_accept js-moderate-picture" type="button" data-picture-id="<?php echo e($picture->id); ?>" data-action="approve">
+                                        <img src="<?php echo e(asset('assets/images/admin/accept.svg')); ?>" alt="Одобрить">
+                                    </button>
+                                    <button class="admin_btn admin_btn_decline js-moderate-picture" type="button" data-picture-id="<?php echo e($picture->id); ?>" data-action="reject">
+                                        <img src="<?php echo e(asset('assets/images/admin/decline.svg')); ?>" alt="Отклонить">
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                            <tr class="admin_empty_row" id="processing_empty_row">
+                                <td colspan="7">Нет картин на модерации</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
-            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-        <?php endif; ?>
-    </div>
-    
-    <!-- Сделки -->
-    <div class="admin_content" data-content="deals" style="display: none;">
-        <?php if($deals->isEmpty()): ?>
-            <div class="admin_empty"><p>Нет сделок</p></div>
-        <?php else: ?>
-            <div class="deals_table">
-                <div class="deals_header">
-                    <span>Картина</span>
-                    <span>Продавец</span>
-                    <span>Покупатель</span>
-                    <span>Цена</span>
-                    <span>Дата</span>
-                </div>
-                <?php $__currentLoopData = $deals; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $deal): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                <div class="deal_row">
-                    <span><?php echo e($deal->picture->name); ?></span>
-                    <span><?php echo e($deal->seller->name); ?></span>
-                    <span><?php echo e($deal->buyer->name); ?></span>
-                    <span><?php echo e(number_format($deal->price, 0, '.', ' ')); ?> ₽</span>
-                    <span><?php echo e($deal->created_at->format('d.m.Y')); ?></span>
-                </div>
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-            </div>
-        <?php endif; ?>
-    </div>
-    
-    <!-- Пользователи -->
-    <div class="admin_content" data-content="users" style="display: none;">
-        <div class="users_list">
-            <?php $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-            <div class="user_card_admin">
-                <img src="<?php echo e(asset($user->img)); ?>" alt="<?php echo e($user->name); ?>" class="user_avatar_admin">
-                <div class="user_info_admin">
-                    <h4><?php echo e($user->name); ?></h4>
-                    <p><?php echo e($user->email); ?></p>
-                </div>
-                <span class="user_role_admin"><?php echo e($user->role == 2 ? 'Админ' : 'Пользователь'); ?></span>
-                <span class="user_date_admin"><?php echo e($user->date_of_reg ? \Carbon\Carbon::parse($user->date_of_reg)->format('d.m.Y') : '-'); ?></span>
-            </div>
-            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
     </div>
-    
-    <!-- Категории -->
-    <div class="admin_content" data-content="categories" style="display: none;">
-        <div class="categories_grid">
-            <!-- Жанры -->
-            <div class="category_section">
-                <h3 class="category_section_title">Жанры</h3>
-                <div class="category_add">
-                    <input type="text" class="category_input" id="genreInput" placeholder="Новый жанр">
-                    <button class="category_add_btn" onclick="addCategory('genre', 'genreInput')">+</button>
-                </div>
-                <div class="category_list" id="genreList">
-                    <?php $__currentLoopData = $genres; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $genre): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <div class="category_item" id="genre_<?php echo e($genre->id); ?>">
-                        <span><?php echo e($genre->name); ?></span>
-                        <button class="category_delete_btn" onclick="deleteCategory('genre', <?php echo e($genre->id); ?>)">✕</button>
-                    </div>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                </div>
+
+    <div class="admin_table_wrapper" data-table="deals">
+        <div class="admin_panel">
+            <div class="admin_panel_header">
+                <h2 class="admin_panel_title">Успешные сделки</h2>
             </div>
-            
-            <!-- Стили -->
-            <div class="category_section">
-                <h3 class="category_section_title">Стили</h3>
-                <div class="category_add">
-                    <input type="text" class="category_input" id="styleInput" placeholder="Новый стиль">
-                    <button class="category_add_btn" onclick="addCategory('style', 'styleInput')">+</button>
-                </div>
-                <div class="category_list" id="styleList">
-                    <?php $__currentLoopData = $styles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $style): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <div class="category_item" id="style_<?php echo e($style->id); ?>">
-                        <span><?php echo e($style->name); ?></span>
-                        <button class="category_delete_btn" onclick="deleteCategory('style', <?php echo e($style->id); ?>)">✕</button>
-                    </div>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                </div>
+
+            <div class="admin_table_scroll">
+                <table class="admin_table">
+                    <thead>
+                        <tr>
+                            <th style="width: 100px;">ID</th>
+                            <th style="width: 180px;">Дата</th>
+                            <th style="width: 220px;">Продавец</th>
+                            <th style="width: 220px;">Покупатель</th>
+                            <th style="width: 220px;">Картина</th>
+                            <th style="width: 180px;">Стоимость</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $__empty_1 = true; $__currentLoopData = $deals; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $deal): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                            <tr>
+                                <td><?php echo e($deal->id); ?></td>
+                                <td><?php echo e(optional($deal->created_at)->format('d.m.Y')); ?></td>
+                                <td><?php echo e($deal->seller->name ?? 'Неизвестно'); ?></td>
+                                <td><?php echo e($deal->buyer->name ?? 'Неизвестно'); ?></td>
+                                <td><?php echo e($deal->picture->name ?? 'Картина удалена'); ?></td>
+                                <td><?php echo e(number_format($deal->price, 0, '.', ' ')); ?> ₽</td>
+                            </tr>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                            <tr class="admin_empty_row">
+                                <td colspan="6">Сделок пока нет</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
             </div>
-            
-            <!-- Эпохи -->
-            <div class="category_section">
-                <h3 class="category_section_title">Эпохи</h3>
-                <div class="category_add">
-                    <input type="text" class="category_input" id="eraInput" placeholder="Новая эпоха">
-                    <button class="category_add_btn" onclick="addCategory('era', 'eraInput')">+</button>
-                </div>
-                <div class="category_list" id="eraList">
-                    <?php $__currentLoopData = $eras; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $era): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <div class="category_item" id="era_<?php echo e($era->id); ?>">
-                        <span><?php echo e($era->name); ?></span>
-                        <button class="category_delete_btn" onclick="deleteCategory('era', <?php echo e($era->id); ?>)">✕</button>
-                    </div>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                </div>
+        </div>
+    </div>
+
+    <div class="admin_table_wrapper" data-table="users">
+        <div class="admin_panel">
+            <div class="admin_panel_header">
+                <h2 class="admin_panel_title">Пользователи</h2>
             </div>
+
+            <div class="admin_table_scroll">
+                <table class="admin_table admin_table_users">
+                    <thead>
+                        <tr>
+                            <th style="width: 100px;">ID</th>
+                            <th style="width: 220px;">Дата регистрации</th>
+                            <th style="width: 260px;">Пользователь</th>
+                            <th style="width: 180px;">Роль</th>
+                            <th style="width: 180px;">Ранг</th>
+                            <th style="width: 180px;">Картин</th>
+                            <th style="width: 180px;">Сделок</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $__empty_1 = true; $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                            <tr
+                                class="admin_user_row"
+                                data-user-id="<?php echo e($user->id); ?>"
+                                role="button"
+                                tabindex="0"
+                                aria-label="Открыть профиль пользователя <?php echo e($user->name); ?>"
+                            >
+                                <td><?php echo e($user->id); ?></td>
+                                <td><?php echo e($user->date_of_reg ? \Carbon\Carbon::parse($user->date_of_reg)->format('d.m.Y') : '-'); ?></td>
+                                <td>
+                                    <div class="admin_user_identity">
+                                        <img
+                                            src="<?php echo e(asset($user->img ?: 'assets/images/account/mainUser.png')); ?>"
+                                            alt="<?php echo e($user->name); ?>"
+                                            class="admin_user_avatar"
+                                        >
+                                        <div class="admin_cell_stack">
+                                            <span><?php echo e($user->name); ?></span>
+                                            <small><?php echo e($user->email); ?></small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><?php echo e($user->role == 2 ? 'Администратор' : 'Пользователь'); ?></td>
+                                <td><?php echo e($user->rank ?: 'Не указан'); ?></td>
+                                <td><?php echo e($user->pictures_count); ?></td>
+                                <td><?php echo e($user->orders_count); ?></td>
+                            </tr>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                            <tr class="admin_empty_row">
+                                <td colspan="7">Пользователи не найдены</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin_table_wrapper admin_categories" data-table="categories">
+        <div class="categories_container">
+            <section class="categories_add">
+                <h2 class="categories_add_title">Добавление категорий</h2>
+
+                <div class="category_form_section">
+                    <label class="category_label" for="genre_input">Жанр</label>
+                    <div class="category_input_wrapper">
+                        <input type="text" class="category_input" id="genre_input" placeholder="Введите жанр картины">
+                        <button class="category_add_btn" type="button" onclick="addCategory('genre')">+</button>
+                    </div>
+                </div>
+
+                <div class="category_form_section">
+                    <label class="category_label" for="style_input">Стиль</label>
+                    <div class="category_input_wrapper">
+                        <input type="text" class="category_input" id="style_input" placeholder="Введите стиль написания">
+                        <button class="category_add_btn" type="button" onclick="addCategory('style')">+</button>
+                    </div>
+                </div>
+
+                <div class="category_form_section">
+                    <label class="category_label" for="era_input">Эпоха</label>
+                    <div class="category_input_wrapper">
+                        <input type="text" class="category_input" id="era_input" placeholder="Введите эпоху картины">
+                        <button class="category_add_btn" type="button" onclick="addCategory('era')">+</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="categories_list">
+                <div class="category_section">
+                    <h3 class="category_section_title"><span>I</span> Жанры</h3>
+                    <div class="category_items" id="genres_list">
+                        <?php $__empty_1 = true; $__currentLoopData = $genres; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $genre): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                            <div class="category_item" data-id="<?php echo e($genre->id); ?>">
+                                <span><?php echo e($genre->name); ?></span>
+                                <button class="category_delete_btn js-delete-category" type="button" data-type="genre" data-id="<?php echo e($genre->id); ?>">
+                                    <img src="<?php echo e(asset('assets/images/admin/delete.svg')); ?>" alt="Удалить">
+                                </button>
+                            </div>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                            <p class="no_categories">Жанры не добавлены</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <div class="category_section">
+                    <h3 class="category_section_title"><span>II</span> Стили</h3>
+                    <div class="category_items category_items_columns" id="styles_list">
+                        <?php
+                            $stylesHalf = (int) ceil($styles->count() / 2);
+                            $stylesFirstColumn = $styles->slice(0, $stylesHalf);
+                            $stylesSecondColumn = $styles->slice($stylesHalf);
+                        ?>
+
+                        <div class="category_column">
+                            <?php $__currentLoopData = $stylesFirstColumn; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $style): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <div class="category_item" data-id="<?php echo e($style->id); ?>">
+                                    <span><?php echo e($style->name); ?></span>
+                                    <button class="category_delete_btn js-delete-category" type="button" data-type="style" data-id="<?php echo e($style->id); ?>">
+                                        <img src="<?php echo e(asset('assets/images/admin/delete.svg')); ?>" alt="Удалить">
+                                    </button>
+                                </div>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </div>
+
+                        <div class="category_column">
+                            <?php $__currentLoopData = $stylesSecondColumn; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $style): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <div class="category_item" data-id="<?php echo e($style->id); ?>">
+                                    <span><?php echo e($style->name); ?></span>
+                                    <button class="category_delete_btn js-delete-category" type="button" data-type="style" data-id="<?php echo e($style->id); ?>">
+                                        <img src="<?php echo e(asset('assets/images/admin/delete.svg')); ?>" alt="Удалить">
+                                    </button>
+                                </div>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </div>
+
+                        <?php if($styles->isEmpty()): ?>
+                            <p class="no_categories">Стили не добавлены</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <div class="category_section">
+                    <h3 class="category_section_title"><span>III</span> Эпохи</h3>
+                    <div class="category_items" id="eras_list">
+                        <?php $__empty_1 = true; $__currentLoopData = $eras; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $era): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                            <div class="category_item" data-id="<?php echo e($era->id); ?>">
+                                <span><?php echo e($era->name); ?></span>
+                                <button class="category_delete_btn js-delete-category" type="button" data-type="era" data-id="<?php echo e($era->id); ?>">
+                                    <img src="<?php echo e(asset('assets/images/admin/delete.svg')); ?>" alt="Удалить">
+                                </button>
+                            </div>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                            <p class="no_categories">Эпохи не добавлены</p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </section>
         </div>
     </div>
 </main>
 
+<div id="toast-container" class="toast-container"></div>
 <?php $__env->stopSection(); ?>
 
 <?php $__env->startSection('scripts'); ?>
 <style>
-@keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+    }
+
+    .toast {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 280px;
+        margin-bottom: 10px;
+        padding: 16px 20px;
+        border-radius: 12px;
+        background: #202020;
+        color: #e0e0e0;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .toast.success {
+        border-left: 4px solid #fbff83;
+    }
+
+    .toast.error {
+        border-left: 4px solid #c76060;
+    }
+
+    .toast-icon {
+        font-size: 18px;
+        line-height: 1;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateX(24px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideOut {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        to {
+            transform: translateX(24px);
+            opacity: 0;
+        }
+    }
 </style>
+
 <script>
-function showToast(message, type = 'success') {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    const icon = type === 'success' ? '✓' : '✗';
-    toast.innerHTML = `<span style="font-size:20px">${icon}</span><span>${message}</span>`;
-    container.appendChild(toast);
-    setTimeout(() => toast.remove(), 3000);
-}
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
 
-// Tabs
-document.querySelectorAll('.admin_tab').forEach(tab => {
-    tab.addEventListener('click', function() {
-        const target = this.getAttribute('data-tab');
-        document.querySelectorAll('.admin_tab').forEach(t => t.classList.remove('active'));
-        this.classList.add('active');
-        document.querySelectorAll('.admin_content').forEach(c => { c.style.display = 'none'; c.classList.remove('active'); });
-        const content = document.querySelector(`[data-content="${target}"]`);
-        if (content) { content.style.display = 'flex'; content.classList.add('active'); }
-    });
-});
+        if (!container) {
+            return;
+        }
 
-async function moderatePicture(id, action) {
-    const formData = new FormData();
-    formData.append('picture_id', id);
-    formData.append('action', action);
-    try {
-        const response = await fetch('/api/picture/moderate', { method: 'POST', body: formData, headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } });
-        const result = await response.json();
-        if (result.success) {
-            showToast(result.message);
-            document.getElementById(`moderateCard_${id}`)?.remove();
-        } else { showToast(result.message || 'Ошибка', 'error'); }
-    } catch (error) { showToast('Ошибка сервера', 'error'); }
-}
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <span class="toast-icon">${type === 'success' ? '✓' : '✕'}</span>
+            <span>${escapeHtml(message)}</span>
+        `;
 
-async function addCategory(type, inputId) {
-    const input = document.getElementById(inputId);
-    const name = input.value.trim();
-    if (!name) { showToast('Введите название', 'error'); return; }
-    const formData = new FormData();
-    formData.append('action', 'add');
-    formData.append('type', type);
-    formData.append('name', name);
-    try {
-        const response = await fetch('/api/categories', { method: 'POST', body: formData, headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } });
-        const result = await response.json();
-        if (result.success) {
-            showToast('Категория добавлена');
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease-out forwards';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function addCategoryToDom(type, id, name) {
+        let container;
+
+        if (type === 'genre') {
+            container = document.getElementById('genres_list');
+        } else if (type === 'style') {
+            container = document.getElementById('styles_list');
+        } else {
+            container = document.getElementById('eras_list');
+        }
+
+        if (!container) {
+            return;
+        }
+
+        const placeholder = container.querySelector('.no_categories');
+        if (placeholder) {
+            placeholder.remove();
+        }
+
+        const item = document.createElement('div');
+        item.className = 'category_item';
+        item.dataset.id = id;
+        item.innerHTML = `
+            <span>${escapeHtml(name)}</span>
+            <button class="category_delete_btn js-delete-category" type="button" data-type="${type}" data-id="${id}">
+                <img src="<?php echo e(asset('assets/images/admin/delete.svg')); ?>" alt="Удалить">
+            </button>
+        `;
+
+        if (type === 'style') {
+            let columns = container.querySelectorAll('.category_column');
+
+            if (!columns.length) {
+                container.innerHTML = '<div class="category_column"></div><div class="category_column"></div>';
+                columns = container.querySelectorAll('.category_column');
+            }
+
+            const firstColumnCount = columns[0].querySelectorAll('.category_item').length;
+            const secondColumnCount = columns[1].querySelectorAll('.category_item').length;
+            const targetColumn = firstColumnCount <= secondColumnCount ? columns[0] : columns[1];
+            targetColumn.appendChild(item);
+            return;
+        }
+
+        container.appendChild(item);
+    }
+
+    function checkEmptyCategories(type) {
+        const map = {
+            genre: { id: 'genres_list', text: 'Жанры не добавлены' },
+            style: { id: 'styles_list', text: 'Стили не добавлены' },
+            era: { id: 'eras_list', text: 'Эпохи не добавлены' }
+        };
+
+        const config = map[type];
+        const container = document.getElementById(config.id);
+
+        if (!container) {
+            return;
+        }
+
+        const items = container.querySelectorAll('.category_item');
+        if (items.length > 0 || container.querySelector('.no_categories')) {
+            return;
+        }
+
+        const emptyMessage = document.createElement('p');
+        emptyMessage.className = 'no_categories';
+        emptyMessage.textContent = config.text;
+        container.appendChild(emptyMessage);
+    }
+
+    async function addCategory(type) {
+        const input = document.getElementById(`${type}_input`);
+        const name = input ? input.value.trim() : '';
+
+        if (!name) {
+            showToast('Введите название категории', 'error');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('action', 'add');
+        formData.append('type', type);
+        formData.append('name', name);
+
+        try {
+            const response = await fetch('/api/categories', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                showToast(result.message || 'Не удалось добавить категорию', 'error');
+                return;
+            }
+
+            showToast(result.message || 'Категория добавлена');
             input.value = '';
-            const list = document.getElementById(`${type}List`);
-            const item = document.createElement('div');
-            item.className = 'category_item';
-            item.id = `${type}_${result.id}`;
-            item.innerHTML = `<span>${name}</span><button class="category_delete_btn" onclick="deleteCategory('${type}', ${result.id})">✕</button>`;
-            list.appendChild(item);
-        } else { showToast(result.message || 'Ошибка', 'error'); }
-    } catch (error) { showToast('Ошибка сервера', 'error'); }
-}
+            addCategoryToDom(type, result.id, name);
+        } catch (error) {
+            showToast('Ошибка при добавлении категории', 'error');
+            console.error(error);
+        }
+    }
 
-async function deleteCategory(type, id) {
-    const formData = new FormData();
-    formData.append('action', 'delete');
-    formData.append('type', type);
-    formData.append('id', id);
-    try {
-        const response = await fetch('/api/categories', { method: 'POST', body: formData, headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content } });
-        const result = await response.json();
-        if (result.success) {
-            showToast('Категория удалена');
-            document.getElementById(`${type}_${id}`)?.remove();
-        } else { showToast(result.message || 'Ошибка', 'error'); }
-    } catch (error) { showToast('Ошибка сервера', 'error'); }
-}
+    async function deleteCategory(type, id) {
+        const formData = new FormData();
+        formData.append('action', 'delete');
+        formData.append('type', type);
+        formData.append('id', id);
+
+        try {
+            const response = await fetch('/api/categories', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                showToast(result.message || 'Не удалось удалить категорию', 'error');
+                return;
+            }
+
+            const item = document.querySelector(`.category_item[data-id="${id}"]`);
+            if (item) {
+                item.remove();
+            }
+
+            checkEmptyCategories(type);
+            showToast(result.message || 'Категория удалена');
+        } catch (error) {
+            showToast('Ошибка при удалении категории', 'error');
+            console.error(error);
+        }
+    }
+
+    function ensureProcessingEmptyState() {
+        const tbody = document.getElementById('processing_table_body');
+
+        if (!tbody || tbody.querySelector('tr[data-picture-id]') || document.getElementById('processing_empty_row')) {
+            return;
+        }
+
+        const row = document.createElement('tr');
+        row.className = 'admin_empty_row';
+        row.id = 'processing_empty_row';
+        row.innerHTML = '<td colspan="7">Нет картин на модерации</td>';
+        tbody.appendChild(row);
+    }
+
+    async function moderatePicture(pictureId, action) {
+        const formData = new FormData();
+        formData.append('picture_id', pictureId);
+        formData.append('action', action);
+
+        try {
+            const response = await fetch('/api/picture/moderate', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                showToast(result.message || 'Не удалось обновить статус', 'error');
+                return;
+            }
+
+            const row = document.querySelector(`tr[data-picture-id="${pictureId}"]`);
+            if (row) {
+                row.remove();
+            }
+
+            ensureProcessingEmptyState();
+            showToast(result.message || 'Статус картины обновлён');
+        } catch (error) {
+            showToast('Ошибка при модерации картины', 'error');
+            console.error(error);
+        }
+    }
+
+    function viewPicture(imagePath, pictureName) {
+        const overlay = document.createElement('div');
+        overlay.className = 'admin_preview_overlay';
+        overlay.innerHTML = `
+            <div class="admin_preview_modal" role="dialog" aria-modal="true" aria-label="${escapeHtml(pictureName)}">
+                <button class="admin_preview_close" type="button" aria-label="Закрыть просмотр">✕</button>
+                <img src="${imagePath}" alt="${escapeHtml(pictureName)}">
+                <div class="admin_preview_caption">${escapeHtml(pictureName)}</div>
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        overlay.addEventListener('click', (event) => {
+            if (event.target === overlay || event.target.classList.contains('admin_preview_close')) {
+                overlay.remove();
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        ['genre', 'style', 'era'].forEach((type) => {
+            const input = document.getElementById(`${type}_input`);
+
+            if (!input) {
+                return;
+            }
+
+            input.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    addCategory(type);
+                }
+            });
+        });
+
+        document.querySelectorAll('.admin_user_row').forEach((row) => {
+            const openProfile = () => {
+                const userId = row.dataset.userId;
+                if (userId) {
+                    window.location.href = `/account?user_id=${userId}`;
+                }
+            };
+
+            row.addEventListener('click', openProfile);
+            row.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    openProfile();
+                }
+            });
+        });
+
+        document.addEventListener('click', (event) => {
+            const deleteButton = event.target.closest('.js-delete-category');
+            if (deleteButton) {
+                deleteCategory(deleteButton.dataset.type, Number(deleteButton.dataset.id));
+                return;
+            }
+
+            const moderateButton = event.target.closest('.js-moderate-picture');
+            if (moderateButton) {
+                moderatePicture(Number(moderateButton.dataset.pictureId), moderateButton.dataset.action);
+                return;
+            }
+
+            const viewButton = event.target.closest('.js-view-picture');
+            if (viewButton) {
+                viewPicture(viewButton.dataset.image, viewButton.dataset.name);
+            }
+        });
+    });
 </script>
 <?php $__env->stopSection(); ?>
 

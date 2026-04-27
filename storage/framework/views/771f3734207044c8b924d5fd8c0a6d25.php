@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Канвас - Платформа для искусства</title>
+    <link rel="stylesheet" href="<?php echo e(asset('assets/css/style.css')); ?>">
+    <link rel="shortcut icon" href="<?php echo e(asset('assets/images/header/logo.svg')); ?>" type="image/x-icon">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <?php echo $__env->yieldContent('head'); ?>
+</head>
+
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="<?php echo e(url('/')); ?>" class="logo">
+                    <img src="<?php echo e(asset('assets/images/header/logo.svg')); ?>" alt="Канвас" class="logo-icon">
+                </a>
+                
+                <nav class="navigation">
+                    <a href="<?php echo e(url('/')); ?>" class="nav-item <?php echo $__env->yieldContent('nav-home-active'); ?>">
+                        <img src="<?php echo e(asset('assets/images/header/home.svg')); ?>" alt="Главная">
+                    </a>
+                    <a href="<?php echo e(url('/gallery')); ?>" class="nav-item <?php echo $__env->yieldContent('nav-gallery-active'); ?>">
+                        <img src="<?php echo e(asset('assets/images/header/gallery.svg')); ?>" alt="Галерея">
+                    </a>
+                    <div class="nav-item profile-toggle <?php echo $__env->yieldContent('nav-profile-active'); ?>" id="profileToggle">
+                        <?php if(session()->has('user_id')): ?>
+                            <img width="40" height="40" src="<?php echo e(asset(session('user_img', 'assets/images/account/mainUser.png'))); ?>" 
+                                 alt="<?php echo e(session('user_name')); ?>" 
+                                 class="profile-avatar">
+                        <?php else: ?>
+                            <img src="<?php echo e(asset('assets/images/header/user.svg')); ?>" alt="Профиль">
+                        <?php endif; ?>
+                    </div>
+                </nav>
+                <?php if(session()->has('user_id')): ?>
+                <!-- Profile Dropdown Panel -->
+                <div class="profile-dropdown" id="profileDropdown">
+                    <?php if(session('user_role') == 2): ?>
+                        <!-- Меню для администратора -->
+                        <a href="<?php echo e(url('/admin')); ?>" class="profile-dropdown-item">
+                            <img class="p_d_a" src="<?php echo e(asset('assets/images/admin/admin.svg')); ?>" alt="Админ-панель">
+                        </a>
+                        <a href="<?php echo e(url('/logout')); ?>" class="profile-dropdown-item">
+                            <img src="<?php echo e(asset('assets/images/header/Logout.svg')); ?>" alt="Выход">
+                        </a>
+                    <?php else: ?>
+                        <!-- Меню для обычного пользователя -->
+                        <a href="<?php echo e(url('/cart')); ?>" class="profile-dropdown-item">
+                            <img src="<?php echo e(asset('assets/images/header/Cart.svg')); ?>" alt="Корзина">
+                        </a>
+                        <a href="<?php echo e(url('/fav')); ?>" class="profile-dropdown-item">
+                            <img src="<?php echo e(asset('assets/images/header/fav.svg')); ?>" alt="Избранное">
+                        </a>
+                        <a href="<?php echo e(url('/account')); ?>" class="profile-dropdown-item">
+                            <img src="<?php echo e(asset('assets/images/header/account.svg')); ?>" alt="Настройки">
+                        </a>
+                        <a href="<?php echo e(url('/add')); ?>" class="profile-dropdown-item">
+                            <img src="<?php echo e(asset('assets/images/header/add.svg')); ?>" alt="Добавить">
+                        </a>
+                        <a href="<?php echo e(url('/orders')); ?>" class="profile-dropdown-item">
+                            <img src="<?php echo e(asset('assets/images/header/orders.svg')); ?>" alt="Заказы">
+                        </a>
+                        <a href="<?php echo e(url('/logout')); ?>" class="profile-dropdown-item">
+                            <img src="<?php echo e(asset('assets/images/header/Logout.svg')); ?>" alt="Выход">
+                        </a>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
+                <?php if(!session()->has('user_id')): ?>
+                    <div class="auth-buttons">
+                        <a href="<?php echo e(url('/auth')); ?>" class="btn btn-login">Войти</a>
+                        <a href="<?php echo e(url('/reg')); ?>" class="btn btn-register">Регистрация</a>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <div class="mobile-header-content">
+            <a href="<?php echo e(url('/')); ?>" class="mobile-logo">
+                <img src="<?php echo e(asset('assets/images/header/logo.svg')); ?>" alt="Канвас">
+            </a>
+            <button class="burger-menu" id="burgerMenu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <!-- Mobile Sidebar Menu -->
+    <div class="mobile-sidebar" id="mobileSidebar">
+        <div class="mobile-sidebar-content">
+            <a href="<?php echo e(url('/')); ?>" class="mobile-menu-item <?php echo $__env->yieldContent('nav-home-active'); ?>">
+                <img src="<?php echo e(asset('assets/images/header/home.svg')); ?>" alt="Главная">
+            </a>
+            <a href="<?php echo e(url('/gallery')); ?>" class="mobile-menu-item <?php echo $__env->yieldContent('nav-gallery-active'); ?>">
+                <img src="<?php echo e(asset('assets/images/header/gallery.svg')); ?>" alt="Галерея">
+            </a>
+            <div class="mobile-menu-item mobile-profile-toggle" id="mobileProfileToggle">
+                <?php if(session()->has('user_id')): ?>
+                    <img src="<?php echo e(asset(session('user_img', 'assets/images/account/mainUser.png'))); ?>" 
+                         alt="<?php echo e(session('user_name')); ?>" 
+                         class="profile-avatar">
+                <?php else: ?>
+                    <img src="<?php echo e(asset('assets/images/header/user.svg')); ?>" alt="Профиль">
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <?php if(session()->has('user_id')): ?>
+    <!-- Mobile Profile Dropdown Panel -->
+    <div class="mobile-profile-dropdown" id="mobileProfileDropdown">
+        <?php if(session('user_role') == 2): ?>
+            <!-- Меню для администратора -->
+            <a href="<?php echo e(url('/admin')); ?>" class="mobile-profile-dropdown-item">
+                <img class="p_d_a" src="<?php echo e(asset('assets/images/admin/admin.svg')); ?>" alt="Админ-панель">
+            </a>
+            <a href="<?php echo e(url('/logout')); ?>" class="mobile-profile-dropdown-item">
+                <img src="<?php echo e(asset('assets/images/header/Logout.svg')); ?>" alt="Выход">
+            </a>
+        <?php else: ?>
+            <!-- Меню для обычного пользователя -->
+            <a href="<?php echo e(url('/cart')); ?>" class="mobile-profile-dropdown-item">
+                <img src="<?php echo e(asset('assets/images/header/Cart.svg')); ?>" alt="Корзина">
+            </a>
+            <a href="<?php echo e(url('/fav')); ?>" class="mobile-profile-dropdown-item">
+                <img src="<?php echo e(asset('assets/images/header/fav.svg')); ?>" alt="Избранное">
+            </a>
+            <a href="<?php echo e(url('/account')); ?>" class="mobile-profile-dropdown-item">
+                <img src="<?php echo e(asset('assets/images/header/account.svg')); ?>" alt="Настройки">
+            </a>
+            <a href="<?php echo e(url('/add')); ?>" class="mobile-profile-dropdown-item">
+                <img src="<?php echo e(asset('assets/images/header/add.svg')); ?>" alt="Добавить">
+            </a>
+            <a href="<?php echo e(url('/orders')); ?>" class="mobile-profile-dropdown-item">
+                <img src="<?php echo e(asset('assets/images/header/orders.svg')); ?>" alt="Заказы">
+            </a>
+            <a href="<?php echo e(url('/logout')); ?>" class="mobile-profile-dropdown-item">
+                <img src="<?php echo e(asset('assets/images/header/Logout.svg')); ?>" alt="Выход">
+            </a>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+
+    <?php echo $__env->yieldContent('content'); ?>
+
+    <footer class="footer">
+        <div class="container">
+          <div class="footer-logo">
+              <img src="<?php echo e(asset('assets/images/footer/logo.svg')); ?>" alt="Канвас" class="footer-logo-icon">
+              <span class="footer-logo-text">Канвас</span>
+          </div>
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h4 class="footer-title">Пользователь</h4>
+                    <ul class="footer-links">
+                        <li><a href="<?php echo e(url('/auth')); ?>">Авторизация</a></li>
+                        <li><a href="<?php echo e(url('/account')); ?>">Личный кабинет</a></li>
+                        <li><a href="<?php echo e(url('/cart')); ?>">Корзина</a></li>
+                        <li><a href="<?php echo e(url('/fav')); ?>">Избранное</a></li>
+                        <li><a href="<?php echo e(url('/account')); ?>">Настройки</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h4 class="footer-title">Галерея</h4>
+                    <ul class="footer-links">
+                        <li><a href="<?php echo e(url('/gallery')); ?>">Галерея</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <p class="footer-year">2025</p>
+                    <p class="footer-email">info@kanvas.ru</p>
+                    <a href="#" class="footer-link">Политика конфиденциальности</a>
+                    <div class="social-links">
+                        <a href="#" class="social-link">
+                            <img src="<?php echo e(asset('assets/images/footer/tg.svg')); ?>" alt="Telegram">
+                        </a>
+                        <a href="#" class="social-link">
+                            <img src="<?php echo e(asset('assets/images/footer/vk.svg')); ?>" alt="VKontakte">
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="<?php echo e(asset('script.js')); ?>"></script>
+    <?php echo $__env->yieldContent('scripts'); ?>
+</body>
+</html>
+<?php /**PATH C:\OSPanel\domains\canvas-laravel01\resources\views\layouts\app.blade.php ENDPATH**/ ?>

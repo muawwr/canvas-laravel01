@@ -3,7 +3,14 @@
 @section('nav-profile-active', 'active')
 
 @section('content')
-<main class="edit_main container" data-managed-edit-page="custom">
+<main
+    class="edit_main container"
+    data-managed-edit-page="custom"
+    data-picture-id="{{ $picture->id }}"
+    data-genre-id="{{ $picture->genre_id }}"
+    data-style-id="{{ $picture->style_id }}"
+    data-era-id="{{ $picture->era_id }}"
+>
     <div class="edit_container">
         <div class="edit_header">
             <h1 class="edit_title">Редактирование картины</h1>
@@ -129,10 +136,6 @@
                     <input type="number" class="edit_input edit_input_full" id="editPriceBuyerPays" value="{{ (int) round($picture->price / (1 - 0.10)) }}" readonly>
                 </div>
 
-                <div class="edit_info_card">
-                    <p class="edit_info_title">Что произойдёт после сохранения</p>
-                    <p class="edit_info_text">Картина обновится и снова попадёт на модерацию, чтобы новые данные прошли проверку.</p>
-                </div>
 
                 <div class="edit_buttons">
                     <a href="{{ url('/picture/' . $picture->id) }}" class="edit_btn edit_btn_cancel">Отмена</a>
@@ -156,40 +159,10 @@
     </div>
 </div>
 
-<div id="toast-container" class="toast-container"></div>
 @endsection
 
 @section('scripts')
 <style>
-    .toast-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 10000;
-    }
-
-    .toast {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-width: 280px;
-        margin-bottom: 10px;
-        padding: 16px 20px;
-        border-radius: 12px;
-        background: #202020;
-        color: #e0e0e0;
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
-        animation: slideIn 0.3s ease-out;
-    }
-
-    .toast.success {
-        border-left: 4px solid #fbff83;
-    }
-
-    .toast.error {
-        border-left: 4px solid #c76060;
-    }
-
     .error-message {
         display: block;
         margin-top: 8px;
@@ -205,63 +178,27 @@
         border-color: #c76060 !important;
     }
 
-    @keyframes slideIn {
-        from {
-            transform: translateX(24px);
-            opacity: 0;
-        }
-
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
+    .edit_form_error {
+        display: block;
+        margin-top: 14px;
+        color: #c76060;
+        font-family: 'InterTight', sans-serif;
+        font-size: 14px;
+        line-height: 1.35;
     }
 
-    @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-
-        to {
-            transform: translateX(24px);
-            opacity: 0;
-        }
-    }
 </style>
 
 <script>
-    const pictureId = {{ $picture->id }};
+    const editPage = document.querySelector('[data-managed-edit-page="custom"]');
+    const pictureId = Number(editPage.dataset.pictureId);
     let newImageFile = null;
 
     const formState = {
-        genre_id: {{ $picture->genre_id }},
-        style_id: {{ $picture->style_id }},
-        era_id: {{ $picture->era_id }}
+        genre_id: Number(editPage.dataset.genreId),
+        style_id: Number(editPage.dataset.styleId),
+        era_id: Number(editPage.dataset.eraId)
     };
-
-    function showToast(message, type = 'success') {
-        const container = document.getElementById('toast-container');
-        if (!container) {
-            return;
-        }
-
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.innerHTML = `<span style="font-size:20px">${type === 'success' ? '✓' : '✕'}</span><span>${escapeHtml(message)}</span>`;
-        container.appendChild(toast);
-
-        setTimeout(() => {
-            toast.style.animation = 'slideOut 0.3s ease-out forwards';
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
-    }
-
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
 
     function clearFieldError(element) {
         element.classList.remove('input-error');
@@ -288,7 +225,26 @@
 
     function clearAllErrors() {
         document.querySelectorAll('.error-message').forEach((item) => item.remove());
+        document.querySelectorAll('.edit_form_error').forEach((item) => item.remove());
         document.querySelectorAll('.input-error').forEach((item) => item.classList.remove('input-error'));
+    }
+
+    function showFormError(message) {
+        const buttons = document.querySelector('.edit_buttons');
+        if (!buttons) {
+            alert(message);
+            return;
+        }
+
+        const error = document.createElement('span');
+        error.className = 'edit_form_error';
+        error.textContent = message;
+        buttons.insertAdjacentElement('afterend', error);
+    }
+
+    function setSaveButtonLoading(button, isLoading, originalHtml = null) {
+        button.disabled = isLoading;
+        button.innerHTML = isLoading ? 'Сохранение...' : originalHtml;
     }
 
     function setupCustomSelects() {
@@ -476,15 +432,14 @@
             }
 
             if (hasErrors) {
-                showToast('Исправьте ошибки в форме', 'error');
                 return;
             }
 
             const originalHtml = this.innerHTML;
-            this.disabled = true;
-            this.innerHTML = 'Сохранение...';
+            setSaveButtonLoading(this, true);
 
             const formData = new FormData();
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
             formData.append('picture_id', pictureId);
             formData.append('width', width);
             formData.append('height', height);
@@ -502,33 +457,47 @@
             }
 
             try {
-                const response = await fetch('/api/picture/edit', {
+                const request = fetch('/api/picture/edit', {
                     method: 'POST',
                     body: formData,
+                    credentials: 'same-origin',
                     headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
                 });
+                const timeout = new Promise((_, reject) => {
+                    window.setTimeout(() => reject(new Error('request_timeout')), 30000);
+                });
+                const response = await Promise.race([request, timeout]);
 
-                const result = await response.json();
+                const contentType = response.headers.get('content-type') || '';
+                const result = contentType.includes('application/json')
+                    ? await response.json()
+                    : { success: false, message: 'Сервер вернул некорректный ответ. Попробуйте ещё раз.' };
 
-                if (!result.success) {
-                    showToast(result.message || 'Ошибка при редактировании картины', 'error');
-                    this.disabled = false;
-                    this.innerHTML = originalHtml;
+                if (!response.ok || !result.success) {
+                    setSaveButtonLoading(this, false, originalHtml);
+                    showFormError(result.message || 'Не удалось сохранить изменения.');
                     return;
                 }
 
-                document.getElementById('editSuccessModal').style.display = 'flex';
+                const successModal = document.getElementById('editSuccessModal');
+                successModal.style.display = 'flex';
+                window.requestAnimationFrame(() => {
+                    successModal.classList.add('show');
+                });
             } catch (error) {
-                showToast('Ошибка подключения к серверу', 'error');
-                this.disabled = false;
-                this.innerHTML = originalHtml;
+                setSaveButtonLoading(this, false, originalHtml);
+                showFormError(error.message === 'request_timeout'
+                    ? 'Сохранение заняло слишком много времени. Проверьте соединение и попробуйте ещё раз.'
+                    : 'Не удалось сохранить изменения. Попробуйте ещё раз.');
             }
         });
 
         document.getElementById('editSuccessOkBtn').addEventListener('click', () => {
-            window.location.href = '/picture/{{ $picture->id }}';
+            window.location.href = '/account';
         });
     });
 </script>

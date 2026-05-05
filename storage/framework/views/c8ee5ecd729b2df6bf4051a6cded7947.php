@@ -36,20 +36,8 @@
 .gallery-card:hover .fav_remove_btn { opacity: 1; }
 .fav_remove_btn img { width: 16px; height: 16px; }
 .gallery-card { position: relative; }
-@keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 </style>
 <script>
-function showToast(message, type = 'success') {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    const icon = type === 'success' ? '✓' : '✗';
-    toast.innerHTML = `<span style="font-size:20px">${icon}</span><span>${message}</span>`;
-    container.appendChild(toast);
-    setTimeout(() => { toast.style.animation = 'slideOut 0.3s ease-out forwards'; setTimeout(() => toast.remove(), 300); }, 3000);
-}
-
 function removeFav(pictureId) {
     const formData = new FormData();
     formData.append('action', 'remove');
@@ -59,11 +47,8 @@ function removeFav(pictureId) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            showToast('Удалено из избранного');
             const card = document.querySelector(`[data-picture-id="${pictureId}"]`);
             if (card) { card.style.opacity = '0'; setTimeout(() => card.remove(), 300); }
-        } else {
-            showToast(data.message || 'Ошибка', 'error');
         }
     });
 }

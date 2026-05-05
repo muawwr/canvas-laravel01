@@ -4,29 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Оформление заказа - Канвас</title>
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
-    <link rel="shortcut icon" href="{{ asset('assets/images/header/logo.svg') }}" type="image/x-icon">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="<?php echo e(asset('assets/css/style.css')); ?>">
+    <link rel="shortcut icon" href="<?php echo e(asset('assets/images/header/logo.svg')); ?>" type="image/x-icon">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 </head>
 <body>
     <div class="checkout-page" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #0D0D0D;">
         <div class="checkout-container" style="max-width: 500px; width: 100%; padding: 40px; background: #1A1A1A; border-radius: 20px; margin: 20px;">
             <h2 style="font-size: 32px; color: #E0E0E0; text-align: center; font-weight:400; margin-bottom: 30px; font-family: 'Neue Haas Grotesk', sans-serif;">Оформление заказа</h2>
 
-            @if($auctionPicture)
-                <form method="POST" action="{{ url('/checkout') }}" id="checkoutFormFinal">
-                    @csrf
-                    <input type="hidden" name="auction_picture_id" value="{{ $auctionPicture->id }}">
+            <?php if($auctionPicture): ?>
+                <form method="POST" action="<?php echo e(url('/checkout')); ?>" id="checkoutFormFinal">
+                    <?php echo csrf_field(); ?>
+                    <input type="hidden" name="auction_picture_id" value="<?php echo e($auctionPicture->id); ?>">
 
                     <div style="background: #2D2D2D; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
                         <h3 style="font-size: 20px; color: #E0E0E0; font-weight:400; margin-bottom: 15px;">Товар:</h3>
                         <div style="display: flex; align-items: center; gap: 15px;">
-                            <img src="{{ asset($auctionPicture->img) }}" alt="{{ $auctionPicture->name }}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 10px;">
+                            <img src="<?php echo e(asset($auctionPicture->img)); ?>" alt="<?php echo e($auctionPicture->name); ?>" style="width: 70px; height: 70px; object-fit: cover; border-radius: 10px;">
                             <div style="flex: 1;">
-                                <div style="color: #E0E0E0; font-size: 16px; margin-bottom: 3px;">{{ $auctionPicture->name }}</div>
-                                <div style="color: #939393; font-size: 14px;">{{ $auctionPicture->user->name ?? 'Автор' }}</div>
+                                <div style="color: #E0E0E0; font-size: 16px; margin-bottom: 3px;"><?php echo e($auctionPicture->name); ?></div>
+                                <div style="color: #939393; font-size: 14px;"><?php echo e($auctionPicture->user->name ?? 'Автор'); ?></div>
                             </div>
-                            <div style="color: #FBFF83; font-size: 18px; font-weight: 600;">{{ number_format($auctionPicture->auction_buyout_price, 0, '.', ' ') }} ₽</div>
+                            <div style="color: #FBFF83; font-size: 18px; font-weight: 600;"><?php echo e(number_format($auctionPicture->auction_buyout_price, 0, '.', ' ')); ?> ₽</div>
                         </div>
                     </div>
 
@@ -43,17 +43,17 @@
                         Оформить заказ
                     </button>
 
-                    <a href="{{ url('/auction') }}" style="display: block; text-align: center; margin-top: 15px; color: #939393; text-decoration: none; transition: color 0.3s;">
+                    <a href="<?php echo e(url('/auction')); ?>" style="display: block; text-align: center; margin-top: 15px; color: #939393; text-decoration: none; transition: color 0.3s;">
                         Вернуться к аукциону
                     </a>
                 </form>
-            @else
+            <?php else: ?>
                 <div id="loadingMessage" style="text-align: center; color: #939393;">
                     <p>Загрузка данных...</p>
                 </div>
 
-                <form method="POST" action="{{ url('/checkout') }}" id="checkoutFormFinal" style="display: none;">
-                    @csrf
+                <form method="POST" action="<?php echo e(url('/checkout')); ?>" id="checkoutFormFinal" style="display: none;">
+                    <?php echo csrf_field(); ?>
                     <input type="hidden" name="picture_ids" id="pictureIds">
                     <input type="hidden" name="pickup_point" id="pickupPointHidden">
                     <input type="hidden" name="recipient_name" id="recipientNameHidden">
@@ -85,15 +85,15 @@
                         Оформить заказ
                     </button>
 
-                    <a href="{{ url('/cart') }}" style="display: block; text-align: center; margin-top: 15px; color: #939393; text-decoration: none; transition: color 0.3s;">
+                    <a href="<?php echo e(url('/cart')); ?>" style="display: block; text-align: center; margin-top: 15px; color: #939393; text-decoration: none; transition: color 0.3s;">
                         Вернуться в корзину
                     </a>
                 </form>
-            @endif
+            <?php endif; ?>
         </div>
     </div>
 
-    @if(!$auctionPicture)
+    <?php if(!$auctionPicture): ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         const checkoutData = localStorage.getItem('checkout_data');
@@ -134,6 +134,7 @@
         });
     });
     </script>
-    @endif
+    <?php endif; ?>
 </body>
 </html>
+<?php /**PATH C:\OSPanel\domains\canvas-laravel01\resources\views/checkout.blade.php ENDPATH**/ ?>

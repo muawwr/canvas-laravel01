@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\AuctionController;
 use App\Http\Controllers\PictureController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\FavoriteController;
@@ -16,12 +17,14 @@ use App\Http\Controllers\Api\FavoriteApiController;
 use App\Http\Controllers\Api\PictureApiController;
 use App\Http\Controllers\Api\CategoryApiController;
 use App\Http\Controllers\Api\ProfileApiController;
+use App\Http\Controllers\Api\AuctionApiController;
 
 /* |-------------------------------------------------------------------------- | Публичные маршруты |-------------------------------------------------------------------------- */
 
 Route::get('/', [MainController::class , 'index'])->name('main');
 Route::get('/main', [MainController::class , 'index']);
 Route::get('/gallery', [GalleryController::class , 'index'])->name('gallery');
+Route::get('/auction', [AuctionController::class , 'index'])->name('auction');
 Route::get('/picture/{id}', [PictureController::class , 'show'])->name('picture.show');
 
 // Авторизация
@@ -49,6 +52,8 @@ Route::middleware('auth.custom')->group(function () {
     Route::post('/api/picture/add', [PictureApiController::class , 'store']);
     Route::post('/api/picture/edit', [PictureApiController::class , 'update']);
     Route::post('/api/picture/delete', [PictureApiController::class , 'destroy']);
+    Route::post('/api/auction/bid', [AuctionApiController::class , 'bid']);
+    Route::post('/api/auction/buyout', [AuctionApiController::class , 'buyout']);
     Route::post('/api/profile/update', [ProfileApiController::class , 'update']);
 });
 

@@ -17,6 +17,9 @@
                 <a href="<?php echo e(url('/')); ?>" class="link_main">
                     <img src="<?php echo e(asset('assets/images/headerNew/home.svg')); ?>" alt="Главная">
                 </a>
+                <a href="<?php echo e(url('/auction')); ?>" class="link_main link_auction">
+                    <img src="<?php echo e(asset('assets/images/headerNew/auction.svg')); ?>" alt="Аукцион">
+                </a>
                 
                 <div class="search-bar">
                     <input type="text" id="searchInput" placeholder="Поиск">
@@ -264,6 +267,7 @@
                     <h4 class="footer-title">Галерея</h4>
                     <ul class="footer-links">
                         <li><a href="<?php echo e(url('/gallery')); ?>">Галерея</a></li>
+                        <li><a href="<?php echo e(url('/auction')); ?>">Аукцион</a></li>
                     </ul>
                 </div>
                 

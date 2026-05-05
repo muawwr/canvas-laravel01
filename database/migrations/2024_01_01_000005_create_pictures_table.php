@@ -22,6 +22,13 @@ return new class extends Migration
             $table->foreignId('style_id')->constrained('styles')->onDelete('cascade');
             $table->foreignId('era_id')->constrained('eras')->onDelete('cascade');
             $table->integer('price');
+            $table->enum('listing_type', ['gallery', 'auction'])->default('gallery');
+            $table->integer('auction_start_price')->nullable();
+            $table->integer('auction_current_price')->nullable();
+            $table->integer('auction_min_step')->nullable();
+            $table->integer('auction_buyout_price')->nullable();
+            $table->dateTime('auction_starts_at')->nullable();
+            $table->dateTime('auction_ends_at')->nullable();
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->timestamps();
         });

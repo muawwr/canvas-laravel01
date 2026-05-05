@@ -15,10 +15,12 @@
     <?php
         $manualHomeActive = trim((string) $__env->yieldContent('nav-home-active'));
         $manualGalleryActive = trim((string) $__env->yieldContent('nav-gallery-active'));
+        $manualAuctionActive = trim((string) $__env->yieldContent('nav-auction-active'));
         $manualProfileActive = trim((string) $__env->yieldContent('nav-profile-active'));
 
         $isHomeActive = trim(request()->path(), '/') === '' || request()->is('main');
         $isGalleryActive = request()->is('gallery');
+        $isAuctionActive = request()->is('auction');
         $isProfileActive = request()->is(
             'admin',
             'account',
@@ -44,6 +46,9 @@
                     </a>
                     <a href="<?php echo e(url('/gallery')); ?>" class="nav-item <?php echo e($isGalleryActive ? 'active' : $manualGalleryActive); ?>">
                         <img src="<?php echo e(asset('assets/images/header/gallery.svg')); ?>" alt="Галерея">
+                    </a>
+                    <a href="<?php echo e(url('/auction')); ?>" class="nav-item <?php echo e($isAuctionActive ? 'active' : $manualAuctionActive); ?>">
+                        <img src="<?php echo e(asset('assets/images/header/auction.svg')); ?>" alt="Аукцион">
                     </a>
                     <div class="nav-item profile-toggle <?php echo e($isProfileActive ? 'active' : ''); ?>" id="profileToggle">
                         <?php if(session()->has('user_id')): ?>
@@ -119,6 +124,9 @@
             <a href="<?php echo e(url('/gallery')); ?>" class="mobile-menu-item <?php echo e($isGalleryActive ? 'active' : $manualGalleryActive); ?>">
                 <img src="<?php echo e(asset('assets/images/header/gallery.svg')); ?>" alt="Галерея">
             </a>
+            <a href="<?php echo e(url('/auction')); ?>" class="mobile-menu-item <?php echo e($isAuctionActive ? 'active' : $manualAuctionActive); ?>">
+                <img src="<?php echo e(asset('assets/images/header/auction.svg')); ?>" alt="Аукцион">
+            </a>
             <div class="mobile-menu-item mobile-profile-toggle <?php echo e($isProfileActive ? 'active' : ''); ?>" id="mobileProfileToggle">
                 <?php if(session()->has('user_id')): ?>
                     <img src="<?php echo e(asset(session('user_img', 'assets/images/account/mainUser.png'))); ?>"
@@ -187,6 +195,7 @@
                     <h4 class="footer-title">Галерея</h4>
                     <ul class="footer-links">
                         <li><a href="<?php echo e(url('/gallery')); ?>">Галерея</a></li>
+                        <li><a href="<?php echo e(url('/auction')); ?>">Аукцион</a></li>
                     </ul>
                 </div>
 

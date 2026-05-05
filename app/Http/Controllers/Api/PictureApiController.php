@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class PictureApiController extends Controller
 {
@@ -32,6 +33,11 @@ class PictureApiController extends Controller
                 'style_id' => ['required', 'integer', 'exists:styles,id'],
                 'era_id' => ['required', 'integer', 'exists:eras,id'],
                 'price' => ['required', 'integer', 'min:100'],
+                'listing_type' => ['nullable', Rule::in(['gallery', 'auction'])],
+                'auction_start_price' => ['required_if:listing_type,auction', 'nullable', 'integer', 'min:100'],
+                'auction_min_step' => ['required_if:listing_type,auction', 'nullable', 'integer', 'min:50'],
+                'auction_buyout_price' => ['nullable', 'integer', 'min:100', 'gte:auction_start_price'],
+                'auction_duration_hours' => ['required_if:listing_type,auction', 'nullable', 'integer', 'min:1', 'max:720'],
             ], [
                 'image.required' => 'Загрузите изображение картины',
                 'image.file' => 'Не удалось обработать загруженный файл',
@@ -65,6 +71,15 @@ class PictureApiController extends Controller
                 'price.required' => 'Укажите цену картины',
                 'price.integer' => 'Цена должна быть числом',
                 'price.min' => 'Минимальная цена - 100 ₽',
+                'listing_type.in' => 'Выберите корректный способ размещения',
+                'auction_start_price.required_if' => 'Укажите стартовую цену аукциона',
+                'auction_start_price.min' => 'Стартовая цена аукциона должна быть не меньше 100 ₽',
+                'auction_min_step.required_if' => 'Укажите минимальный шаг ставки',
+                'auction_min_step.min' => 'Минимальный шаг ставки - 50 ₽',
+                'auction_buyout_price.gte' => 'Блиц-цена не может быть ниже стартовой цены',
+                'auction_duration_hours.required_if' => 'Укажите длительность аукциона',
+                'auction_duration_hours.min' => 'Минимальная длительность аукциона - 1 час',
+                'auction_duration_hours.max' => 'Максимальная длительность аукциона - 30 дней',
             ]);
 
             if ($validator->fails()) {
@@ -76,6 +91,10 @@ class PictureApiController extends Controller
             }
 
             $validated = $validator->validated();
+            $listingType = $validated['listing_type'] ?? 'gallery';
+            $displayPrice = $listingType === 'auction'
+                ? $validated['auction_start_price']
+                : $validated['price'];
             $file = $request->file('image');
 
             if (!$file || !$file->isValid()) {
@@ -100,7 +119,14 @@ class PictureApiController extends Controller
                 'genre_id' => $validated['genre_id'],
                 'style_id' => $validated['style_id'],
                 'era_id' => $validated['era_id'],
-                'price' => $validated['price'],
+                'price' => $displayPrice,
+                'listing_type' => $listingType,
+                'auction_start_price' => $listingType === 'auction' ? $validated['auction_start_price'] : null,
+                'auction_current_price' => $listingType === 'auction' ? $validated['auction_start_price'] : null,
+                'auction_min_step' => $listingType === 'auction' ? $validated['auction_min_step'] : null,
+                'auction_buyout_price' => $listingType === 'auction' ? ($validated['auction_buyout_price'] ?? null) : null,
+                'auction_starts_at' => $listingType === 'auction' ? now() : null,
+                'auction_ends_at' => $listingType === 'auction' ? now()->addHours((int) $validated['auction_duration_hours']) : null,
                 'status' => 'pending',
             ]);
 
@@ -108,7 +134,9 @@ class PictureApiController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Картина отправлена на модерацию',
+                'message' => $listingType === 'auction'
+                    ? 'Картина для аукциона отправлена на модерацию'
+                    : 'Картина отправлена на модерацию',
                 'picture_id' => $picture->id,
             ]);
         } catch (\Exception $e) {
@@ -170,9 +198,15 @@ class PictureApiController extends Controller
             $data['img'] = 'uploads/pictures/' . $filename;
         }
 
-        $picture->update($data);
+        $data['status'] = 'pending';
 
-        return response()->json(['success' => true, 'message' => 'Картина обновлена']);
+        try {
+            $picture->update($data);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'message' => 'Ошибка сохранения: ' . $e->getMessage()], 500);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Изменения отправлены на модерацию']);
     }
 
     public function destroy(Request $request)

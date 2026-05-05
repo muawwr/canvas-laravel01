@@ -28,7 +28,10 @@ class CartApiController extends Controller
                 return response()->json(['success' => false, 'message' => 'Некорректный ID картины'], 400);
             }
 
-            $picture = Picture::where('id', $picture_id)->where('status', 'approved')->first();
+            $picture = Picture::where('id', $picture_id)
+                ->where('status', 'approved')
+                ->where('listing_type', 'gallery')
+                ->first();
             if (!$picture) {
                 return response()->json(['success' => false, 'message' => 'Картина не найдена'], 404);
             }

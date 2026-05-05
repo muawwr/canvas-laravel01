@@ -83,17 +83,6 @@
     const avatarImage = document.getElementById('avatarImage');
     const accountAvatar = document.getElementById('accountAvatar');
     
-    function showToast(message, type = 'success') {
-        const container = document.getElementById('toast-container');
-        if (!container) return;
-        const toast = document.createElement('div');
-        toast.style.cssText = `background:#2D2D2D;color:#E0E0E0;padding:16px 24px;border-radius:12px;margin-bottom:10px;min-width:300px;box-shadow:0 4px 12px rgba(0,0,0,0.3);display:flex;align-items:center;gap:12px;border-left:4px solid ${type === 'success' ? '#FBFF83' : '#C76060'};animation:slideIn 0.3s ease-out;`;
-        const icon = type === 'success' ? '✓' : '✗';
-        toast.innerHTML = `<span style="font-size:20px">${icon}</span><span>${message}</span>`;
-        container.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-    
     editBtn.addEventListener('click', function() {
         if (!isEditMode) { enterEditMode(); } else { saveProfile(); }
     });
@@ -131,19 +120,18 @@
     avatarUploadInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
-            if (!file.type.startsWith('image/')) { showToast('Выберите изображение', 'error'); return; }
-            if (file.size > 5 * 1024 * 1024) { showToast('Макс 5 МБ', 'error'); return; }
+            if (!file.type.startsWith('image/')) { return; }
+            if (file.size > 5 * 1024 * 1024) { return; }
             newAvatarFile = file;
             const reader = new FileReader();
             reader.onload = function(e) { avatarImage.src = e.target.result; };
             reader.readAsDataURL(file);
-            showToast('Нажмите "Применить" для сохранения');
         }
     });
     
     async function saveProfile() {
         const newName = nameEdit.value.trim();
-        if (!newName || newName.length < 2) { showToast('Минимум 2 символа', 'error'); return; }
+        if (!newName || newName.length < 2) { return; }
         editBtn.disabled = true;
         editBtnText.textContent = 'Сохранение...';
         try {
@@ -155,10 +143,9 @@
             if (result.success) {
                 nameDisplay.textContent = newName;
                 if (result.avatar_url) { avatarImage.src = result.avatar_url + '?t=' + Date.now(); }
-                showToast('Профиль обновлен');
                 exitEditMode();
-            } else { showToast(result.message || 'Ошибка', 'error'); }
-        } catch (error) { showToast('Ошибка подключения', 'error'); }
+            }
+        } catch (error) {}
         finally { editBtn.disabled = false; if (isEditMode) editBtnText.textContent = 'Применить'; }
     }
     
@@ -191,7 +178,6 @@
 .account_edit_btn:hover img {
         filter: brightness(0) saturate(100%) invert(88%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(150%) contrast(88%);
     }
-@keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 </style>
 <?php endif; ?>
 <?php $__env->stopSection(); ?>

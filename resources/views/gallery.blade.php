@@ -17,6 +17,9 @@
                 <a href="{{ url('/') }}" class="link_main">
                     <img src="{{ asset('assets/images/headerNew/home.svg') }}" alt="Главная">
                 </a>
+                <a href="{{ url('/auction') }}" class="link_main link_auction">
+                    <img src="{{ asset('assets/images/headerNew/auction.svg') }}" alt="Аукцион">
+                </a>
                 
                 <div class="search-bar">
                     <input type="text" id="searchInput" placeholder="Поиск">
@@ -264,6 +267,7 @@
                     <h4 class="footer-title">Галерея</h4>
                     <ul class="footer-links">
                         <li><a href="{{ url('/gallery') }}">Галерея</a></li>
+                        <li><a href="{{ url('/auction') }}">Аукцион</a></li>
                     </ul>
                 </div>
                 

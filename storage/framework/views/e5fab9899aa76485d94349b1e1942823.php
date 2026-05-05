@@ -1,50 +1,48 @@
-@extends('layouts.app')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <main>
     <div class="cart_main container">
         <div class="main_page_title">
             <h3 class="main_title">В корзине:</h3>
-            <div class="count_page" id="cartTotalCount">{{ $cartItems->count() }}</div>
+            <div class="count_page" id="cartTotalCount"><?php echo e($cartItems->count()); ?></div>
         </div>
 
-        @if($cartItems->isEmpty())
+        <?php if($cartItems->isEmpty()): ?>
             <div class="empty-cart" style="text-align: center; padding: 60px 20px; color: #939393;">
-                <img src="{{ asset('assets/images/header/Cart.svg') }}" alt="Корзина" style="width: 80px; height: 80px; opacity: 0.3; margin-bottom: 20px;">
+                <img src="<?php echo e(asset('assets/images/header/Cart.svg')); ?>" alt="Корзина" style="width: 80px; height: 80px; opacity: 0.3; margin-bottom: 20px;">
                 <h3 style="font-size: 24px; margin-bottom: 10px;">Корзина пуста</h3>
                 <p style="font-size: 16px; margin-bottom: 30px;">Добавьте картины в корзину, чтобы они появились здесь</p>
-                <a href="{{ url('/gallery') }}" class="btn" style="display: inline-block; padding: 15px 40px; background: #FBFF83; color: #0D0D0D; text-decoration: none; border-radius: 15px; font-weight: 500;">
+                <a href="<?php echo e(url('/gallery')); ?>" class="btn" style="display: inline-block; padding: 15px 40px; background: #FBFF83; color: #0D0D0D; text-decoration: none; border-radius: 15px; font-weight: 500;">
                     Перейти в галерею
                 </a>
             </div>
-        @else
+        <?php else: ?>
             <div class="cart_content">
                 <div class="cart_items" id="cartItemsList">
-                    @foreach($cartItems as $item)
-                        <div class="cart_item" data-picture-id="{{ $item->picture_id }}" data-price="{{ $item->picture->price }}">
+                    <?php $__currentLoopData = $cartItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <div class="cart_item" data-picture-id="<?php echo e($item->picture_id); ?>" data-price="<?php echo e($item->picture->price); ?>">
                             <label class="cart_checkbox">
-                                <input type="checkbox" class="cart_item_checkbox" data-price="{{ $item->picture->price }}">
+                                <input type="checkbox" class="cart_item_checkbox" data-price="<?php echo e($item->picture->price); ?>">
                                 <span class="checkmark"></span>
                             </label>
 
-                            <a href="{{ url('/picture/' . $item->picture_id) }}">
+                            <a href="<?php echo e(url('/picture/' . $item->picture_id)); ?>">
                                 <div class="cart_item_image">
-                                    <img src="{{ asset($item->picture->img) }}" alt="{{ $item->picture->name }}">
+                                    <img src="<?php echo e(asset($item->picture->img)); ?>" alt="<?php echo e($item->picture->name); ?>">
                                 </div>
                             </a>
 
                             <div class="cart_item_info">
-                                <h4 class="cart_item_name">{{ $item->picture->name }}</h4>
-                                <p class="cart_item_author">{{ $item->picture->user->name }}</p>
+                                <h4 class="cart_item_name"><?php echo e($item->picture->name); ?></h4>
+                                <p class="cart_item_author"><?php echo e($item->picture->user->name); ?></p>
                             </div>
 
-                            <p class="cart_item_price">{{ number_format($item->picture->price, 0, '.', ' ') }} <span>₽</span></p>
+                            <p class="cart_item_price"><?php echo e(number_format($item->picture->price, 0, '.', ' ')); ?> <span>₽</span></p>
 
-                            <button class="cart_item_delete" type="button" data-picture-id="{{ $item->picture_id }}">
-                                <img src="{{ asset('assets/images/cart/Trashcan.svg') }}" alt="Удалить">
+                            <button class="cart_item_delete" type="button" data-picture-id="<?php echo e($item->picture_id); ?>">
+                                <img src="<?php echo e(asset('assets/images/cart/Trashcan.svg')); ?>" alt="Удалить">
                             </button>
                         </div>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </div>
 
                 <div class="cart_all_info">
@@ -73,19 +71,19 @@
                         </div>
 
                         <button type="submit" class="checkout_button" id="checkoutBtn">
-                            <img src="{{ asset('assets/images/cart/Subtract.svg') }}" alt="">
+                            <img src="<?php echo e(asset('assets/images/cart/Subtract.svg')); ?>" alt="">
                             <span>Перейти к оформлению</span>
                         </button>
                     </form>
                 </div>
             </div>
-        @endif
+        <?php endif; ?>
     </div>
 </main>
 
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('scripts')
+<?php $__env->startSection('scripts'); ?>
 <style>
 .cart_item {
     transition: opacity 0.3s ease;
@@ -212,4 +210,6 @@ document.addEventListener('DOMContentLoaded', function() {
     updateCartSummary();
 });
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\OSPanel\domains\canvas-laravel01\resources\views/cart.blade.php ENDPATH**/ ?>

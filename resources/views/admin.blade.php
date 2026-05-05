@@ -284,93 +284,13 @@
     </div>
 </main>
 
-<div id="toast-container" class="toast-container"></div>
 @endsection
 
 @section('scripts')
 <style>
-    .toast-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 10000;
-    }
-
-    .toast {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-width: 280px;
-        margin-bottom: 10px;
-        padding: 16px 20px;
-        border-radius: 12px;
-        background: #202020;
-        color: #e0e0e0;
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28);
-        animation: slideIn 0.3s ease-out;
-    }
-
-    .toast.success {
-        border-left: 4px solid #fbff83;
-    }
-
-    .toast.error {
-        border-left: 4px solid #c76060;
-    }
-
-    .toast-icon {
-        font-size: 18px;
-        line-height: 1;
-    }
-
-    @keyframes slideIn {
-        from {
-            transform: translateX(24px);
-            opacity: 0;
-        }
-
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-
-    @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-
-        to {
-            transform: translateX(24px);
-            opacity: 0;
-        }
-    }
 </style>
 
 <script>
-    function showToast(message, type = 'success') {
-        const container = document.getElementById('toast-container');
-
-        if (!container) {
-            return;
-        }
-
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.innerHTML = `
-            <span class="toast-icon">${type === 'success' ? '✓' : '✕'}</span>
-            <span>${escapeHtml(message)}</span>
-        `;
-
-        container.appendChild(toast);
-
-        setTimeout(() => {
-            toast.style.animation = 'slideOut 0.3s ease-out forwards';
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
-    }
-
     function escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
@@ -455,7 +375,6 @@
         const name = input ? input.value.trim() : '';
 
         if (!name) {
-            showToast('Введите название категории', 'error');
             return;
         }
 
@@ -476,15 +395,12 @@
             const result = await response.json();
 
             if (!result.success) {
-                showToast(result.message || 'Не удалось добавить категорию', 'error');
                 return;
             }
 
-            showToast(result.message || 'Категория добавлена');
             input.value = '';
             addCategoryToDom(type, result.id, name);
         } catch (error) {
-            showToast('Ошибка при добавлении категории', 'error');
             console.error(error);
         }
     }
@@ -507,7 +423,6 @@
             const result = await response.json();
 
             if (!result.success) {
-                showToast(result.message || 'Не удалось удалить категорию', 'error');
                 return;
             }
 
@@ -517,9 +432,7 @@
             }
 
             checkEmptyCategories(type);
-            showToast(result.message || 'Категория удалена');
         } catch (error) {
-            showToast('Ошибка при удалении категории', 'error');
             console.error(error);
         }
     }
@@ -555,7 +468,6 @@
             const result = await response.json();
 
             if (!result.success) {
-                showToast(result.message || 'Не удалось обновить статус', 'error');
                 return;
             }
 
@@ -565,9 +477,7 @@
             }
 
             ensureProcessingEmptyState();
-            showToast(result.message || 'Статус картины обновлён');
         } catch (error) {
-            showToast('Ошибка при модерации картины', 'error');
             console.error(error);
         }
     }

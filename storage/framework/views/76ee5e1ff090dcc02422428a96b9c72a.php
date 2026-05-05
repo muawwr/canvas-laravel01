@@ -44,6 +44,9 @@
                     <a href="<?php echo e(url('/gallery')); ?>" class="nav-item">
                         <img src="<?php echo e(asset('assets/images/header/gallery.svg')); ?>" alt="Галерея">
                     </a>
+                    <a href="<?php echo e(url('/auction')); ?>" class="nav-item">
+                        <img src="<?php echo e(asset('assets/images/header/auction.svg')); ?>" alt="Аукцион">
+                    </a>
                     <div class="nav-item profile-toggle" id="profileToggle">
                         <img src="<?php echo e(asset('assets/images/header/user.svg')); ?>" alt="Профиль">
                     </div>

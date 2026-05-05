@@ -18,6 +18,7 @@ class MainController extends Controller
 
         // Получаем картины для галереи на главной (одобренные)
         $pictures = Picture::where('status', 'approved')
+            ->where('listing_type', 'gallery')
             ->with('user')
             ->inRandomOrder()
             ->limit(12)

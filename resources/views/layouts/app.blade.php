@@ -15,10 +15,12 @@
     @php
         $manualHomeActive = trim((string) $__env->yieldContent('nav-home-active'));
         $manualGalleryActive = trim((string) $__env->yieldContent('nav-gallery-active'));
+        $manualAuctionActive = trim((string) $__env->yieldContent('nav-auction-active'));
         $manualProfileActive = trim((string) $__env->yieldContent('nav-profile-active'));
 
         $isHomeActive = trim(request()->path(), '/') === '' || request()->is('main');
         $isGalleryActive = request()->is('gallery');
+        $isAuctionActive = request()->is('auction');
         $isProfileActive = request()->is(
             'admin',
             'account',
@@ -44,6 +46,9 @@
                     </a>
                     <a href="{{ url('/gallery') }}" class="nav-item {{ $isGalleryActive ? 'active' : $manualGalleryActive }}">
                         <img src="{{ asset('assets/images/header/gallery.svg') }}" alt="Галерея">
+                    </a>
+                    <a href="{{ url('/auction') }}" class="nav-item {{ $isAuctionActive ? 'active' : $manualAuctionActive }}">
+                        <img src="{{ asset('assets/images/header/auction.svg') }}" alt="Аукцион">
                     </a>
                     <div class="nav-item profile-toggle {{ $isProfileActive ? 'active' : '' }}" id="profileToggle">
                         @if(session()->has('user_id'))
@@ -119,6 +124,9 @@
             <a href="{{ url('/gallery') }}" class="mobile-menu-item {{ $isGalleryActive ? 'active' : $manualGalleryActive }}">
                 <img src="{{ asset('assets/images/header/gallery.svg') }}" alt="Галерея">
             </a>
+            <a href="{{ url('/auction') }}" class="mobile-menu-item {{ $isAuctionActive ? 'active' : $manualAuctionActive }}">
+                <img src="{{ asset('assets/images/header/auction.svg') }}" alt="Аукцион">
+            </a>
             <div class="mobile-menu-item mobile-profile-toggle {{ $isProfileActive ? 'active' : '' }}" id="mobileProfileToggle">
                 @if(session()->has('user_id'))
                     <img src="{{ asset(session('user_img', 'assets/images/account/mainUser.png')) }}"
@@ -187,6 +195,7 @@
                     <h4 class="footer-title">Галерея</h4>
                     <ul class="footer-links">
                         <li><a href="{{ url('/gallery') }}">Галерея</a></li>
+                        <li><a href="{{ url('/auction') }}">Аукцион</a></li>
                     </ul>
                 </div>
 

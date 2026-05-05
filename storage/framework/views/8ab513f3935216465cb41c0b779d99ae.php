@@ -182,24 +182,65 @@
     <div class="add_modal" data-step="4">
         <div class="add_modal_content">
             <h1 class="add_title">Расчет стоимости</h1>
-            <p class="add_subtitle">Заполните данные о желаемой цене</p>
+            <p class="add_subtitle">Выберите формат размещения и заполните данные о цене</p>
             <div class="add_line"></div>
 
-            <div class="add_section">
-                <div class="add_price_header">
-                    <label class="add_label" for="priceYouGet">Цена, ₽</label>
-                    <span class="add_price_hint">Сколько вы получите</span>
-                </div>
-                <input type="number" class="add_input add_input_full" placeholder="Введите цену вашей картины" id="priceYouGet" min="100" value="<?php echo e(old('price')); ?>">
-                <div class="field_error" id="priceYouGetError"></div>
+            <div class="listing_tabs" role="tablist" aria-label="Формат размещения">
+                <button class="listing_tab active" type="button" data-listing-type="gallery">Продажа в галерее</button>
+                <button class="listing_tab" type="button" data-listing-type="auction">Аукцион</button>
             </div>
 
-            <div class="add_section">
-                <div class="add_price_header">
-                    <label class="add_label" for="priceBuyerPays">Цена, ₽</label>
-                    <span class="add_price_hint">Сколько заплатит покупатель (с комиссией 7%)</span>
+            <div class="listing_panel active" data-listing-panel="gallery">
+                <div class="add_section">
+                    <div class="add_price_header">
+                        <label class="add_label" for="priceYouGet">Цена, ₽</label>
+                        <span class="add_price_hint">Сколько вы получите</span>
+                    </div>
+                    <input type="number" class="add_input add_input_full" placeholder="Введите цену вашей картины" id="priceYouGet" min="100" value="<?php echo e(old('price')); ?>">
+                    <div class="field_error" id="priceYouGetError"></div>
                 </div>
-                <input type="number" class="add_input add_input_full" placeholder="Введите сумму для покупателя" id="priceBuyerPays" min="107">
+
+                <div class="add_section">
+                    <div class="add_price_header">
+                        <label class="add_label" for="priceBuyerPays">Цена, ₽</label>
+                        <span class="add_price_hint">Сколько заплатит покупатель (с комиссией 7%)</span>
+                    </div>
+                    <input type="number" class="add_input add_input_full" placeholder="Введите сумму для покупателя" id="priceBuyerPays" min="107">
+                </div>
+            </div>
+
+            <div class="listing_panel" data-listing-panel="auction">
+                <div class="add_price_header">
+                    <label class="add_label" for="auctionStartPrice">Стартовая цена, ₽</label>
+                    <span class="add_price_hint">С этой суммы начнутся торги</span>
+                </div>
+                <input type="number" class="add_input add_input_full" placeholder="Введите стартовую цену" id="auctionStartPrice" min="100">
+                <div class="field_error" id="auctionStartPriceError"></div>
+
+                <div class="add_row">
+                    <div class="add_section add_section_half">
+                        <label class="add_label" for="auctionMinStep">Минимальный шаг, ₽</label>
+                        <input type="number" class="add_input" placeholder="Например, 500" id="auctionMinStep" min="50" value="500">
+                        <div class="field_error" id="auctionMinStepError"></div>
+                    </div>
+                    <div class="add_section add_section_half">
+                        <label class="add_label" for="auctionBuyoutPrice">Блиц-цена, ₽</label>
+                        <input type="number" class="add_input" placeholder="Необязательно" id="auctionBuyoutPrice" min="100">
+                        <div class="field_error" id="auctionBuyoutPriceError"></div>
+                    </div>
+                </div>
+
+                <div class="add_section">
+                    <label class="add_label" for="auctionDurationHours">Таймер аукциона</label>
+                    <select class="add_input add_input_full" id="auctionDurationHours">
+                        <option value="24">24 часа</option>
+                        <option value="72">3 дня</option>
+                        <option value="168">7 дней</option>
+                        <option value="336">14 дней</option>
+                        <option value="720">30 дней</option>
+                    </select>
+                    <div class="field_error" id="auctionDurationHoursError"></div>
+                </div>
             </div>
 
             <div class="add_agreement">
@@ -228,7 +269,7 @@
             <div class="success_icon">
                 <img src="<?php echo e(asset('assets/images/add/Success.svg')); ?>" alt="Success">
             </div>
-            <h2 class="success_title">Ваша картина будет выставлена<br>в галерею после модерации</h2>
+            <h2 class="success_title" id="successTitle">Ваша картина будет выставлена<br>в галерею после модерации</h2>
             <button class="success_btn" id="successOkBtn" type="button">OK!</button>
         </div>
     </div>
@@ -274,6 +315,39 @@
     line-height: 1.35;
     color: #ff7f7f;
 }
+
+.listing_tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.listing_tab {
+    min-height: 58px;
+    border: 1px solid #5D5D5D30;
+    border-radius: 15px;
+    background-color: #20202050;
+    color: #8E8E8E;
+    font-family: 'InterTight', sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.listing_tab.active {
+    border-color: #FBFF83;
+    background-color: #FBFF83;
+    color: #0D0D0D;
+}
+
+.listing_panel {
+    display: none;
+}
+
+.listing_panel.active {
+    display: block;
+}
 </style>
 
 <script>
@@ -284,6 +358,7 @@
     const accountUrl = "<?php echo e(url('/account')); ?>";
     const formState = {
         image: null,
+        listing_type: 'gallery',
         genre_id: Number(document.getElementById('genreId')?.value || 0),
         style_id: Number(document.getElementById('styleId')?.value || 0),
         era_id: Number(document.getElementById('eraId')?.value || 0),
@@ -300,8 +375,15 @@
     const uploadText = document.getElementById('uploadText');
     const priceYouGet = document.getElementById('priceYouGet');
     const priceBuyerPays = document.getElementById('priceBuyerPays');
+    const listingTabs = Array.from(document.querySelectorAll('.listing_tab'));
+    const listingPanels = Array.from(document.querySelectorAll('.listing_panel'));
+    const auctionStartPrice = document.getElementById('auctionStartPrice');
+    const auctionMinStep = document.getElementById('auctionMinStep');
+    const auctionBuyoutPrice = document.getElementById('auctionBuyoutPrice');
+    const auctionDurationHours = document.getElementById('auctionDurationHours');
     const submitButton = document.getElementById('submitPicture');
     const successOkBtn = document.getElementById('successOkBtn');
+    const successTitle = document.getElementById('successTitle');
 
     const fields = {
         width: document.getElementById('pictureWidth'),
@@ -486,11 +568,38 @@
         }
 
         if (step === 4) {
-            const sellerPrice = Number(priceYouGet.value);
+            if (formState.listing_type === 'gallery') {
+                const sellerPrice = Number(priceYouGet.value);
 
-            if (!sellerPrice || sellerPrice < 100) {
-                markInvalid(priceYouGet, 'priceYouGetError', 'Минимальная цена картины 100 ₽');
-                return false;
+                if (!sellerPrice || sellerPrice < 100) {
+                    markInvalid(priceYouGet, 'priceYouGetError', 'Минимальная цена картины 100 ₽');
+                    return false;
+                }
+            } else {
+                const startPrice = Number(auctionStartPrice.value);
+                const minStep = Number(auctionMinStep.value);
+                const buyoutPrice = Number(auctionBuyoutPrice.value);
+                const durationHours = Number(auctionDurationHours.value);
+
+                if (!startPrice || startPrice < 100) {
+                    markInvalid(auctionStartPrice, 'auctionStartPriceError', 'Минимальная стартовая цена 100 ₽');
+                    return false;
+                }
+
+                if (!minStep || minStep < 50) {
+                    markInvalid(auctionMinStep, 'auctionMinStepError', 'Минимальный шаг ставки 50 ₽');
+                    return false;
+                }
+
+                if (buyoutPrice && buyoutPrice < startPrice) {
+                    markInvalid(auctionBuyoutPrice, 'auctionBuyoutPriceError', 'Блиц-цена не может быть ниже стартовой цены');
+                    return false;
+                }
+
+                if (!durationHours || durationHours < 1 || durationHours > 720) {
+                    markInvalid(auctionDurationHours, 'auctionDurationHoursError', 'Выберите длительность аукциона');
+                    return false;
+                }
             }
 
             if (!fields.agreeTerms.checked) {
@@ -542,7 +651,17 @@
         formData.append('genre_id', formState.genre_id);
         formData.append('style_id', formState.style_id);
         formData.append('era_id', formState.era_id);
-        formData.append('price', priceYouGet.value);
+        formData.append('listing_type', formState.listing_type);
+
+        if (formState.listing_type === 'auction') {
+            formData.append('price', auctionStartPrice.value);
+            formData.append('auction_start_price', auctionStartPrice.value);
+            formData.append('auction_min_step', auctionMinStep.value);
+            formData.append('auction_buyout_price', auctionBuyoutPrice.value);
+            formData.append('auction_duration_hours', auctionDurationHours.value);
+        } else {
+            formData.append('price', priceYouGet.value);
+        }
 
         submitButton.disabled = true;
         submitButton.textContent = 'Отправка...';
@@ -562,16 +681,39 @@
             if (!response.ok || !result.success) {
                 markInvalid(null, 'agreeTermsError', result.message || 'Не удалось добавить картину');
                 submitButton.disabled = false;
-                submitButton.textContent = 'Выставить на продажу';
+                updateSubmitText();
                 return;
             }
 
+            successTitle.innerHTML = formState.listing_type === 'auction'
+                ? 'Ваша картина будет выставлена<br>на аукцион после модерации'
+                : 'Ваша картина будет выставлена<br>в галерею после модерации';
             successModal.classList.add('show');
         } catch (error) {
             markInvalid(null, 'agreeTermsError', 'Ошибка сервера. Попробуйте еще раз.');
             submitButton.disabled = false;
-            submitButton.textContent = 'Выставить на продажу';
+            updateSubmitText();
         }
+    }
+
+    function updateSubmitText() {
+        submitButton.textContent = formState.listing_type === 'auction'
+            ? 'Выставить на аукцион'
+            : 'Выставить на продажу';
+    }
+
+    function setListingType(type) {
+        formState.listing_type = type;
+
+        listingTabs.forEach((tab) => {
+            tab.classList.toggle('active', tab.dataset.listingType === type);
+        });
+
+        listingPanels.forEach((panel) => {
+            panel.classList.toggle('active', panel.dataset.listingPanel === type);
+        });
+
+        updateSubmitText();
     }
 
     document.querySelectorAll('[data-next]').forEach((button) => {
@@ -602,6 +744,10 @@
     });
 
     imageUpload.addEventListener('change', (event) => handleImage(event.target.files[0]));
+
+    listingTabs.forEach((tab) => {
+        tab.addEventListener('click', () => setListingType(tab.dataset.listingType));
+    });
 
     Object.values(fields).forEach((field) => {
         if (!field) {
@@ -697,6 +843,7 @@
     });
 
     updateStepIndicators(1);
+    setListingType('gallery');
     updateBuyerPriceFromSeller();
 })();
 </script>

@@ -81,7 +81,6 @@
     </div>
 </main>
 
-<div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 10000;"></div>
 <?php $__env->stopSection(); ?>
 
 <?php $__env->startSection('scripts'); ?>
@@ -95,68 +94,9 @@
     pointer-events: none;
 }
 
-.toast {
-    background: #2D2D2D;
-    color: #E0E0E0;
-    padding: 16px 24px;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    min-width: 300px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    animation: slideIn 0.3s ease-out;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.toast.success {
-    border-left: 4px solid #FBFF83;
-}
-
-.toast.error {
-    border-left: 4px solid #C76060;
-}
-
-@keyframes slideIn {
-    from {
-        transform: translateX(400px);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-@keyframes slideOut {
-    from {
-        transform: translateX(0);
-        opacity: 1;
-    }
-
-    to {
-        transform: translateX(400px);
-        opacity: 0;
-    }
-}
 </style>
 
 <script>
-function showToast(message, type = 'success') {
-    const container = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    const icon = type === 'success' ? '✓' : '✗';
-    toast.innerHTML = `<span style="font-size:20px">${icon}</span><span>${message}</span>`;
-    container.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease-out forwards';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-
 function updateCartSummary() {
     const checkboxes = document.querySelectorAll('.cart_item_checkbox:checked');
     let count = checkboxes.length;
@@ -216,8 +156,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const result = await response.json();
 
                 if (result.success) {
-                    showToast('Удалено из корзины', 'success');
-
                     setTimeout(() => {
                         cartItem.remove();
 
@@ -229,11 +167,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }, 300);
                 } else {
-                    showToast(result.message || 'Ошибка при удалении', 'error');
                     cartItem.classList.remove('removing');
                 }
             } catch (error) {
-                showToast('Ошибка подключения к серверу', 'error');
                 cartItem.classList.remove('removing');
             }
         });
@@ -245,7 +181,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const selectedCheckboxes = document.querySelectorAll('.cart_item_checkbox:checked');
             if (selectedCheckboxes.length === 0) {
-                showToast('Выберите хотя бы один товар', 'error');
                 return;
             }
 
@@ -253,7 +188,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const recipientName = document.getElementById('recipientName').value.trim();
 
             if (!pickupPoint || !recipientName) {
-                showToast('Заполните все поля', 'error');
                 return;
             }
 

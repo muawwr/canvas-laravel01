@@ -18,7 +18,15 @@ class PictureController extends Controller
         $user_avatar = session('user_img', 'assets/images/account/mainUser.png');
         $user_name = session('user_name', 'Гость');
 
-        $picture = Picture::with(['user', 'genre', 'style', 'era'])
+        $picture = Picture::with(['user', 'genre', 'style', 'era', 'latestAuctionBid.user'])
+            ->withCount('auctionBids')
+            ->when(session()->has('user_id'), function ($query) {
+                $query->with(['auctionBids' => function ($bidsQuery) {
+                    $bidsQuery
+                        ->where('user_id', session('user_id'))
+                        ->orderByDesc('created_at');
+                }]);
+            })
             ->where('status', 'approved')
             ->findOrFail($id);
 

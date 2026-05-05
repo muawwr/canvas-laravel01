@@ -9,7 +9,15 @@ class Picture extends Model
     protected $fillable = [
         'user_id', 'img', 'width', 'height', 'name',
         'technique', 'year', 'description',
-        'genre_id', 'style_id', 'era_id', 'price', 'status',
+        'genre_id', 'style_id', 'era_id', 'price', 'listing_type',
+        'auction_start_price', 'auction_current_price', 'auction_min_step',
+        'auction_buyout_price', 'auction_starts_at', 'auction_ends_at',
+        'status',
+    ];
+
+    protected $casts = [
+        'auction_starts_at' => 'datetime',
+        'auction_ends_at' => 'datetime',
     ];
 
     public function user()
@@ -45,6 +53,16 @@ class Picture extends Model
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function auctionBids()
+    {
+        return $this->hasMany(AuctionBid::class);
+    }
+
+    public function latestAuctionBid()
+    {
+        return $this->hasOne(AuctionBid::class)->latestOfMany();
     }
 
     public function isSold(): bool

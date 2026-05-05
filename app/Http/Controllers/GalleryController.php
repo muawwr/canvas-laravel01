@@ -21,6 +21,7 @@ class GalleryController extends Controller
         $eras = Era::orderBy('name')->get();
 
         $query = Picture::where('status', 'approved')
+            ->where('listing_type', 'gallery')
             ->with(['user', 'genre', 'style', 'era'])
             ->withCount('favoriteEntries');
 

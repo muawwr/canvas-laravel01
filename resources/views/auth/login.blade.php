@@ -44,6 +44,9 @@
                     <a href="{{ url('/gallery') }}" class="nav-item">
                         <img src="{{ asset('assets/images/header/gallery.svg') }}" alt="Галерея">
                     </a>
+                    <a href="{{ url('/auction') }}" class="nav-item">
+                        <img src="{{ asset('assets/images/header/auction.svg') }}" alt="Аукцион">
+                    </a>
                     <div class="nav-item profile-toggle" id="profileToggle">
                         <img src="{{ asset('assets/images/header/user.svg') }}" alt="Профиль">
                     </div>

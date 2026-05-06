@@ -15,6 +15,31 @@ class CartController extends Controller
         $user_name = session('user_name', 'Гость');
         $user_id = session('user_id');
 
+        if ($is_logged_in) {
+            $wonAuctionIds = Picture::where('status', 'approved')
+                ->where('listing_type', 'auction')
+                ->whereNotNull('auction_ends_at')
+                ->where('auction_ends_at', '<=', now())
+                ->where('user_id', '!=', $user_id)
+                ->whereDoesntHave('orders', function ($query) {
+                    $query->where('payment_status', 'succeeded');
+                })
+                ->whereHas('latestAuctionBid', function ($query) use ($user_id) {
+                    $query->where('user_id', $user_id);
+                })
+                ->whereDoesntHave('cartEntries', function ($query) use ($user_id) {
+                    $query->where('user_id', $user_id);
+                })
+                ->pluck('id');
+
+            foreach ($wonAuctionIds as $pictureId) {
+                Cart::create([
+                    'user_id' => $user_id,
+                    'picture_id' => $pictureId,
+                ]);
+            }
+        }
+
         $cartItems = Cart::where('user_id', $user_id)
             ->with(['picture.user'])
             ->orderByDesc('added_at')

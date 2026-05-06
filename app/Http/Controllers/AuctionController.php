@@ -11,6 +11,7 @@ class AuctionController extends Controller
         $auctions = Picture::where('status', 'approved')
             ->where('listing_type', 'auction')
             ->whereNotNull('auction_ends_at')
+            ->where('auction_ends_at', '>', now())
             ->whereDoesntHave('orders', function ($query) {
                 $query->where('payment_status', 'succeeded');
             })
@@ -23,7 +24,6 @@ class AuctionController extends Controller
                         ->orderByDesc('created_at');
                 }]);
             })
-            ->orderByRaw('auction_ends_at < NOW()')
             ->orderBy('auction_ends_at')
             ->get();
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuctionBid;
+use App\Models\Cart;
 use App\Models\Picture;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -146,12 +147,29 @@ class AuctionApiController extends Controller
                     return ['success' => false, 'message' => 'Картина уже куплена'];
                 }
 
-                session(['auction_buyout_picture_id' => $picture->id]);
+                $price = (int) $picture->auction_buyout_price;
+
+                AuctionBid::create([
+                    'picture_id' => $picture->id,
+                    'user_id' => $userId,
+                    'amount' => $price,
+                ]);
+
+                $picture->update([
+                    'auction_current_price' => $price,
+                    'price' => $price,
+                    'auction_ends_at' => now(),
+                ]);
+
+                Cart::updateOrCreate([
+                    'user_id' => $userId,
+                    'picture_id' => $picture->id,
+                ]);
 
                 return [
                     'success' => true,
-                    'message' => 'Перейдите к оформлению покупки',
-                    'redirect_url' => url('/checkout?auction=' . $picture->id),
+                    'message' => 'Картина добавлена в корзину',
+                    'redirect_url' => url('/cart'),
                 ];
             });
 

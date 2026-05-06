@@ -1,8 +1,6 @@
-
-
 <?php $__env->startSection('content'); ?>
 <main>
-    <div class="one_product container <?php echo e($picture->listing_type === 'auction' ? 'one_product_auction' : ''); ?>">
+    <div class="one_product container">
         <?php if($picture->listing_type !== 'auction'): ?>
         <div>
             <a class="btn_back" href="<?php echo e(url('/gallery')); ?>"><img src="<?php echo e(asset('assets/images/oneProduct/back.svg')); ?>" alt=""></a>
@@ -97,13 +95,6 @@
                     </div>
                     <div class="product_line"></div>
                 </div>
-                <div class="product_about_card">
-                    <div class="info_card">
-                        <p class="info_title">Текущая ставка</p>
-                        <p class="info_text price"><?php echo e(number_format($picture->auction_current_price ?? $picture->auction_start_price ?? $picture->price, 0, '.', ' ')); ?> ₽</p>
-                    </div>
-                    <div class="product_line"></div>
-                </div>
                 <?php else: ?>
                 <div class="product_about_card">
                     <div class="info_card">
@@ -114,29 +105,6 @@
                 </div>
                 <?php endif; ?>
             </div>
-            <?php if($picture->listing_type === 'auction'): ?>
-                <?php
-                    $currentUserId = session('user_id');
-                    $endsAt = $picture->auction_ends_at;
-                    $isFinishedAuction = $endsAt && $endsAt->isPast();
-                    $currentPrice = $picture->auction_current_price ?? $picture->auction_start_price ?? $picture->price;
-                    $minStep = $picture->auction_min_step ?? 50;
-                    $minNextBid = $currentPrice + $minStep;
-                    $latestBidUserId = optional($picture->latestAuctionBid)->user_id;
-                    $hasUserBid = session()->has('user_id') && $picture->relationLoaded('auctionBids') && $picture->auctionBids->isNotEmpty();
-                    $userStatus = null;
-
-                    if ($isFinishedAuction && $latestBidUserId && $latestBidUserId == $currentUserId) {
-                        $userStatus = 'Вы выиграли';
-                    } elseif ($isFinishedAuction) {
-                        $userStatus = 'Аукцион завершен';
-                    } elseif ($latestBidUserId && $latestBidUserId == $currentUserId) {
-                        $userStatus = 'Вы лидируете';
-                    } elseif ($hasUserBid) {
-                        $userStatus = 'Ваша ставка перебита';
-                    }
-                ?>
-            <?php endif; ?>
             <?php if($picture->listing_type !== 'auction'): ?>
             <div class="product_buttons">
                 <?php if(session()->has('user_id') && session('user_id') == $picture->user_id): ?>
@@ -195,102 +163,6 @@
             </div>
             <?php endif; ?>
         </div>
-        <?php if($picture->listing_type === 'auction'): ?>
-        <div class="auction_product_actions" data-auction-card data-picture-id="<?php echo e($picture->id); ?>">
-            <?php if($userStatus): ?>
-                <div class="auction_user_status <?php echo e($userStatus === 'Вы лидируете' || $userStatus === 'Вы выиграли' ? 'is-leading' : 'is-outbid'); ?>" data-user-status>
-                    <?php echo e($userStatus); ?>
-
-                </div>
-            <?php else: ?>
-                <div class="auction_user_status" data-user-status style="display: none;"></div>
-            <?php endif; ?>
-
-            <div class="auction_product_panels">
-                <section class="auction_bid_panel">
-                    <div class="auction_panel_heading">
-                        <h3>Ставки</h3>
-                        <span data-auction-timer data-ends-at="<?php echo e($endsAt ? $endsAt->toIso8601String() : ''); ?>"><?php echo e($isFinishedAuction ? 'Завершен' : '...'); ?></span>
-                    </div>
-
-                    <div class="auction_prices">
-                        <div>
-                            <span class="auction_price_label">Текущая ставка</span>
-                            <strong data-current-price><?php echo e(number_format($currentPrice, 0, '.', ' ')); ?> ₽</strong>
-                        </div>
-                        <div>
-                            <span class="auction_price_label">Минимальный шаг</span>
-                            <strong>+<?php echo e(number_format($minStep, 0, '.', ' ')); ?> ₽</strong>
-                        </div>
-                        <div>
-                            <span class="auction_price_label">Следующая ставка</span>
-                            <strong data-next-bid-label><?php echo e(number_format($minNextBid, 0, '.', ' ')); ?> ₽</strong>
-                        </div>
-                        <div>
-                            <span class="auction_price_label">Ставок</span>
-                            <strong data-bids-count><?php echo e($picture->auction_bids_count); ?></strong>
-                        </div>
-                    </div>
-
-                    <div class="auction_bid_info">
-                        <?php if($picture->latestAuctionBid): ?>
-                            <span>Лидер: <strong data-leader-name><?php echo e($latestBidUserId == $currentUserId ? 'вы' : ($picture->latestAuctionBid->user->name ?? 'Пользователь')); ?></strong></span>
-                        <?php else: ?>
-                            <span>Станьте первым участником торгов</span>
-                        <?php endif; ?>
-                    </div>
-
-                    <?php if($isFinishedAuction): ?>
-                        <div class="auction_notice">Торги по этой картине завершены.</div>
-                    <?php elseif(!session()->has('user_id')): ?>
-                        <a class="auction_login_link" href="<?php echo e(url('/auth')); ?>">Войдите, чтобы сделать ставку</a>
-                    <?php elseif(session('user_id') == $picture->user_id): ?>
-                        <div class="auction_notice">Это ваша картина. Покупатели могут делать ставки здесь.</div>
-                    <?php else: ?>
-                        <form class="auction_bid_form" data-bid-form data-confirm-message="Вы собираетесь поставить <?php echo e(number_format($minNextBid, 0, '.', ' ')); ?> ₽. Отменить ставку будет нельзя.">
-                            <input type="hidden" name="picture_id" value="<?php echo e($picture->id); ?>">
-                            <input type="hidden" name="amount" value="<?php echo e($minNextBid); ?>" data-quick-bid-amount>
-                            <button class="auction_action_btn" type="submit" data-quick-bid-button>
-                                Поставить <?php echo e(number_format($minNextBid, 0, '.', ' ')); ?> ₽
-                            </button>
-                        </form>
-
-                        <form class="auction_custom_bid_form" data-bid-form data-custom-bid-form>
-                            <input type="hidden" name="picture_id" value="<?php echo e($picture->id); ?>">
-                            <label class="auction_price_label" for="customBid<?php echo e($picture->id); ?>">Ввести свою сумму</label>
-                            <div class="auction_custom_bid_row">
-                                <input id="customBid<?php echo e($picture->id); ?>" type="number" name="amount" min="<?php echo e($minNextBid); ?>" placeholder="Минимум <?php echo e(number_format($minNextBid, 0, '.', ' ')); ?> ₽" class="auction_input" data-bid-input>
-                                <button class="auction_action_btn auction_action_btn_secondary" type="submit">Поставить</button>
-                            </div>
-                        </form>
-                    <?php endif; ?>
-                </section>
-
-                <?php if(!$isFinishedAuction && $picture->auction_buyout_price && $currentPrice <= $picture->auction_buyout_price): ?>
-                    <section class="auction_buyout_panel">
-                        <div class="auction_panel_heading">
-                            <h3>Купить сейчас</h3>
-                            <span>Аукцион завершится немедленно</span>
-                        </div>
-                        <strong class="auction_buyout_price"><?php echo e(number_format($picture->auction_buyout_price, 0, '.', ' ')); ?> ₽</strong>
-
-                        <?php if(!session()->has('user_id')): ?>
-                            <a class="auction_buyout_btn" href="<?php echo e(url('/auth')); ?>">Войти для покупки</a>
-                        <?php elseif(session('user_id') == $picture->user_id): ?>
-                            <div class="auction_notice">Блиц-покупка доступна только покупателям.</div>
-                        <?php else: ?>
-                            <form class="auction_buyout_form" data-buyout-form data-confirm-message="Вы покупаете картину за <?php echo e(number_format($picture->auction_buyout_price, 0, '.', ' ')); ?> ₽. Аукцион завершится немедленно.">
-                                <input type="hidden" name="picture_id" value="<?php echo e($picture->id); ?>">
-                                <button class="auction_buyout_btn" type="submit">Купить сейчас</button>
-                            </form>
-                        <?php endif; ?>
-                    </section>
-                <?php endif; ?>
-            </div>
-
-            <div class="auction_message" data-auction-message></div>
-        </div>
-        <?php endif; ?>
     </div>
 </main>
 
@@ -307,19 +179,6 @@
         </div>
     </div>
 </div>
-
-<?php if($picture->listing_type === 'auction'): ?>
-<div class="auction_confirm_overlay" id="auctionConfirmModal" aria-hidden="true">
-    <div class="auction_confirm_modal" role="dialog" aria-modal="true">
-        <h2>Подтверждение</h2>
-        <p id="auctionConfirmText"></p>
-        <div class="auction_confirm_actions">
-            <button class="auction_confirm_cancel" type="button" id="auctionConfirmCancel">Отмена</button>
-            <button class="auction_confirm_submit" type="button" id="auctionConfirmSubmit">Подтвердить</button>
-        </div>
-    </div>
-</div>
-<?php endif; ?>
 
 <?php $__env->stopSection(); ?>
 
@@ -341,8 +200,6 @@
 </style>
 <script src="<?php echo e(asset('script.js')); ?>"></script>
 <script>
-const isAuctionPicture = <?php echo json_encode($picture->listing_type === 'auction', 15, 512) ?>;
-
 function updateProductAuctionTimer() {
     document.querySelectorAll('[data-auction-timer]').forEach((timer) => {
         const endsAt = timer.dataset.endsAt ? new Date(timer.dataset.endsAt) : null;
@@ -371,168 +228,6 @@ function updateProductAuctionTimer() {
 
 updateProductAuctionTimer();
 window.setInterval(updateProductAuctionTimer, 1000);
-
-if (isAuctionPicture) {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
-    const confirmModal = document.getElementById('auctionConfirmModal');
-    const confirmText = document.getElementById('auctionConfirmText');
-    const confirmSubmit = document.getElementById('auctionConfirmSubmit');
-    const confirmCancel = document.getElementById('auctionConfirmCancel');
-    let pendingAction = null;
-
-    function formatPrice(value) {
-        return new Intl.NumberFormat('ru-RU').format(Number(value) || 0) + ' ₽';
-    }
-
-    function openConfirm(message, onConfirm, submitText = 'Подтвердить') {
-        pendingAction = onConfirm;
-        confirmText.textContent = message;
-        confirmSubmit.textContent = submitText;
-        confirmSubmit.disabled = false;
-        confirmModal.classList.add('show');
-        confirmModal.setAttribute('aria-hidden', 'false');
-    }
-
-    function closeConfirm() {
-        pendingAction = null;
-        confirmModal.classList.remove('show');
-        confirmModal.setAttribute('aria-hidden', 'true');
-    }
-
-    function showMessage(card, message, isSuccess) {
-        const messageNode = card.querySelector('[data-auction-message]');
-        if (!messageNode) return;
-        messageNode.textContent = message;
-        messageNode.classList.toggle('success', isSuccess);
-        messageNode.classList.toggle('error', !isSuccess);
-    }
-
-    function updateUserStatus(card, status, isLeading = true) {
-        const statusNode = card.querySelector('[data-user-status]');
-        if (!statusNode) return;
-        statusNode.textContent = status;
-        statusNode.style.display = '';
-        statusNode.classList.toggle('is-leading', isLeading);
-        statusNode.classList.toggle('is-outbid', !isLeading);
-    }
-
-    async function sendAuctionRequest(url, form) {
-        const response = await fetch(url, {
-            method: 'POST',
-            body: new FormData(form),
-            credentials: 'same-origin',
-            headers: {
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': csrfToken,
-            },
-        });
-
-        const result = await response.json();
-        return { response, result };
-    }
-
-    async function submitBid(form) {
-        const card = form.closest('[data-auction-card]');
-        const buttons = card.querySelectorAll('[data-bid-form] button');
-        buttons.forEach((button) => button.disabled = true);
-
-        try {
-            const { response, result } = await sendAuctionRequest('<?php echo e(url('/api/auction/bid')); ?>', form);
-            showMessage(card, result.message || 'Готово', response.ok && result.success);
-
-            if (response.ok && result.success) {
-                card.querySelector('[data-current-price]').textContent = formatPrice(result.current_price);
-                card.querySelector('[data-next-bid-label]').textContent = formatPrice(result.min_next_bid);
-                card.querySelector('[data-bids-count]').textContent = result.bids_count;
-
-                const quickAmount = card.querySelector('[data-quick-bid-amount]');
-                const quickButton = card.querySelector('[data-quick-bid-button]');
-                if (quickAmount) quickAmount.value = result.min_next_bid;
-                if (quickButton) quickButton.textContent = 'Поставить ' + formatPrice(result.min_next_bid);
-
-                const quickForm = card.querySelector('.auction_bid_form');
-                if (quickForm) {
-                    quickForm.dataset.confirmMessage = 'Вы собираетесь поставить ' + formatPrice(result.min_next_bid) + '. Отменить ставку будет нельзя.';
-                }
-
-                const input = card.querySelector('[data-bid-input]');
-                if (input) {
-                    input.min = result.min_next_bid;
-                    input.placeholder = 'Минимум ' + formatPrice(result.min_next_bid);
-                    input.value = '';
-                }
-
-                const leader = card.querySelector('[data-leader-name]');
-                if (leader) leader.textContent = 'вы';
-                updateUserStatus(card, result.user_status || 'Вы лидируете', true);
-            }
-        } catch (error) {
-            showMessage(card, 'Не удалось отправить ставку. Попробуйте еще раз.', false);
-        } finally {
-            buttons.forEach((button) => button.disabled = false);
-        }
-    }
-
-    async function submitBuyout(form) {
-        const card = form.closest('[data-auction-card]');
-        const button = form.querySelector('button');
-        button.disabled = true;
-
-        try {
-            const { response, result } = await sendAuctionRequest('<?php echo e(url('/api/auction/buyout')); ?>', form);
-            showMessage(card, result.message || 'Готово', response.ok && result.success);
-
-            if (response.ok && result.success) {
-                window.setTimeout(() => {
-                    window.location.href = result.redirect_url || '<?php echo e(url('/checkout')); ?>';
-                }, 700);
-            }
-        } catch (error) {
-            showMessage(card, 'Не удалось оформить блиц-покупку. Попробуйте еще раз.', false);
-        } finally {
-            button.disabled = false;
-        }
-    }
-
-    document.querySelectorAll('[data-bid-form]').forEach((form) => {
-        form.addEventListener('submit', (event) => {
-            event.preventDefault();
-            const amount = Number(new FormData(form).get('amount'));
-            const min = Number(form.querySelector('[name="amount"]')?.min || 0);
-
-            if (min && amount < min) {
-                showMessage(form.closest('[data-auction-card]'), 'Минимальная ставка: ' + formatPrice(min), false);
-                return;
-            }
-
-            const message = form.dataset.confirmMessage
-                || 'Вы собираетесь поставить ' + formatPrice(amount) + '. Отменить ставку будет нельзя.';
-            openConfirm(message, () => submitBid(form));
-        });
-    });
-
-    document.querySelectorAll('[data-buyout-form]').forEach((form) => {
-        form.addEventListener('submit', (event) => {
-            event.preventDefault();
-            openConfirm(form.dataset.confirmMessage, () => submitBuyout(form), 'Купить');
-        });
-    });
-
-    confirmSubmit?.addEventListener('click', async () => {
-        if (!pendingAction) return;
-        confirmSubmit.disabled = true;
-        const action = pendingAction;
-        closeConfirm();
-        await action();
-    });
-
-    confirmCancel?.addEventListener('click', closeConfirm);
-    confirmModal?.addEventListener('click', (event) => {
-        if (event.target === confirmModal) {
-            closeConfirm();
-        }
-    });
-}
 
 let pictureToDelete = null;
 

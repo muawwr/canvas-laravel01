@@ -12,12 +12,14 @@ class Picture extends Model
         'genre_id', 'style_id', 'era_id', 'price', 'listing_type',
         'auction_start_price', 'auction_current_price', 'auction_min_step',
         'auction_buyout_price', 'auction_starts_at', 'auction_ends_at',
-        'status',
+        'status', 'show_sold_badge', 'hidden_after_sale',
     ];
 
     protected $casts = [
         'auction_starts_at' => 'datetime',
         'auction_ends_at' => 'datetime',
+        'show_sold_badge' => 'boolean',
+        'hidden_after_sale' => 'boolean',
     ];
 
     public function user()

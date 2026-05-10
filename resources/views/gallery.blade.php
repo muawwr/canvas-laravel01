@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -8,6 +8,18 @@
     <link rel="shortcut icon" href="{{ asset('assets/images/header/logo.svg') }}" type="image/x-icon">
 </head>
 <body>
+    @php
+        $galleryHasNotificationsTable = false;
+        try {
+            $galleryHasNotificationsTable = \Illuminate\Support\Facades\Schema::hasTable('user_notifications');
+        } catch (\Throwable $e) {
+            $galleryHasNotificationsTable = false;
+        }
+
+        $galleryNotificationCount = session()->has('user_id') && $galleryHasNotificationsTable
+            ? \App\Models\UserNotification::where('user_id', session('user_id'))->whereNull('read_at')->count()
+            : 0;
+    @endphp
     <header class="header-gallery">
         <div class="container">
             <div class="header-gallery-content">
@@ -20,6 +32,12 @@
                 <a href="{{ url('/auction') }}" class="link_main link_auction">
                     <img src="{{ asset('assets/images/headerNew/auction.svg') }}" alt="Аукцион">
                 </a>
+                @if(session()->has('user_id'))
+                    <a href="{{ url('/notifications') }}" class="link_notification_gallery">
+                        <img src="{{ asset('assets/images/header/notifications.svg') }}" alt="Уведомления">
+                        <span class="notification-dot" style="{{ $galleryNotificationCount > 0 ? '' : 'display:none;' }}"></span>
+                    </a>
+                @endif
                 
                 <div class="search-bar">
                     <input type="text" id="searchInput" placeholder="Поиск">
@@ -35,10 +53,6 @@
                     <a href="{{ url('/fav') }}" class="icon-btn">
                         <img src="{{ asset('assets/images/headerNew/Fav.svg') }}" alt="Избранное">
                     </a>
-                    <button class="icon-btn notification-btn">
-                        <img src="{{ asset('assets/images/header/user.svg') }}" alt="Уведомления">
-                        <span class="notification-dot"></span>
-                    </button>
                 </div>
                 
                 <!-- Profile Button with Dropdown -->
@@ -232,6 +246,51 @@
                     </div>
                 @endif
             </div>
+
+            @if($pictures->hasPages())
+                @php
+                    $currentPage = $pictures->currentPage();
+                    $lastPage = $pictures->lastPage();
+                    $pageStart = max(1, $currentPage - 2);
+                    $pageEnd = min($lastPage, $currentPage + 2);
+                @endphp
+
+                <nav class="gallery_pagination" aria-label="Пагинация каталога">
+                    @if($pictures->onFirstPage())
+                        <span class="gallery_page_link gallery_page_link_disabled"><img src="{{ asset('assets/images/gallery/left.svg') }}" alt=""></span>
+                    @else
+                        <a class="gallery_page_link" href="{{ $pictures->previousPageUrl() }}"><img src="{{ asset('assets/images/gallery/left.svg') }}" alt=""></a>
+                    @endif
+
+                    @if($pageStart > 1)
+                        <a class="gallery_page_number" href="{{ $pictures->url(1) }}">1</a>
+                        @if($pageStart > 2)
+                            <span class="gallery_page_gap">...</span>
+                        @endif
+                    @endif
+
+                    @for($page = $pageStart; $page <= $pageEnd; $page++)
+                        @if($page === $currentPage)
+                            <span class="gallery_page_number gallery_page_number_active">{{ $page }}</span>
+                        @else
+                            <a class="gallery_page_number" href="{{ $pictures->url($page) }}">{{ $page }}</a>
+                        @endif
+                    @endfor
+
+                    @if($pageEnd < $lastPage)
+                        @if($pageEnd < $lastPage - 1)
+                            <span class="gallery_page_gap">...</span>
+                        @endif
+                        <a class="gallery_page_number" href="{{ $pictures->url($lastPage) }}">{{ $lastPage }}</a>
+                    @endif
+
+                    @if($pictures->hasMorePages())
+                        <a class="gallery_page_link" href="{{ $pictures->nextPageUrl() }}"><img src="{{ asset('assets/images/gallery/right.svg') }}" alt=""></a>
+                    @else
+                        <span class="gallery_page_link gallery_page_link_disabled"><img src="{{ asset('assets/images/gallery/right.svg') }}" alt=""></span>
+                    @endif
+                </nav>
+            @endif
             
             <div id="noResultsMessage" style="display: none; text-align: center; color: #999; padding: 60px; width: 100%;">
                 Ничего не найдено. Попробуйте изменить параметры поиска или фильтры.
@@ -519,3 +578,4 @@
     </script>
 </body>
 </html>
+

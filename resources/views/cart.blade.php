@@ -21,9 +21,22 @@
             <div class="cart_content">
                 <div class="cart_items" id="cartItemsList">
                     @foreach($cartItems as $item)
-                        <div class="cart_item" data-picture-id="{{ $item->picture_id }}" data-price="{{ $item->picture->price }}">
-                            <label class="cart_checkbox">
-                                <input type="checkbox" class="cart_item_checkbox" data-price="{{ $item->picture->price }}">
+                        @php
+                            $latestBidUserId = optional($item->picture->latestAuctionBid)->user_id;
+                            $isLockedAuctionItem = $item->picture->listing_type === 'auction'
+                                && $item->picture->auction_ends_at
+                                && $item->picture->auction_ends_at->isPast()
+                                && $latestBidUserId == session('user_id')
+                                && !$item->picture->orders()->where('payment_status', 'succeeded')->exists();
+                        @endphp
+                        <div class="cart_item {{ $isLockedAuctionItem ? 'cart_item_locked' : '' }}" data-picture-id="{{ $item->picture_id }}" data-price="{{ $item->picture->price }}">
+                            <label class="cart_checkbox {{ $isLockedAuctionItem ? 'is-locked' : '' }}">
+                                <input
+                                    type="checkbox"
+                                    class="cart_item_checkbox"
+                                    data-price="{{ $item->picture->price }}"
+                                    {{ $isLockedAuctionItem ? 'checked disabled' : '' }}
+                                >
                                 <span class="checkmark"></span>
                             </label>
 
@@ -36,13 +49,18 @@
                             <div class="cart_item_info">
                                 <h4 class="cart_item_name">{{ $item->picture->name }}</h4>
                                 <p class="cart_item_author">{{ $item->picture->user->name }}</p>
+                                @if($isLockedAuctionItem)
+                                    <p class="cart_item_lock_note">Аукционный лот забронирован за вами до оплаты</p>
+                                @endif
                             </div>
 
                             <p class="cart_item_price">{{ number_format($item->picture->price, 0, '.', ' ') }} <span>₽</span></p>
 
-                            <button class="cart_item_delete" type="button" data-picture-id="{{ $item->picture_id }}">
-                                <img src="{{ asset('assets/images/cart/Trashcan.svg') }}" alt="Удалить">
-                            </button>
+                            @unless($isLockedAuctionItem)
+                                <button class="cart_item_delete" type="button" data-picture-id="{{ $item->picture_id }}">
+                                    <img src="{{ asset('assets/images/cart/Trashcan.svg') }}" alt="Удалить">
+                                </button>
+                            @endunless
                         </div>
                     @endforeach
                 </div>
@@ -95,7 +113,6 @@
     opacity: 0.3;
     pointer-events: none;
 }
-
 </style>
 
 <script>
@@ -132,7 +149,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const checkoutForm = document.getElementById('checkoutForm');
 
     checkboxes.forEach((checkbox) => {
-        checkbox.addEventListener('change', updateCartSummary);
+        checkbox.addEventListener('change', function() {
+            if (checkbox.disabled) {
+                checkbox.checked = true;
+            }
+            updateCartSummary();
+        });
     });
 
     deleteButtons.forEach((button) => {

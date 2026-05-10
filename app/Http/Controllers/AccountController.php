@@ -7,7 +7,9 @@ use App\Models\User;
 use App\Models\Picture;
 use App\Models\Favorite;
 use App\Models\Order;
+use App\Models\AuctionBid;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class AccountController extends Controller
 {
@@ -23,8 +25,14 @@ class AccountController extends Controller
         $user_data = User::findOrFail($viewed_user_id);
 
         // Актуальное количество картин
-        $user_data->pictures_count = Picture::where('user_id', $viewed_user_id)
-            ->where('status', 'approved')->count();
+        $picturesCountQuery = Picture::where('user_id', $viewed_user_id)
+            ->where('status', 'approved');
+
+        if (Schema::hasColumn('pictures', 'hidden_after_sale')) {
+            $picturesCountQuery->where('hidden_after_sale', false);
+        }
+
+        $user_data->pictures_count = $picturesCountQuery->count();
 
         // Актуальное количество заказов
         $user_data->orders_count = Order::where(function ($q) use ($viewed_user_id) {
@@ -69,13 +77,34 @@ class AccountController extends Controller
         }
 
         // Получаем картины
-        $user_pictures = Picture::where('user_id', $viewed_user_id)
-            ->where('status', 'approved')
+        $userPicturesQuery = Picture::where('user_id', $viewed_user_id)
+            ->where('status', 'approved');
+
+        if (Schema::hasColumn('pictures', 'hidden_after_sale')) {
+            $userPicturesQuery->where('hidden_after_sale', false);
+        }
+
+        $user_pictures = $userPicturesQuery
             ->orderByDesc('created_at')
             ->get()
             ->map(function ($picture) {
-            $picture->is_sold = Order::where('picture_id', $picture->id)
-                ->where('payment_status', 'succeeded')->count();
+            $picture->is_sold = ($picture->show_sold_badge ?? false)
+                || Order::where('picture_id', $picture->id)
+                    ->where('payment_status', 'succeeded')
+                    ->exists();
+
+            $picture->has_failed_auction = $picture->listing_type === 'auction'
+                && $picture->is_sold == 0
+                && $picture->auction_ends_at
+                && $picture->auction_ends_at->isPast()
+                && Order::where('picture_id', $picture->id)
+                    ->where('payment_status', 'canceled')
+                    ->exists();
+
+            $picture->failed_auction_reason = $picture->has_failed_auction
+                ? 'Победитель аукциона не оплатил картину в течение 24 часов'
+                : null;
+
             return $picture;
         });
 

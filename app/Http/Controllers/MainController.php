@@ -7,6 +7,7 @@ use App\Models\Picture;
 use App\Models\User;
 use App\Models\Order;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class MainController extends Controller
 {
@@ -17,9 +18,15 @@ class MainController extends Controller
         $user_name = session('user_name', 'Гость');
 
         // Получаем картины для галереи на главной (одобренные)
-        $pictures = Picture::where('status', 'approved')
+        $picturesQuery = Picture::where('status', 'approved')
             ->where('listing_type', 'gallery')
-            ->with('user')
+            ->with('user');
+
+        if (Schema::hasColumn('pictures', 'hidden_after_sale')) {
+            $picturesQuery->where('hidden_after_sale', false);
+        }
+
+        $pictures = $picturesQuery
             ->inRandomOrder()
             ->limit(12)
             ->get();

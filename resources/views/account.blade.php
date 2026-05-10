@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 @section('nav-profile-active', 'active')
 
 @section('content')
@@ -45,7 +45,7 @@
 
     <div class="gallery-grid-masonry">
         @forelse($user_pictures as $picture)
-        <div class="gallery-card">
+        <div class="gallery-card account_picture_card">
             <a href="{{ url('/picture/' . $picture->id) }}">
                 <img src="{{ asset($picture->img) }}" alt="{{ $picture->name }}">
                 @if($picture->is_sold > 0)
@@ -55,6 +55,20 @@
                     </div>
                 @endif
             </a>
+
+            @if($is_own_profile && $picture->has_failed_auction)
+                <div class="account_auction_retry_box">
+                    <div class="account_auction_retry_head">
+                        <strong>Картина не была продана</strong>
+                        <span class="account_retry_info">i<span class="account_retry_tooltip">&#1055;&#1086;&#1073;&#1077;&#1076;&#1080;&#1090;&#1077;&#1083;&#1100; &#1072;&#1091;&#1082;&#1094;&#1080;&#1086;&#1085;&#1072; &#1085;&#1077; &#1086;&#1087;&#1083;&#1072;&#1090;&#1080;&#1083; &#1082;&#1072;&#1088;&#1090;&#1080;&#1085;&#1091; &#1074; &#1090;&#1077;&#1095;&#1077;&#1085;&#1080;&#1077; 24 &#1095;&#1072;&#1089;&#1086;&#1074;</span></span>
+                    </div>
+                    <span class="account_auction_retry_text">Хотите опубликовать картину снова?</span>
+                    <div class="account_auction_retry_actions">
+                        <button class="account_retry_btn" type="button" data-relist-auction-picture-id="{{ $picture->id }}">Да</button>
+                        <button class="account_retry_btn account_retry_btn_secondary" type="button" data-delete-auction-picture-id="{{ $picture->id }}">Нет, удалить</button>
+                    </div>
+                </div>
+            @endif
         </div>
         @empty
         <div class="gallery-card" style="text-align: center; color: #999; padding: 60px;">
@@ -72,7 +86,7 @@
     'use strict';
     let isEditMode = false;
     let newAvatarFile = null;
-    
+
     const editBtn = document.getElementById('editProfileBtn');
     const editBtnText = document.getElementById('editBtnText');
     const editBtnIcon = editBtn.querySelector('img');
@@ -82,11 +96,11 @@
     const avatarUploadInput = document.getElementById('avatarUploadInput');
     const avatarImage = document.getElementById('avatarImage');
     const accountAvatar = document.getElementById('accountAvatar');
-    
+
     editBtn.addEventListener('click', function() {
         if (!isEditMode) { enterEditMode(); } else { saveProfile(); }
     });
-    
+
     function enterEditMode() {
         isEditMode = true;
         nameDisplay.style.display = 'none';
@@ -100,7 +114,7 @@
         editBtn.style.color = '#E0E0E0';
         editBtn.style.border = '1px solid #E0E0E0';
     }
-    
+
     function exitEditMode() {
         isEditMode = false;
         newAvatarFile = null;
@@ -114,9 +128,9 @@
         editBtn.style.color = '';
         editBtn.style.border = '';
     }
-    
+
     accountAvatar.addEventListener('click', function() { if (isEditMode) avatarUploadInput.click(); });
-    
+
     avatarUploadInput.addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
@@ -128,7 +142,7 @@
             reader.readAsDataURL(file);
         }
     });
-    
+
     async function saveProfile() {
         const newName = nameEdit.value.trim();
         if (!newName || newName.length < 2) { return; }
@@ -148,7 +162,56 @@
         } catch (error) {}
         finally { editBtn.disabled = false; if (isEditMode) editBtnText.textContent = 'Применить'; }
     }
-    
+
+    document.querySelectorAll('[data-relist-auction-picture-id]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            button.disabled = true;
+            const formData = new FormData();
+            formData.append('picture_id', button.dataset.relistAuctionPictureId);
+
+            try {
+                const response = await fetch('/api/picture/relist-auction', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    window.location.reload();
+                    return;
+                }
+                alert(result.message || 'Не удалось снова выставить картину на аукцион');
+            } catch (error) {
+                alert('Не удалось снова выставить картину на аукцион');
+            } finally {
+                button.disabled = false;
+            }
+        });
+    });
+
+    document.querySelectorAll('[data-delete-auction-picture-id]').forEach((button) => {
+        button.addEventListener('click', async () => {
+            button.disabled = true;
+            const formData = new FormData();
+            formData.append('picture_id', button.dataset.deleteAuctionPictureId);
+
+            try {
+                const response = await fetch('/api/picture/delete', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    window.location.reload();
+                }
+            } catch (error) {
+            } finally {
+                button.disabled = false;
+            }
+        });
+    });
+
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && isEditMode) {
             nameEdit.value = nameDisplay.textContent;
@@ -178,6 +241,107 @@
 .account_edit_btn:hover img {
         filter: brightness(0) saturate(100%) invert(88%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(150%) contrast(88%);
     }
+.account_picture_card {
+    position: relative;
+    overflow: hidden;
+    z-index: 2;
+}
+.account_picture_card:hover {
+    z-index: 12;
+}
+.account_auction_retry_box {
+    position: absolute;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    padding: 18px 18px 16px;
+    border-radius: 12px;
+    background: rgba(18, 18, 18, 0.92);
+    border: 1px solid rgba(255, 90, 90, 0.2);
+    backdrop-filter: blur(10px);
+    z-index: 3;
+    overflow: visible;
+}
+.account_auction_retry_box strong {
+    color: #F3F3F3;
+    font-size: 18px;
+}
+.account_auction_retry_head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.account_retry_info {
+    position: relative;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.24);
+    color: #F3F3F3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    line-height: 1;
+    font-weight: 600;
+    cursor: default;
+    flex-shrink: 0;
+    padding: 0;
+    text-indent: 0;
+    overflow: visible;
+}
+.account_retry_tooltip {
+    position: absolute;
+    right: -20px;
+    bottom:45px;
+    width: 220px;
+    max-width: min(220px, calc(100vw - 32px));
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(10, 10, 10, 0.55);
+    color: #EAEAEA;
+    font-size: 13px;
+    line-height: 1.45;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: 0.2s ease;
+    text-align: left;
+    z-index: 40;
+    display: block;
+}
+
+.account_retry_info:hover .account_retry_tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+.account_auction_retry_text {
+    display: block;
+    color: #BDBDBD;
+    margin-bottom: 14px;
+}
+.account_auction_retry_actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.account_retry_btn {
+    min-height: 42px;
+    padding: 0 18px;
+    border-radius: 12px;
+    border: none;
+    background: #FBFF83;
+    color: #121212;
+    cursor: pointer;
+    font-weight: 600;
+}
+.account_retry_btn_secondary {
+    background: transparent;
+    color: #E0E0E0;
+    border: 1px solid rgba(255,255,255,0.16);
+}
 </style>
 @endif
 @endsection

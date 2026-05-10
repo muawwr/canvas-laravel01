@@ -13,6 +13,17 @@
 
 <body>
     @php
+        $hasNotificationsTable = false;
+        try {
+            $hasNotificationsTable = \Illuminate\Support\Facades\Schema::hasTable('user_notifications');
+        } catch (\Throwable $e) {
+            $hasNotificationsTable = false;
+        }
+
+        $notificationCount = session()->has('user_id') && $hasNotificationsTable
+            ? \App\Models\UserNotification::where('user_id', session('user_id'))->whereNull('read_at')->count()
+            : 0;
+
         $manualHomeActive = trim((string) $__env->yieldContent('nav-home-active'));
         $manualGalleryActive = trim((string) $__env->yieldContent('nav-gallery-active'));
         $manualAuctionActive = trim((string) $__env->yieldContent('nav-auction-active'));
@@ -21,6 +32,7 @@
         $isHomeActive = trim(request()->path(), '/') === '' || request()->is('main');
         $isGalleryActive = request()->is('gallery');
         $isAuctionActive = request()->is('auction');
+        $isNotificationsActive = request()->is('notifications');
         $isProfileActive = request()->is(
             'admin',
             'account',
@@ -60,43 +72,54 @@
                         @endif
                     </div>
                 </nav>
-                @if(session()->has('user_id'))
-                <div class="profile-dropdown" id="profileDropdown">
-                    @if(session('user_role') == 2)
-                        <a href="{{ url('/admin') }}" class="profile-dropdown-item">
-                            <img class="p_d_a" src="{{ asset('assets/images/admin/admin.svg') }}" alt="Админ-панель">
-                        </a>
-                        <a href="{{ url('/logout') }}" class="profile-dropdown-item">
-                            <img src="{{ asset('assets/images/header/Logout.svg') }}" alt="Выход">
-                        </a>
-                    @else
-                        <a href="{{ url('/cart') }}" class="profile-dropdown-item">
-                            <img src="{{ asset('assets/images/header/Cart.svg') }}" alt="Корзина">
-                        </a>
-                        <a href="{{ url('/fav') }}" class="profile-dropdown-item">
-                            <img src="{{ asset('assets/images/header/fav.svg') }}" alt="Избранное">
-                        </a>
-                        <a href="{{ url('/account') }}" class="profile-dropdown-item">
-                            <img src="{{ asset('assets/images/header/account.svg') }}" alt="Настройки">
-                        </a>
-                        <a href="{{ url('/add') }}" class="profile-dropdown-item">
-                            <img src="{{ asset('assets/images/header/add.svg') }}" alt="Добавить">
-                        </a>
-                        <a href="{{ url('/orders') }}" class="profile-dropdown-item">
-                            <img src="{{ asset('assets/images/header/orders.svg') }}" alt="Заказы">
-                        </a>
-                        <a href="{{ url('/logout') }}" class="profile-dropdown-item">
-                            <img src="{{ asset('assets/images/header/Logout.svg') }}" alt="Выход">
+
+                <div class="header-right-tools">
+                    @if(session()->has('user_id'))
+                        <a href="{{ url('/notifications') }}" class="header-notification-link {{ $isNotificationsActive ? 'active' : '' }}">
+                            <img src="{{ asset('assets/images/header/notifications.svg') }}" alt="Уведомления">
+                            <span class="notification-dot" data-notification-dot style="{{ $notificationCount > 0 ? '' : 'display:none;' }}"></span>
                         </a>
                     @endif
-                </div>
-                @endif
-                @if(!session()->has('user_id'))
-                    <div class="auth-buttons">
+
+                    @if(session()->has('user_id'))
+                        <div class="profile-dropdown" id="profileDropdown">
+                            @if(session('user_role') == 2)
+                                <a href="{{ url('/admin') }}" class="profile-dropdown-item">
+                                    <img class="p_d_a" src="{{ asset('assets/images/admin/admin.svg') }}" alt="Админ-панель">
+                                </a>
+                                <a href="{{ url('/logout') }}" class="profile-dropdown-item">
+                                    <img src="{{ asset('assets/images/header/Logout.svg') }}" alt="Выход">
+                                </a>
+                            @else
+                                <a href="{{ url('/cart') }}" class="profile-dropdown-item">
+                                    <img src="{{ asset('assets/images/header/Cart.svg') }}" alt="Корзина">
+                                </a>
+                                <a href="{{ url('/fav') }}" class="profile-dropdown-item">
+                                    <img src="{{ asset('assets/images/header/fav.svg') }}" alt="Избранное">
+                                </a>
+                                <a href="{{ url('/account') }}" class="profile-dropdown-item">
+                                    <img src="{{ asset('assets/images/header/account.svg') }}" alt="Настройки">
+                                </a>
+                                <a href="{{ url('/add') }}" class="profile-dropdown-item">
+                                    <img src="{{ asset('assets/images/header/add.svg') }}" alt="Добавить">
+                                </a>
+                                <a href="{{ url('/orders') }}" class="profile-dropdown-item">
+                                    <img src="{{ asset('assets/images/header/orders.svg') }}" alt="Заказы">
+                                </a>
+                                <a href="{{ url('/logout') }}" class="profile-dropdown-item">
+                                    <img src="{{ asset('assets/images/header/Logout.svg') }}" alt="Выход">
+                                </a>
+                            @endif
+                        </div>
+                    @endif
+
+                    @if(!session()->has('user_id'))
+                        <div class="auth-buttons">
                         <a href="{{ url('/auth') }}" class="btn btn-login">Войти</a>
                         <a href="{{ url('/reg') }}" class="btn btn-register">Регистрация</a>
-                    </div>
-                @endif
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
     </header>
@@ -127,6 +150,12 @@
             <a href="{{ url('/auction') }}" class="mobile-menu-item {{ $isAuctionActive ? 'active' : $manualAuctionActive }}">
                 <img src="{{ asset('assets/images/header/auction.svg') }}" alt="Аукцион">
             </a>
+            @if(session()->has('user_id'))
+                <a href="{{ url('/notifications') }}" class="mobile-menu-item notification-nav-item {{ $isNotificationsActive ? 'active' : '' }}">
+                    <img src="{{ asset('assets/images/header/notifications.svg') }}" alt="Уведомления">
+                    <span class="notification-dot" data-notification-dot style="{{ $notificationCount > 0 ? '' : 'display:none;' }}"></span>
+                </a>
+            @endif
             <div class="mobile-menu-item mobile-profile-toggle {{ $isProfileActive ? 'active' : '' }}" id="mobileProfileToggle">
                 @if(session()->has('user_id'))
                     <img src="{{ asset(session('user_img', 'assets/images/account/mainUser.png')) }}"
@@ -140,35 +169,35 @@
     </div>
 
     @if(session()->has('user_id'))
-    <div class="mobile-profile-dropdown" id="mobileProfileDropdown">
-        @if(session('user_role') == 2)
-            <a href="{{ url('/admin') }}" class="mobile-profile-dropdown-item">
-                <img class="p_d_a" src="{{ asset('assets/images/admin/admin.svg') }}" alt="Админ-панель">
-            </a>
-            <a href="{{ url('/logout') }}" class="mobile-profile-dropdown-item">
-                <img src="{{ asset('assets/images/header/Logout.svg') }}" alt="Выход">
-            </a>
-        @else
-            <a href="{{ url('/cart') }}" class="mobile-profile-dropdown-item">
-                <img src="{{ asset('assets/images/header/Cart.svg') }}" alt="Корзина">
-            </a>
-            <a href="{{ url('/fav') }}" class="mobile-profile-dropdown-item">
-                <img src="{{ asset('assets/images/header/fav.svg') }}" alt="Избранное">
-            </a>
-            <a href="{{ url('/account') }}" class="mobile-profile-dropdown-item">
-                <img src="{{ asset('assets/images/header/account.svg') }}" alt="Настройки">
-            </a>
-            <a href="{{ url('/add') }}" class="mobile-profile-dropdown-item">
-                <img src="{{ asset('assets/images/header/add.svg') }}" alt="Добавить">
-            </a>
-            <a href="{{ url('/orders') }}" class="mobile-profile-dropdown-item">
-                <img src="{{ asset('assets/images/header/orders.svg') }}" alt="Заказы">
-            </a>
-            <a href="{{ url('/logout') }}" class="mobile-profile-dropdown-item">
-                <img src="{{ asset('assets/images/header/Logout.svg') }}" alt="Выход">
-            </a>
-        @endif
-    </div>
+        <div class="mobile-profile-dropdown" id="mobileProfileDropdown">
+            @if(session('user_role') == 2)
+                <a href="{{ url('/admin') }}" class="mobile-profile-dropdown-item">
+                    <img class="p_d_a" src="{{ asset('assets/images/admin/admin.svg') }}" alt="Админ-панель">
+                </a>
+                <a href="{{ url('/logout') }}" class="mobile-profile-dropdown-item">
+                    <img src="{{ asset('assets/images/header/Logout.svg') }}" alt="Выход">
+                </a>
+            @else
+                <a href="{{ url('/cart') }}" class="mobile-profile-dropdown-item">
+                    <img src="{{ asset('assets/images/header/Cart.svg') }}" alt="Корзина">
+                </a>
+                <a href="{{ url('/fav') }}" class="mobile-profile-dropdown-item">
+                    <img src="{{ asset('assets/images/header/fav.svg') }}" alt="Избранное">
+                </a>
+                <a href="{{ url('/account') }}" class="mobile-profile-dropdown-item">
+                    <img src="{{ asset('assets/images/header/account.svg') }}" alt="Настройки">
+                </a>
+                <a href="{{ url('/add') }}" class="mobile-profile-dropdown-item">
+                    <img src="{{ asset('assets/images/header/add.svg') }}" alt="Добавить">
+                </a>
+                <a href="{{ url('/orders') }}" class="mobile-profile-dropdown-item">
+                    <img src="{{ asset('assets/images/header/orders.svg') }}" alt="Заказы">
+                </a>
+                <a href="{{ url('/logout') }}" class="mobile-profile-dropdown-item">
+                    <img src="{{ asset('assets/images/header/Logout.svg') }}" alt="Выход">
+                </a>
+            @endif
+        </div>
     @endif
 
     @yield('content')

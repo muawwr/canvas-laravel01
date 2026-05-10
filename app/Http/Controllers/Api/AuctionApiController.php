@@ -6,16 +6,45 @@ use App\Http\Controllers\Controller;
 use App\Models\AuctionBid;
 use App\Models\Cart;
 use App\Models\Picture;
+use App\Models\User;
+use App\Services\NotificationService;
+use App\Services\UserBanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class AuctionApiController extends Controller
 {
+    protected function formatTimeLeft(?\Carbon\Carbon $endsAt): string
+    {
+        if (!$endsAt || $endsAt->isPast()) {
+            return 'аукцион завершен';
+        }
+
+        $totalSeconds = now()->diffInSeconds($endsAt);
+        $days = intdiv($totalSeconds, 86400);
+        $hours = intdiv($totalSeconds % 86400, 3600);
+        $minutes = intdiv($totalSeconds % 3600, 60);
+        $seconds = $totalSeconds % 60;
+
+        if ($days > 0) {
+            return $days . ' д ' . $hours . ' ч ' . $minutes . ' мин';
+        }
+
+        return $hours . ' ч ' . $minutes . ' мин ' . $seconds . ' сек';
+    }
+
     public function bid(Request $request)
     {
         if (!session()->has('user_id')) {
             return response()->json(['success' => false, 'message' => 'Необходима авторизация'], 403);
+        }
+
+        $userId = session('user_id');
+        $user = User::find($userId);
+        $restrictionMessage = $user ? UserBanService::getRestrictionMessage($user) : null;
+        if ($restrictionMessage) {
+            return response()->json(['success' => false, 'message' => $restrictionMessage], 403);
         }
 
         $validator = Validator::make($request->all(), [
@@ -30,7 +59,6 @@ class AuctionApiController extends Controller
             return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
         }
 
-        $userId = session('user_id');
         $pictureId = (int) $request->picture_id;
         $amount = (int) $request->amount;
 
@@ -61,11 +89,19 @@ class AuctionApiController extends Controller
                 $currentPrice = $picture->auction_current_price ?? $picture->auction_start_price ?? $picture->price;
                 $minStep = $picture->auction_min_step ?? 50;
                 $minBid = $currentPrice + $minStep;
+                $previousLeader = $picture->latestAuctionBid;
 
                 if ($amount < $minBid) {
                     return [
                         'success' => false,
                         'message' => 'Минимальная ставка: ' . number_format($minBid, 0, '.', ' ') . ' ₽',
+                    ];
+                }
+
+                if ($picture->auction_buyout_price && $amount >= $picture->auction_buyout_price) {
+                    return [
+                        'success' => false,
+                        'message' => 'Для этой суммы используйте выкуп за ' . number_format((int) $picture->auction_buyout_price, 0, '.', ' ') . ' ₽',
                     ];
                 }
 
@@ -79,6 +115,26 @@ class AuctionApiController extends Controller
                     'auction_current_price' => $amount,
                     'price' => $amount,
                 ]);
+
+                NotificationService::push(
+                    $userId,
+                    'auction_bid_placed',
+                    'Ставка принята',
+                    'Вы сделали ставку на картину "' . $picture->name . '" в размере ' . number_format($amount, 0, '.', ' ') . ' ₽. Сейчас вы лидируете.',
+                    url('/auction'),
+                    $picture->id
+                );
+
+                if ($previousLeader && $previousLeader->user_id != $userId) {
+                    NotificationService::push(
+                        $previousLeader->user_id,
+                        'auction_outbid',
+                        'Вас обогнали в аукционе',
+                        'По картине "' . $picture->name . '" новая ставка: ' . number_format($amount, 0, '.', ' ') . ' ₽. До конца торгов: ' . $this->formatTimeLeft($picture->auction_ends_at) . '.',
+                        url('/auction'),
+                        $picture->id
+                    );
+                }
 
                 return [
                     'success' => true,
@@ -103,6 +159,13 @@ class AuctionApiController extends Controller
             return response()->json(['success' => false, 'message' => 'Необходима авторизация'], 403);
         }
 
+        $userId = session('user_id');
+        $user = User::find($userId);
+        $restrictionMessage = $user ? UserBanService::getRestrictionMessage($user) : null;
+        if ($restrictionMessage) {
+            return response()->json(['success' => false, 'message' => $restrictionMessage], 403);
+        }
+
         $validator = Validator::make($request->all(), [
             'picture_id' => ['required', 'integer', 'exists:pictures,id'],
         ]);
@@ -111,11 +174,10 @@ class AuctionApiController extends Controller
             return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
         }
 
-        $userId = session('user_id');
         $pictureId = (int) $request->picture_id;
 
         try {
-            $result = DB::transaction(function () use ($pictureId, $userId, $request) {
+            $result = DB::transaction(function () use ($pictureId, $userId) {
                 $picture = Picture::where('id', $pictureId)
                     ->where('status', 'approved')
                     ->where('listing_type', 'auction')
@@ -132,11 +194,6 @@ class AuctionApiController extends Controller
 
                 if (!$picture->auction_buyout_price) {
                     return ['success' => false, 'message' => 'Для этой картины не указана блиц-цена'];
-                }
-
-                $currentPrice = $picture->auction_current_price ?? $picture->auction_start_price ?? $picture->price;
-                if ($currentPrice > $picture->auction_buyout_price) {
-                    return ['success' => false, 'message' => 'Блиц-цена уже недоступна'];
                 }
 
                 if ($picture->auction_ends_at && $picture->auction_ends_at->isPast()) {
@@ -165,6 +222,15 @@ class AuctionApiController extends Controller
                     'user_id' => $userId,
                     'picture_id' => $picture->id,
                 ]);
+
+                NotificationService::push(
+                    $userId,
+                    'auction_buyout',
+                    'Картина выкуплена',
+                    'Картина "' . $picture->name . '" добавлена в корзину. Оплатите заказ в течение 24 часов, иначе доступ к покупкам будет ограничен на 7 дней.',
+                    url('/cart'),
+                    $picture->id
+                );
 
                 return [
                     'success' => true,

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('content')
 <main class="admin_main container">
@@ -21,9 +21,6 @@
 
     <div class="admin_table_wrapper" data-table="processing">
         <div class="admin_panel">
-            <div class="admin_panel_header">
-                <h2 class="admin_panel_title">Картины на модерации</h2>
-            </div>
 
             <div class="admin_table_scroll">
                 <table class="admin_table">
@@ -84,9 +81,7 @@
 
     <div class="admin_table_wrapper" data-table="deals">
         <div class="admin_panel">
-            <div class="admin_panel_header">
-                <h2 class="admin_panel_title">Успешные сделки</h2>
-            </div>
+
 
             <div class="admin_table_scroll">
                 <table class="admin_table">
@@ -123,9 +118,7 @@
 
     <div class="admin_table_wrapper" data-table="users">
         <div class="admin_panel">
-            <div class="admin_panel_header">
-                <h2 class="admin_panel_title">Пользователи</h2>
-            </div>
+
 
             <div class="admin_table_scroll">
                 <table class="admin_table admin_table_users">
@@ -282,12 +275,131 @@
             </section>
         </div>
     </div>
+
+    <div class="admin_reject_modal" id="reject_reason_modal" hidden>
+        <div class="admin_reject_dialog" role="dialog" aria-modal="true" aria-labelledby="reject_reason_title">
+            <h2 id="reject_reason_title">Причина отказа</h2>
+            <form id="reject_reason_form">
+                <textarea
+                    id="reject_reason_text"
+                    class="admin_reject_textarea"
+                    rows="5"
+                    maxlength="500"
+                    placeholder="Например: изображение плохого качества или описание заполнено некорректно"
+                    required
+                ></textarea>
+                <span class="admin_reject_error" id="reject_reason_error"></span>
+
+                <div class="admin_reject_actions">
+                    <button class="admin_reject_cancel" type="button" data-reject-close>Отмена</button>
+                    <button class="admin_reject_submit" type="submit">Отклонить</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </main>
 
 @endsection
 
 @section('scripts')
 <style>
+.admin_reject_modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10002;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.82);
+}
+
+.admin_reject_modal[hidden] {
+    display: none;
+}
+
+.admin_reject_dialog {
+    position: relative;
+    width: min(100%, 520px);
+    padding: 28px;
+    border-radius: 18px;
+    background: #151515;
+
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+}
+
+.admin_reject_dialog h2 {
+    margin: 0 0 10px;
+    color: #F3F3F3;
+    font-size: 24px;
+}
+
+.admin_reject_dialog p {
+    margin: 0 0 18px;
+    color: #AFAFAF;
+    line-height: 1.45;
+}
+
+.admin_reject_close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 50%;
+    background: transparent;
+    color: #E0E0E0;
+    cursor: pointer;
+}
+
+.admin_reject_textarea {
+    width: 100%;
+    min-height: 130px;
+    resize: vertical;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: none;
+    background: #0E0E0E;
+    color: #EAEAEA;
+    font: inherit;
+    outline: none;
+}
+
+.admin_reject_error {
+    display: block;
+    min-height: 20px;
+    margin-top: 8px;
+    color: #FF6B6B;
+    font-size: 14px;
+}
+
+.admin_reject_actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 5px;
+}
+
+.admin_reject_cancel,
+.admin_reject_submit {
+    min-height: 44px;
+    padding: 0 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.admin_reject_cancel {
+    background: transparent;
+    color: #E0E0E0;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.admin_reject_submit {
+    background: #FBFF83;
+    color: #111;
+    border: 1px solid #FBFF83;
+}
 </style>
 
 <script>
@@ -451,10 +563,13 @@
         tbody.appendChild(row);
     }
 
-    async function moderatePicture(pictureId, action) {
+    async function moderatePicture(pictureId, action, rejectionReason = '') {
         const formData = new FormData();
         formData.append('picture_id', pictureId);
         formData.append('action', action);
+        if (action === 'reject') {
+            formData.append('rejection_reason', rejectionReason);
+        }
 
         try {
             const response = await fetch('/api/picture/moderate', {
@@ -468,7 +583,8 @@
             const result = await response.json();
 
             if (!result.success) {
-                return;
+                alert(result.message || 'Не удалось выполнить действие');
+                return false;
             }
 
             const row = document.querySelector(`tr[data-picture-id="${pictureId}"]`);
@@ -477,17 +593,18 @@
             }
 
             ensureProcessingEmptyState();
+            return true;
         } catch (error) {
             console.error(error);
+            return false;
         }
     }
-
     function viewPicture(imagePath, pictureName) {
         const overlay = document.createElement('div');
         overlay.className = 'admin_preview_overlay';
         overlay.innerHTML = `
             <div class="admin_preview_modal" role="dialog" aria-modal="true" aria-label="${escapeHtml(pictureName)}">
-                <button class="admin_preview_close" type="button" aria-label="Закрыть просмотр">✕</button>
+                <button class="admin_preview_close" type="button" aria-label="Закрыть просмотр">x</button>
                 <img src="${imagePath}" alt="${escapeHtml(pictureName)}">
                 <div class="admin_preview_caption">${escapeHtml(pictureName)}</div>
             </div>
@@ -503,6 +620,53 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        const rejectModal = document.getElementById('reject_reason_modal');
+        const rejectForm = document.getElementById('reject_reason_form');
+        const rejectTextarea = document.getElementById('reject_reason_text');
+        const rejectError = document.getElementById('reject_reason_error');
+        let pendingRejectPictureId = null;
+
+        function openRejectModal(pictureId) {
+            pendingRejectPictureId = pictureId;
+            rejectTextarea.value = '';
+            rejectError.textContent = '';
+            rejectModal.hidden = false;
+            rejectTextarea.focus();
+        }
+
+        function closeRejectModal() {
+            rejectModal.hidden = true;
+            pendingRejectPictureId = null;
+            rejectTextarea.value = '';
+            rejectError.textContent = '';
+        }
+
+        document.querySelectorAll('[data-reject-close]').forEach((button) => {
+            button.addEventListener('click', closeRejectModal);
+        });
+
+        rejectModal.addEventListener('click', (event) => {
+            if (event.target === rejectModal) {
+                closeRejectModal();
+            }
+        });
+
+        rejectForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const reason = rejectTextarea.value.trim();
+            if (!reason) {
+                rejectError.textContent = 'Причина отклонения обязательна';
+                rejectTextarea.focus();
+                return;
+            }
+
+            const success = await moderatePicture(pendingRejectPictureId, 'reject', reason);
+            if (success) {
+                closeRejectModal();
+            }
+        });
+
         ['genre', 'style', 'era'].forEach((type) => {
             const input = document.getElementById(`${type}_input`);
 
@@ -544,10 +708,16 @@
 
             const moderateButton = event.target.closest('.js-moderate-picture');
             if (moderateButton) {
-                moderatePicture(Number(moderateButton.dataset.pictureId), moderateButton.dataset.action);
+                const action = moderateButton.dataset.action;
+
+                if (action === 'reject') {
+                    openRejectModal(Number(moderateButton.dataset.pictureId));
+                    return;
+                }
+
+                moderatePicture(Number(moderateButton.dataset.pictureId), action);
                 return;
             }
-
             const viewButton = event.target.closest('.js-view-picture');
             if (viewButton) {
                 viewPicture(viewButton.dataset.image, viewButton.dataset.name);
@@ -556,3 +726,4 @@
     });
 </script>
 @endsection
+

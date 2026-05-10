@@ -12,12 +12,15 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\BlockedController;
 use App\Http\Controllers\Api\CartApiController;
 use App\Http\Controllers\Api\FavoriteApiController;
 use App\Http\Controllers\Api\PictureApiController;
 use App\Http\Controllers\Api\CategoryApiController;
 use App\Http\Controllers\Api\ProfileApiController;
 use App\Http\Controllers\Api\AuctionApiController;
+use App\Http\Controllers\Api\OrderApiController;
 
 /* |-------------------------------------------------------------------------- | Публичные маршруты |-------------------------------------------------------------------------- */
 
@@ -33,6 +36,7 @@ Route::post('/auth', [AuthController::class , 'login']);
 Route::get('/reg', [AuthController::class , 'showRegister'])->name('auth.register');
 Route::post('/reg', [AuthController::class , 'register']);
 Route::get('/logout', [AuthController::class , 'logout'])->name('auth.logout');
+Route::get('/blocked', [BlockedController::class, 'index'])->name('blocked');
 
 /* |-------------------------------------------------------------------------- | Защищённые маршруты (авторизованные пользователи) |-------------------------------------------------------------------------- */
 
@@ -40,6 +44,7 @@ Route::middleware('auth.custom')->group(function () {
     Route::get('/cart', [CartController::class , 'index'])->name('cart');
     Route::get('/fav', [FavoriteController::class , 'index'])->name('favorites');
     Route::get('/orders', [OrderController::class , 'index'])->name('orders');
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');
     Route::get('/account', [AccountController::class , 'index'])->name('account');
     Route::get('/add', [PictureController::class , 'create'])->name('picture.create');
     Route::get('/edit/{id}', [PictureController::class , 'edit'])->name('picture.edit');
@@ -52,9 +57,12 @@ Route::middleware('auth.custom')->group(function () {
     Route::post('/api/picture/add', [PictureApiController::class , 'store']);
     Route::post('/api/picture/edit', [PictureApiController::class , 'update']);
     Route::post('/api/picture/delete', [PictureApiController::class , 'destroy']);
+    Route::post('/api/picture/relist-auction', [PictureApiController::class , 'relistAuction']);
     Route::post('/api/auction/bid', [AuctionApiController::class , 'bid']);
     Route::post('/api/auction/buyout', [AuctionApiController::class , 'buyout']);
     Route::post('/api/profile/update', [ProfileApiController::class , 'update']);
+    Route::post('/api/notifications/read', [NotificationController::class, 'markAsRead']);
+    Route::post('/api/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
 });
 
 /* |-------------------------------------------------------------------------- | Админские маршруты |-------------------------------------------------------------------------- */
@@ -63,4 +71,5 @@ Route::middleware(['auth.custom', 'admin'])->group(function () {
     Route::get('/admin', [AdminController::class , 'index'])->name('admin');
     Route::post('/api/picture/moderate', [PictureApiController::class , 'moderate']);
     Route::post('/api/categories', [CategoryApiController::class , 'handle']);
+    Route::post('/api/orders/status', [OrderApiController::class, 'updateStatus']);
 });

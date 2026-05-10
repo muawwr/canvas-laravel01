@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\Genre;
 use App\Models\Style;
 use App\Models\Era;
+use Illuminate\Support\Facades\Schema;
 
 class PictureController extends Controller
 {
@@ -18,7 +19,7 @@ class PictureController extends Controller
         $user_avatar = session('user_img', 'assets/images/account/mainUser.png');
         $user_name = session('user_name', 'Гость');
 
-        $picture = Picture::with(['user', 'genre', 'style', 'era', 'latestAuctionBid.user'])
+        $pictureQuery = Picture::with(['user', 'genre', 'style', 'era', 'latestAuctionBid.user'])
             ->withCount('auctionBids')
             ->when(session()->has('user_id'), function ($query) {
                 $query->with(['auctionBids' => function ($bidsQuery) {
@@ -27,8 +28,13 @@ class PictureController extends Controller
                         ->orderByDesc('created_at');
                 }]);
             })
-            ->where('status', 'approved')
-            ->findOrFail($id);
+            ->where('status', 'approved');
+
+        if (Schema::hasColumn('pictures', 'hidden_after_sale')) {
+            $pictureQuery->where('hidden_after_sale', false);
+        }
+
+        $picture = $pictureQuery->findOrFail($id);
 
         // Количество лайков
         $likes_count = Favorite::where('picture_id', $id)->count();
@@ -41,8 +47,10 @@ class PictureController extends Controller
         }
 
         // Проверка продано
-        $is_sold = Order::where('picture_id', $id)
-            ->where('payment_status', 'succeeded')->exists();
+        $is_sold = $picture->show_sold_badge
+            || Order::where('picture_id', $id)
+                ->where('payment_status', 'succeeded')
+                ->exists();
 
         return view('picture.show', compact(
             'is_logged_in', 'user_avatar', 'user_name',

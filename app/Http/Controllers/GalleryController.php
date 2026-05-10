@@ -7,6 +7,7 @@ use App\Models\Picture;
 use App\Models\Genre;
 use App\Models\Style;
 use App\Models\Era;
+use Illuminate\Support\Facades\Schema;
 
 class GalleryController extends Controller
 {
@@ -24,6 +25,10 @@ class GalleryController extends Controller
             ->where('listing_type', 'gallery')
             ->with(['user', 'genre', 'style', 'era'])
             ->withCount('favoriteEntries');
+
+        if (Schema::hasColumn('pictures', 'hidden_after_sale')) {
+            $query->where('hidden_after_sale', false);
+        }
 
         // Фильтрация
         if ($request->genre_id) {
@@ -66,7 +71,16 @@ class GalleryController extends Controller
                 break;
         }
 
-        $pictures = $query->get();
+        $pictures = $query->paginate(12)->withQueryString();
+
+        $pictures->setCollection(
+            $pictures->getCollection()->map(function ($picture) {
+                $picture->is_sold = $picture->show_sold_badge
+                    || $picture->orders()->where('payment_status', 'succeeded')->exists();
+
+                return $picture;
+            })
+        );
 
         return view('gallery', compact(
             'is_logged_in', 'user_avatar', 'user_name',

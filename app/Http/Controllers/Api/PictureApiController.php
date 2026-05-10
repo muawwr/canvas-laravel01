@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Picture;
 use App\Models\User;
+use App\Models\Order;
+use App\Models\AuctionBid;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
@@ -92,6 +95,21 @@ class PictureApiController extends Controller
 
             $validated = $validator->validated();
             $listingType = $validated['listing_type'] ?? 'gallery';
+
+            if (
+                $listingType === 'auction'
+                && !empty($validated['auction_buyout_price'])
+                && ((int) $validated['auction_start_price'] + (int) $validated['auction_min_step']) > (int) $validated['auction_buyout_price']
+            ) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Стартовая цена вместе с минимальным шагом не должна превышать блиц-цену',
+                    'errors' => [
+                        'auction_buyout_price' => ['Стартовая цена вместе с минимальным шагом не должна превышать блиц-цену'],
+                    ],
+                ], 422);
+            }
+
             $displayPrice = $listingType === 'auction'
                 ? $validated['auction_start_price']
                 : $validated['price'];
@@ -223,8 +241,17 @@ class PictureApiController extends Controller
             return response()->json(['success' => false, 'message' => 'Картина не найдена']);
         }
 
+        $pictureName = $picture->name;
         $picture->delete();
         User::where('id', $user_id)->decrement('pictures_count');
+
+        NotificationService::push(
+            $user_id,
+            'picture_deleted',
+            'Картина удалена',
+            'Картина "' . $pictureName . '" удалена из вашего профиля.',
+            url('/account')
+        );
 
         return response()->json(['success' => true, 'message' => 'Картина удалена']);
     }
@@ -246,15 +273,89 @@ class PictureApiController extends Controller
         if ($action === 'approve') {
             $picture->update(['status' => 'approved']);
 
+            NotificationService::push(
+                $picture->user_id,
+                'picture_approved',
+                'Картина прошла модерацию',
+                'Картина "' . $picture->name . '" опубликована и доступна пользователям.',
+                $picture->listing_type === 'auction' ? url('/auction') : url('/picture/' . $picture->id),
+                $picture->id
+            );
+
             return response()->json(['success' => true, 'message' => 'Картина одобрена']);
         }
 
         if ($action === 'reject') {
+            $reason = trim((string) $request->input('rejection_reason', ''));
+
+            if ($reason === '') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Укажите причину отклонения картины',
+                ], 422);
+            }
             $picture->update(['status' => 'rejected']);
+
+            NotificationService::push(
+                $picture->user_id,
+                'picture_rejected',
+                'Картина отклонена',
+                'Картина "' . $picture->name . '" не прошла модерацию. Причина: ' . $reason,
+                url('/account'),
+                $picture->id
+            );
 
             return response()->json(['success' => true, 'message' => 'Картина отклонена']);
         }
 
         return response()->json(['success' => false, 'message' => 'Некорректное действие']);
+    }
+
+    public function relistAuction(Request $request)
+    {
+        if (!session()->has('user_id')) {
+            return response()->json(['success' => false, 'message' => 'Необходима авторизация'], 403);
+        }
+
+        $user_id = session('user_id');
+        $picture_id = intval($request->picture_id ?? 0);
+
+        $picture = Picture::where('id', $picture_id)
+            ->where('user_id', $user_id)
+            ->where('status', 'approved')
+            ->where('listing_type', 'auction')
+            ->first();
+
+        if (!$picture) {
+            return response()->json(['success' => false, 'message' => 'Картина не найдена'], 404);
+        }
+
+        $hasCanceledAuction = Order::where('picture_id', $picture->id)
+            ->where('payment_status', 'canceled')
+            ->exists();
+
+        if (!$hasCanceledAuction) {
+            return response()->json(['success' => false, 'message' => 'Эту картину нельзя повторно выставить'], 422);
+        }
+
+        $durationInHours = 24;
+        if ($picture->auction_starts_at && $picture->auction_ends_at) {
+            $durationInHours = max(1, $picture->auction_starts_at->diffInHours($picture->auction_ends_at));
+        }
+
+        AuctionBid::where('picture_id', $picture->id)->delete();
+
+        $picture->update([
+            'price' => $picture->auction_start_price,
+            'auction_current_price' => $picture->auction_start_price,
+            'auction_starts_at' => now(),
+            'auction_ends_at' => now()->addHours($durationInHours),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Картина снова опубликована на аукционе',
+            'redirect_url' => url('/auction'),
+        ]);
     }
 }

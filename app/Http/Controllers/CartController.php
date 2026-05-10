@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Cart;
 use App\Models\Picture;
+use App\Services\NotificationService;
 
 class CartController extends Controller
 {
@@ -37,11 +37,23 @@ class CartController extends Controller
                     'user_id' => $user_id,
                     'picture_id' => $pictureId,
                 ]);
+
+                $picture = Picture::find($pictureId);
+                if ($picture) {
+                    NotificationService::pushOnce(
+                        $user_id,
+                        'auction_winner',
+                        'Аукцион завершен',
+                        'Вы победили в аукционе по картине "' . $picture->name . '". Перейдите в корзину для оформления заказа. В случае неуплаты в течение 24 часов доступ к покупкам будет ограничен на 7 дней.',
+                        url('/cart'),
+                        $picture->id
+                    );
+                }
             }
         }
 
         $cartItems = Cart::where('user_id', $user_id)
-            ->with(['picture.user'])
+            ->with(['picture.user', 'picture.latestAuctionBid'])
             ->orderByDesc('added_at')
             ->get();
 
@@ -50,8 +62,11 @@ class CartController extends Controller
         });
 
         return view('cart', compact(
-            'is_logged_in', 'user_avatar', 'user_name',
-            'cartItems', 'totalPrice'
+            'is_logged_in',
+            'user_avatar',
+            'user_name',
+            'cartItems',
+            'totalPrice'
         ));
     }
 }

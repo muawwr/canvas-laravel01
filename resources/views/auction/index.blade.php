@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('nav-auction-active', 'active')
 
@@ -132,7 +132,6 @@
                         <input class="auction_side_input" type="number" name="amount" data-side-bid-input>
                         <button class="auction_side_btn auction_side_btn_dashed" type="submit" data-side-bid-button>Поставить</button>
                     </form>
-                    <p class="auction_side_hint" data-side-bid-hint></p>
                 </section>
 
                 <section class="auction_side_card auction_side_buy" data-side-buyout-panel>
@@ -174,6 +173,9 @@
     let lots = Array.from(document.querySelectorAll('[data-auction-lot]'));
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
     const confirmModal = document.getElementById('auctionConfirmModal');
+    const bidUrl = "{{ url('/api/auction/bid') }}";
+    const buyoutUrl = "{{ url('/api/auction/buyout') }}";
+    const cartUrl = "{{ url('/cart') }}";
     const confirmText = document.getElementById('auctionConfirmText');
     const confirmSubmit = document.getElementById('auctionConfirmSubmit');
     const confirmCancel = document.getElementById('auctionConfirmCancel');
@@ -242,9 +244,6 @@
         bidInput.disabled = disabled;
         buyoutButton.disabled = disabled;
 
-        if (reason) {
-            document.querySelector('[data-side-bid-hint]').textContent = reason;
-        }
     }
 
     function renderSidePanel(lot) {
@@ -273,10 +272,13 @@
         bidInput.placeholder = 'Минимум ' + formatPrice(nextBid);
         document.querySelector('[data-side-bid-picture-id]').value = dataset.pictureId;
         document.querySelector('[data-side-buyout-picture-id]').value = dataset.pictureId;
-        document.querySelector('[data-side-bid-hint]').textContent = 'Минимум ' + formatPrice(nextBid);
 
         const statusNode = document.querySelector('[data-side-user-status]');
-        if (userStatus) {
+        if (isOwner) {
+            statusNode.textContent = 'Ваша картина';
+            statusNode.style.display = '';
+            statusNode.classList.remove('is-leading', 'is-outbid');
+        } else if (userStatus) {
             statusNode.textContent = userStatus;
             statusNode.style.display = '';
             statusNode.classList.toggle('is-leading', userStatus === 'Вы лидируете' || userStatus === 'Вы выиграли');
@@ -296,7 +298,7 @@
             return;
         }
 
-        if (buyoutPrice && currentPrice <= buyoutPrice && !isFinished) {
+        if (buyoutPrice && !isFinished) {
             buyoutPanel.style.display = '';
             buyoutPriceNode.textContent = formatPrice(buyoutPrice);
         } else {
@@ -390,7 +392,7 @@
         button.disabled = true;
 
         try {
-            const { response, result } = await sendAuctionRequest('{{ url('/api/auction/bid') }}', form);
+            const { response, result } = await sendAuctionRequest(bidUrl, form);
             showMessage(result.message || 'Готово', response.ok && result.success);
 
             if (response.ok && result.success && activeLot) {
@@ -413,12 +415,12 @@
         button.disabled = true;
 
         try {
-            const { response, result } = await sendAuctionRequest('{{ url('/api/auction/buyout') }}', form);
+            const { response, result } = await sendAuctionRequest(buyoutUrl, form);
             showMessage(result.message || 'Готово', response.ok && result.success);
 
             if (response.ok && result.success) {
                 window.setTimeout(() => {
-                    window.location.href = result.redirect_url || '{{ url('/cart') }}';
+                    window.location.href = result.redirect_url || cartUrl;
                 }, 700);
             }
         } catch (error) {
@@ -440,6 +442,12 @@
 
         if (amount < min) {
             showMessage('Минимальная ставка: ' + formatPrice(min), false);
+            return;
+        }
+
+        const buyoutPrice = Number(activeLot?.dataset.buyoutPrice || 0);
+        if (buyoutPrice && amount >= buyoutPrice) {
+            showMessage('Для этой суммы используйте выкуп за ' + formatPrice(buyoutPrice), false);
             return;
         }
 
@@ -474,3 +482,4 @@
 })();
 </script>
 @endsection
+

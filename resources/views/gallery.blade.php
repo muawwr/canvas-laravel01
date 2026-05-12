@@ -26,24 +26,26 @@
                 <a href="{{ url('/') }}" class="logo-gallery">
                     <img src="{{ asset('assets/images/header/logo.svg') }}" alt="Канвас" class="logo-icon">
                 </a>
-                <a href="{{ url('/') }}" class="link_main">
-                    <img src="{{ asset('assets/images/headerNew/home.svg') }}" alt="Главная">
-                </a>
-                <a href="{{ url('/auction') }}" class="link_main link_auction">
-                    <img src="{{ asset('assets/images/headerNew/auction.svg') }}" alt="Аукцион">
-                </a>
-                @if(session()->has('user_id'))
-                    <a href="{{ url('/notifications') }}" class="link_notification_gallery">
-                        <img src="{{ asset('assets/images/header/notifications.svg') }}" alt="Уведомления">
-                        <span class="notification-dot" style="{{ $galleryNotificationCount > 0 ? '' : 'display:none;' }}"></span>
+                <div class="header-gallery-nav">
+                    <a href="{{ url('/') }}" class="link_main">
+                        <img src="{{ asset('assets/images/headerNew/home.svg') }}" alt="Главная">
                     </a>
-                @endif
-                
-                <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="Поиск">
-                    <a href="javascript:void(0)">
-                        <img src="{{ asset('assets/images/headerNew/Search.svg') }}" alt="Поиск" class="search-icon-right">
+                    <a href="{{ url('/auction') }}" class="link_main link_auction">
+                        <img src="{{ asset('assets/images/headerNew/auction.svg') }}" alt="Аукцион">
                     </a>
+                    @if(session()->has('user_id'))
+                        <a href="{{ url('/notifications') }}" class="link_notification_gallery">
+                            <img src="{{ asset('assets/images/header/notifications.svg') }}" alt="Уведомления">
+                            <span class="notification-dot" style="{{ $galleryNotificationCount > 0 ? '' : 'display:none;' }}"></span>
+                        </a>
+                    @endif
+
+                    <div class="search-bar search-bar-collapsed" id="gallerySearchBar">
+                        <button type="button" class="search-toggle-btn" id="gallerySearchToggle" aria-label="Открыть поиск" aria-expanded="false">
+                            <img src="{{ asset('assets/images/headerNew/Search.svg') }}" alt="Поиск" class="search-icon-right">
+                        </button>
+                        <input type="text" id="searchInput" placeholder="Поиск">
+                    </div>
                 </div>
                 
                 <div class="header-actions">
@@ -364,6 +366,8 @@
         };
         
         const searchInput = document.getElementById('searchInput');
+        const searchBar = document.getElementById('gallerySearchBar');
+        const searchToggle = document.getElementById('gallerySearchToggle');
         const galleryGrid = document.getElementById('galleryGrid');
         const noResultsMessage = document.getElementById('noResultsMessage');
         const filterCheckboxes = document.querySelectorAll('.filter-checkbox');
@@ -381,6 +385,36 @@
             searchInput.addEventListener('input', function() {
                 filterState.searchQuery = this.value.toLowerCase().trim();
                 applyFilters();
+            });
+        }
+
+        if (searchToggle && searchBar && searchInput) {
+            const setSearchOpen = (isOpen) => {
+                searchBar.classList.toggle('search-bar-open', isOpen);
+                searchBar.classList.toggle('search-bar-collapsed', !isOpen);
+                searchToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+
+                if (isOpen) {
+                    window.requestAnimationFrame(() => searchInput.focus());
+                }
+            };
+
+            searchToggle.addEventListener('click', function() {
+                const isOpen = !searchBar.classList.contains('search-bar-open');
+                setSearchOpen(isOpen);
+            });
+
+            searchInput.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    setSearchOpen(false);
+                    searchInput.blur();
+                }
+            });
+
+            document.addEventListener('click', function(event) {
+                if (!searchBar.contains(event.target)) {
+                    setSearchOpen(false);
+                }
             });
         }
         

@@ -1,3 +1,5 @@
+﻿
+
 <?php $__env->startSection('content'); ?>
 <main class="admin_main container">
 
@@ -19,9 +21,6 @@
 
     <div class="admin_table_wrapper" data-table="processing">
         <div class="admin_panel">
-            <div class="admin_panel_header">
-                <h2 class="admin_panel_title">Картины на модерации</h2>
-            </div>
 
             <div class="admin_table_scroll">
                 <table class="admin_table">
@@ -82,9 +81,7 @@
 
     <div class="admin_table_wrapper" data-table="deals">
         <div class="admin_panel">
-            <div class="admin_panel_header">
-                <h2 class="admin_panel_title">Успешные сделки</h2>
-            </div>
+
 
             <div class="admin_table_scroll">
                 <table class="admin_table">
@@ -121,9 +118,7 @@
 
     <div class="admin_table_wrapper" data-table="users">
         <div class="admin_panel">
-            <div class="admin_panel_header">
-                <h2 class="admin_panel_title">Пользователи</h2>
-            </div>
+
 
             <div class="admin_table_scroll">
                 <table class="admin_table admin_table_users">
@@ -280,12 +275,276 @@
             </section>
         </div>
     </div>
+
+    <div class="admin_reject_modal" id="reject_reason_modal" hidden>
+        <div class="admin_reject_dialog" role="dialog" aria-modal="true" aria-labelledby="reject_reason_title">
+            <h2 id="reject_reason_title">Причина отказа</h2>
+            <form id="reject_reason_form">
+                <textarea
+                    id="reject_reason_text"
+                    class="admin_reject_textarea"
+                    rows="5"
+                    maxlength="500"
+                    placeholder="Например: изображение плохого качества или описание заполнено некорректно"
+                    required
+                ></textarea>
+                <span class="admin_reject_error" id="reject_reason_error"></span>
+
+                <div class="admin_reject_actions">
+                    <button class="admin_reject_cancel" type="button" data-reject-close>Отмена</button>
+                    <button class="admin_reject_submit" type="submit">Отклонить</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </main>
 
 <?php $__env->stopSection(); ?>
 
 <?php $__env->startSection('scripts'); ?>
 <style>
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body[data-theme="dark"] {
+    --admin-page-bg: #0d0d0d;
+    --admin-text: #e0e0e0;
+    --admin-text-soft: rgba(224, 224, 224, 0.72);
+    --admin-text-muted: rgba(224, 224, 224, 0.58);
+    --admin-text-faint: rgba(224, 224, 224, 0.5);
+    --admin-text-subtle: rgba(224, 224, 224, 0.54);
+    --admin-surface: #161616;
+    --admin-surface-strong: #1b1b1b;
+    --admin-surface-soft: #222222;
+    --admin-border: rgba(255, 255, 255, 0.08);
+    --admin-input-bg: rgba(32, 32, 32, 0.31);
+    --admin-input-border: rgba(93, 93, 93, 0.19);
+    background-color: var(--admin-page-bg);
+    color: var(--admin-text);
+}
+
+body[data-theme="light"] {
+    --admin-page-bg: #f4f0e8;
+    --admin-text: #221d16;
+    --admin-text-soft: rgba(34, 29, 22, 0.75);
+    --admin-text-muted: rgba(34, 29, 22, 0.58);
+    --admin-text-faint: rgba(34, 29, 22, 0.42);
+    --admin-text-subtle: rgba(34, 29, 22, 0.56);
+    --admin-surface: #fffdf8;
+    --admin-surface-strong: #f5eee2;
+    --admin-surface-soft: #e8dece;
+    --admin-border: rgba(34, 29, 22, 0.12);
+    --admin-input-bg: rgba(255, 250, 241, 0.96);
+    --admin-input-border: rgba(34, 29, 22, 0.16);
+    background:
+        radial-gradient(circle at top right, rgba(251, 255, 131, 0.34), transparent 28%),
+        linear-gradient(180deg, #f8f4ec 0%, #efe7da 100%);
+    color: var(--admin-text);
+}
+
+.admin_main,
+.admin_main * {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.admin_main {
+    color: var(--admin-text);
+}
+
+.admin_tabs {
+    background-color: var(--admin-surface-soft);
+}
+
+.admin_tab {
+    background-color: var(--admin-surface-soft);
+    color: var(--admin-text);
+}
+
+.admin_tab_active {
+    background-color: var(--admin-text);
+    color: var(--admin-surface);
+}
+
+.admin_tab_badge {
+    background: var(--admin-border);
+}
+
+.admin_tab_active .admin_tab_badge {
+    background: rgba(10, 10, 10, 0.08);
+}
+
+.admin_table thead th {
+    color: var(--admin-text-faint);
+}
+
+.admin_table tbody td,
+.categories_add,
+.admin_reject_dialog,
+.admin_preview_caption {
+    background-color: var(--admin-surface);
+    color: var(--admin-text);
+}
+
+.admin_empty_row td,
+.no_categories {
+    color: var(--admin-text-muted);
+}
+
+.admin_cell_stack small {
+    color: var(--admin-text-subtle);
+}
+
+.admin_btn_watch {
+    background-color: var(--admin-border);
+}
+
+.admin_btn_watch:hover,
+.admin_user_row:hover td,
+.admin_user_row:focus td {
+    background-color: var(--admin-surface-strong);
+}
+
+.categories_add_title,
+.category_label,
+.category_section_title,
+.category_item span,
+.admin_reject_dialog h2,
+.admin_reject_cancel {
+    color: var(--admin-text);
+}
+
+.category_section_title span {
+    color: #d7a819;
+}
+
+.category_input {
+    color: var(--admin-text);
+    background-color: var(--admin-input-bg);
+    border-color: var(--admin-input-border);
+}
+
+.category_input::placeholder {
+    color: var(--admin-text-faint);
+}
+
+.admin_reject_textarea {
+    background: var(--admin-input-bg);
+    color: var(--admin-text);
+    border: 1px solid var(--admin-input-border);
+}
+
+.admin_reject_cancel {
+    border-color: var(--admin-input-border);
+}
+
+.admin_preview_close {
+    background: rgba(17, 17, 17, 0.84);
+    color: #e0e0e0;
+}
+
+body[data-theme="light"] .admin_preview_close {
+    background: rgba(255, 253, 248, 0.94);
+    color: #221d16;
+}
+
+.admin_reject_modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10002;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.82);
+}
+
+.admin_reject_modal[hidden] {
+    display: none;
+}
+
+.admin_reject_dialog {
+    position: relative;
+    width: min(100%, 520px);
+    padding: 28px;
+    border-radius: 18px;
+    background: #151515;
+
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+}
+
+.admin_reject_dialog h2 {
+    margin: 0 0 10px;
+    color: #F3F3F3;
+    font-size: 24px;
+}
+
+.admin_reject_dialog p {
+    margin: 0 0 18px;
+    color: #AFAFAF;
+    line-height: 1.45;
+}
+
+.admin_reject_close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 50%;
+    background: transparent;
+    color: #E0E0E0;
+    cursor: pointer;
+}
+
+.admin_reject_textarea {
+    width: 100%;
+    min-height: 130px;
+    resize: vertical;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: none;
+    background: #0E0E0E;
+    color: #EAEAEA;
+    font: inherit;
+    outline: none;
+}
+
+.admin_reject_error {
+    display: block;
+    min-height: 20px;
+    margin-top: 8px;
+    color: #FF6B6B;
+    font-size: 14px;
+}
+
+.admin_reject_actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 5px;
+}
+
+.admin_reject_cancel,
+.admin_reject_submit {
+    min-height: 44px;
+    padding: 0 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.admin_reject_cancel {
+    background: transparent;
+    color: #E0E0E0;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.admin_reject_submit {
+    background: #FBFF83;
+    color: #111;
+    border: 1px solid #FBFF83;
+}
 </style>
 
 <script>
@@ -449,10 +708,13 @@
         tbody.appendChild(row);
     }
 
-    async function moderatePicture(pictureId, action) {
+    async function moderatePicture(pictureId, action, rejectionReason = '') {
         const formData = new FormData();
         formData.append('picture_id', pictureId);
         formData.append('action', action);
+        if (action === 'reject') {
+            formData.append('rejection_reason', rejectionReason);
+        }
 
         try {
             const response = await fetch('/api/picture/moderate', {
@@ -466,7 +728,8 @@
             const result = await response.json();
 
             if (!result.success) {
-                return;
+                alert(result.message || 'Не удалось выполнить действие');
+                return false;
             }
 
             const row = document.querySelector(`tr[data-picture-id="${pictureId}"]`);
@@ -475,17 +738,18 @@
             }
 
             ensureProcessingEmptyState();
+            return true;
         } catch (error) {
             console.error(error);
+            return false;
         }
     }
-
     function viewPicture(imagePath, pictureName) {
         const overlay = document.createElement('div');
         overlay.className = 'admin_preview_overlay';
         overlay.innerHTML = `
             <div class="admin_preview_modal" role="dialog" aria-modal="true" aria-label="${escapeHtml(pictureName)}">
-                <button class="admin_preview_close" type="button" aria-label="Закрыть просмотр">✕</button>
+                <button class="admin_preview_close" type="button" aria-label="Закрыть просмотр">x</button>
                 <img src="${imagePath}" alt="${escapeHtml(pictureName)}">
                 <div class="admin_preview_caption">${escapeHtml(pictureName)}</div>
             </div>
@@ -501,6 +765,53 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        const rejectModal = document.getElementById('reject_reason_modal');
+        const rejectForm = document.getElementById('reject_reason_form');
+        const rejectTextarea = document.getElementById('reject_reason_text');
+        const rejectError = document.getElementById('reject_reason_error');
+        let pendingRejectPictureId = null;
+
+        function openRejectModal(pictureId) {
+            pendingRejectPictureId = pictureId;
+            rejectTextarea.value = '';
+            rejectError.textContent = '';
+            rejectModal.hidden = false;
+            rejectTextarea.focus();
+        }
+
+        function closeRejectModal() {
+            rejectModal.hidden = true;
+            pendingRejectPictureId = null;
+            rejectTextarea.value = '';
+            rejectError.textContent = '';
+        }
+
+        document.querySelectorAll('[data-reject-close]').forEach((button) => {
+            button.addEventListener('click', closeRejectModal);
+        });
+
+        rejectModal.addEventListener('click', (event) => {
+            if (event.target === rejectModal) {
+                closeRejectModal();
+            }
+        });
+
+        rejectForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const reason = rejectTextarea.value.trim();
+            if (!reason) {
+                rejectError.textContent = 'Причина отклонения обязательна';
+                rejectTextarea.focus();
+                return;
+            }
+
+            const success = await moderatePicture(pendingRejectPictureId, 'reject', reason);
+            if (success) {
+                closeRejectModal();
+            }
+        });
+
         ['genre', 'style', 'era'].forEach((type) => {
             const input = document.getElementById(`${type}_input`);
 
@@ -542,10 +853,16 @@
 
             const moderateButton = event.target.closest('.js-moderate-picture');
             if (moderateButton) {
-                moderatePicture(Number(moderateButton.dataset.pictureId), moderateButton.dataset.action);
+                const action = moderateButton.dataset.action;
+
+                if (action === 'reject') {
+                    openRejectModal(Number(moderateButton.dataset.pictureId));
+                    return;
+                }
+
+                moderatePicture(Number(moderateButton.dataset.pictureId), action);
                 return;
             }
-
             const viewButton = event.target.closest('.js-view-picture');
             if (viewButton) {
                 viewPicture(viewButton.dataset.image, viewButton.dataset.name);
@@ -554,5 +871,6 @@
     });
 </script>
 <?php $__env->stopSection(); ?>
+
 
 <?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\OSPanel\domains\canvas-laravel01\resources\views\admin.blade.php ENDPATH**/ ?>

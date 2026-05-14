@@ -6,8 +6,9 @@
             <a class="btn_back" href="<?php echo e(url('/gallery')); ?>"><img src="<?php echo e(asset('assets/images/oneProduct/back.svg')); ?>" alt=""></a>
         </div>
         <?php endif; ?>
-        <div class="product_image">
-            <img src="<?php echo e(asset($picture->img)); ?>" alt="<?php echo e($picture->name); ?>">
+        <div class="product_image product_image_magnifier" data-magnifier>
+            <img src="<?php echo e(asset($picture->img)); ?>" alt="<?php echo e($picture->name); ?>" data-magnifier-image>
+            <div class="product_magnifier_lens" data-magnifier-lens aria-hidden="true"></div>
         </div>
         <div class="product_info">
             <div class="product_card_author">
@@ -241,6 +242,48 @@ function getLikesWord(count) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-magnifier]').forEach((container) => {
+        const image = container.querySelector('[data-magnifier-image]');
+        const lens = container.querySelector('[data-magnifier-lens]');
+        const zoom = 2.35;
+
+        if (!image || !lens) {
+            return;
+        }
+
+        lens.style.backgroundImage = `url("${image.currentSrc || image.src}")`;
+
+        const hideLens = () => {
+            lens.classList.remove('is-visible');
+        };
+
+        image.addEventListener('mousemove', (event) => {
+            const rect = image.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+                hideLens();
+                return;
+            }
+
+            const lensSize = lens.offsetWidth || 190;
+            const backgroundWidth = rect.width * zoom;
+            const backgroundHeight = rect.height * zoom;
+            const backgroundX = -(x * zoom - lensSize / 2);
+            const backgroundY = -(y * zoom - lensSize / 2);
+
+            lens.style.left = `${event.clientX}px`;
+            lens.style.top = `${event.clientY}px`;
+            lens.style.backgroundSize = `${backgroundWidth}px ${backgroundHeight}px`;
+            lens.style.backgroundPosition = `${backgroundX}px ${backgroundY}px`;
+            lens.classList.add('is-visible');
+        });
+
+        image.addEventListener('mouseleave', hideLens);
+        image.addEventListener('touchstart', hideLens, { passive: true });
+    });
+
     const addToCartBtn = document.getElementById('addToCartBtn');
     if (addToCartBtn) {
         addToCartBtn.addEventListener('click', async function() {

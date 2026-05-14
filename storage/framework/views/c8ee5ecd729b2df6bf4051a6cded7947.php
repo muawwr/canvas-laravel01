@@ -10,7 +10,9 @@
         <img src="<?php echo e(asset('assets/images/header/fav.svg')); ?>" alt="Избранное" style="width: 80px; height: 80px; opacity: 0.3; margin-bottom: 20px;">
         <h3 style="font-size: 24px; margin-bottom: 10px;">Избранное пусто</h3>
         <p style="font-size: 16px; margin-bottom: 30px;">Добавляйте понравившиеся картины</p>
-        <a href="<?php echo e(url('/gallery')); ?>" class="hero_btn">Перейти в галерею</a>
+        <a href="<?php echo e(url('/gallery')); ?>" class="btn" style="display: inline-block; padding: 15px 40px; background: #FBFF83; color: #0D0D0D; text-decoration: none; border-radius: 15px; font-weight: 500;">
+                    Перейти в галерею
+                </a>
     </div>
     <?php else: ?>
     <div class="gallery-grid-masonry">

@@ -1,31 +1,52 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?php echo $__env->make('partials.theme-head', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
     <title>Галерея - Канвас</title>
     <link rel="stylesheet" href="<?php echo e(asset('assets/css/style.css')); ?>">
     <link rel="shortcut icon" href="<?php echo e(asset('assets/images/header/logo.svg')); ?>" type="image/x-icon">
 </head>
 <body>
+    <?php
+        $galleryHasNotificationsTable = false;
+        try {
+            $galleryHasNotificationsTable = \Illuminate\Support\Facades\Schema::hasTable('user_notifications');
+        } catch (\Throwable $e) {
+            $galleryHasNotificationsTable = false;
+        }
+
+        $galleryNotificationCount = session()->has('user_id') && $galleryHasNotificationsTable
+            ? \App\Models\UserNotification::where('user_id', session('user_id'))->whereNull('read_at')->count()
+            : 0;
+    ?>
     <header class="header-gallery">
         <div class="container">
             <div class="header-gallery-content">
                 <a href="<?php echo e(url('/')); ?>" class="logo-gallery">
                     <img src="<?php echo e(asset('assets/images/header/logo.svg')); ?>" alt="Канвас" class="logo-icon">
                 </a>
-                <a href="<?php echo e(url('/')); ?>" class="link_main">
-                    <img src="<?php echo e(asset('assets/images/headerNew/home.svg')); ?>" alt="Главная">
-                </a>
-                <a href="<?php echo e(url('/auction')); ?>" class="link_main link_auction">
-                    <img src="<?php echo e(asset('assets/images/headerNew/auction.svg')); ?>" alt="Аукцион">
-                </a>
-                
-                <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="Поиск">
-                    <a href="javascript:void(0)">
-                        <img src="<?php echo e(asset('assets/images/headerNew/Search.svg')); ?>" alt="Поиск" class="search-icon-right">
+                <div class="header-gallery-nav">
+                    <a href="<?php echo e(url('/')); ?>" class="link_main">
+                        <img src="<?php echo e(asset('assets/images/headerNew/home.svg')); ?>" alt="Главная">
                     </a>
+                    <a href="<?php echo e(url('/auction')); ?>" class="link_main link_auction">
+                        <img src="<?php echo e(asset('assets/images/headerNew/auction.svg')); ?>" alt="Аукцион">
+                    </a>
+                    <?php if(session()->has('user_id')): ?>
+                        <a href="<?php echo e(url('/notifications')); ?>" class="link_notification_gallery">
+                            <img src="<?php echo e(asset('assets/images/header/notifications.svg')); ?>" alt="Уведомления">
+                            <span class="notification-dot" style="<?php echo e($galleryNotificationCount > 0 ? '' : 'display:none;'); ?>"></span>
+                        </a>
+                    <?php endif; ?>
+
+                    <div class="search-bar search-bar-collapsed" id="gallerySearchBar">
+                        <button type="button" class="search-toggle-btn" id="gallerySearchToggle" aria-label="Открыть поиск" aria-expanded="false">
+                            <img src="<?php echo e(asset('assets/images/headerNew/Search.svg')); ?>" alt="Поиск" class="search-icon-right">
+                        </button>
+                        <input type="text" id="searchInput" placeholder="Поиск">
+                    </div>
                 </div>
                 
                 <div class="header-actions">
@@ -35,10 +56,6 @@
                     <a href="<?php echo e(url('/fav')); ?>" class="icon-btn">
                         <img src="<?php echo e(asset('assets/images/headerNew/Fav.svg')); ?>" alt="Избранное">
                     </a>
-                    <button class="icon-btn notification-btn">
-                        <img src="<?php echo e(asset('assets/images/header/user.svg')); ?>" alt="Уведомления">
-                        <span class="notification-dot"></span>
-                    </button>
                 </div>
                 
                 <!-- Profile Button with Dropdown -->
@@ -232,6 +249,51 @@
                     </div>
                 <?php endif; ?>
             </div>
+
+            <?php if($pictures->hasPages()): ?>
+                <?php
+                    $currentPage = $pictures->currentPage();
+                    $lastPage = $pictures->lastPage();
+                    $pageStart = max(1, $currentPage - 2);
+                    $pageEnd = min($lastPage, $currentPage + 2);
+                ?>
+
+                <nav class="gallery_pagination" aria-label="Пагинация каталога">
+                    <?php if($pictures->onFirstPage()): ?>
+                        <span class="gallery_page_link gallery_page_link_disabled"><img src="<?php echo e(asset('assets/images/gallery/left.svg')); ?>" alt=""></span>
+                    <?php else: ?>
+                        <a class="gallery_page_link" href="<?php echo e($pictures->previousPageUrl()); ?>"><img src="<?php echo e(asset('assets/images/gallery/left.svg')); ?>" alt=""></a>
+                    <?php endif; ?>
+
+                    <?php if($pageStart > 1): ?>
+                        <a class="gallery_page_number" href="<?php echo e($pictures->url(1)); ?>">1</a>
+                        <?php if($pageStart > 2): ?>
+                            <span class="gallery_page_gap">...</span>
+                        <?php endif; ?>
+                    <?php endif; ?>
+
+                    <?php for($page = $pageStart; $page <= $pageEnd; $page++): ?>
+                        <?php if($page === $currentPage): ?>
+                            <span class="gallery_page_number gallery_page_number_active"><?php echo e($page); ?></span>
+                        <?php else: ?>
+                            <a class="gallery_page_number" href="<?php echo e($pictures->url($page)); ?>"><?php echo e($page); ?></a>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+
+                    <?php if($pageEnd < $lastPage): ?>
+                        <?php if($pageEnd < $lastPage - 1): ?>
+                            <span class="gallery_page_gap">...</span>
+                        <?php endif; ?>
+                        <a class="gallery_page_number" href="<?php echo e($pictures->url($lastPage)); ?>"><?php echo e($lastPage); ?></a>
+                    <?php endif; ?>
+
+                    <?php if($pictures->hasMorePages()): ?>
+                        <a class="gallery_page_link" href="<?php echo e($pictures->nextPageUrl()); ?>"><img src="<?php echo e(asset('assets/images/gallery/right.svg')); ?>" alt=""></a>
+                    <?php else: ?>
+                        <span class="gallery_page_link gallery_page_link_disabled"><img src="<?php echo e(asset('assets/images/gallery/right.svg')); ?>" alt=""></span>
+                    <?php endif; ?>
+                </nav>
+            <?php endif; ?>
             
             <div id="noResultsMessage" style="display: none; text-align: center; color: #999; padding: 60px; width: 100%;">
                 Ничего не найдено. Попробуйте изменить параметры поиска или фильтры.
@@ -305,6 +367,8 @@
         };
         
         const searchInput = document.getElementById('searchInput');
+        const searchBar = document.getElementById('gallerySearchBar');
+        const searchToggle = document.getElementById('gallerySearchToggle');
         const galleryGrid = document.getElementById('galleryGrid');
         const noResultsMessage = document.getElementById('noResultsMessage');
         const filterCheckboxes = document.querySelectorAll('.filter-checkbox');
@@ -322,6 +386,36 @@
             searchInput.addEventListener('input', function() {
                 filterState.searchQuery = this.value.toLowerCase().trim();
                 applyFilters();
+            });
+        }
+
+        if (searchToggle && searchBar && searchInput) {
+            const setSearchOpen = (isOpen) => {
+                searchBar.classList.toggle('search-bar-open', isOpen);
+                searchBar.classList.toggle('search-bar-collapsed', !isOpen);
+                searchToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+
+                if (isOpen) {
+                    window.requestAnimationFrame(() => searchInput.focus());
+                }
+            };
+
+            searchToggle.addEventListener('click', function() {
+                const isOpen = !searchBar.classList.contains('search-bar-open');
+                setSearchOpen(isOpen);
+            });
+
+            searchInput.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    setSearchOpen(false);
+                    searchInput.blur();
+                }
+            });
+
+            document.addEventListener('click', function(event) {
+                if (!searchBar.contains(event.target)) {
+                    setSearchOpen(false);
+                }
             });
         }
         
@@ -517,6 +611,8 @@
         updateSortOptionStyles();
     })();
     </script>
+    <?php echo $__env->make('partials.theme-toggle', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 </body>
 </html>
+
 <?php /**PATH C:\OSPanel\domains\canvas-laravel01\resources\views\gallery.blade.php ENDPATH**/ ?>

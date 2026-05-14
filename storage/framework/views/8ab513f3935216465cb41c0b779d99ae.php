@@ -1,3 +1,5 @@
+﻿
+
 <?php $__env->startSection('content'); ?>
 
 <div class="add_steps">
@@ -210,12 +212,14 @@
             </div>
 
             <div class="listing_panel" data-listing-panel="auction">
-                <div class="add_price_header">
-                    <label class="add_label" for="auctionStartPrice">Стартовая цена, ₽</label>
-                    <span class="add_price_hint">С этой суммы начнутся торги</span>
+                <div class="add_section">
+                    <div class="add_price_header">
+                        <label class="add_label" for="auctionStartPrice">Стартовая цена, ₽</label>
+                        <span class="add_price_hint">С этой суммы начнутся торги</span>
+                    </div>
+                    <input type="number" class="add_input add_input_full" placeholder="Введите стартовую цену" id="auctionStartPrice" min="100">
+                    <div class="field_error" id="auctionStartPriceError"></div>
                 </div>
-                <input type="number" class="add_input add_input_full" placeholder="Введите стартовую цену" id="auctionStartPrice" min="100">
-                <div class="field_error" id="auctionStartPriceError"></div>
 
                 <div class="add_row">
                     <div class="add_section add_section_half">
@@ -232,8 +236,8 @@
 
                 <div class="add_section">
                     <label class="add_label" for="auctionDurationHours">Таймер аукциона</label>
-                    <select class="add_input add_input_full" id="auctionDurationHours">
-                        <option value="24">24 часа</option>
+                    <select class="add_input add_input_full add_timer_select" id="auctionDurationHours">
+                        <option class="add_timer" value="24">24 часа</option>
                         <option value="72">3 дня</option>
                         <option value="168">7 дней</option>
                         <option value="336">14 дней</option>
@@ -381,6 +385,7 @@
     const auctionMinStep = document.getElementById('auctionMinStep');
     const auctionBuyoutPrice = document.getElementById('auctionBuyoutPrice');
     const auctionDurationHours = document.getElementById('auctionDurationHours');
+    let auctionDurationHoursUi = null;
     const submitButton = document.getElementById('submitPicture');
     const successOkBtn = document.getElementById('successOkBtn');
     const successTitle = document.getElementById('successTitle');
@@ -409,13 +414,39 @@
         if (element) {
             element.classList.add('field_invalid');
         }
-
         if (errorId) {
             const errorElement = document.getElementById(errorId);
             if (errorElement) {
                 errorElement.textContent = message;
             }
         }
+    }
+    function initCustomTimerSelect() {
+        if (!auctionDurationHours) {
+            return;
+        }
+        const wrapper = document.createElement('div');
+        wrapper.className = 'custom_select custom_select_timer';
+        wrapper.dataset.select = 'auction_duration_hours';
+        wrapper.innerHTML = `
+            <div class="custom_select_trigger">
+                <span class="custom_select_text">${auctionDurationHours.options[auctionDurationHours.selectedIndex]?.textContent.trim() || 'Выберите таймер'}</span>
+                <img src="<?php echo e(asset('assets/images/add/Arrow.svg')); ?>" alt="Arrow" class="select_arrow">
+            </div>
+            <div class="custom_select_options"></div>
+        `;
+        const optionsContainer = wrapper.querySelector('.custom_select_options');
+        Array.from(auctionDurationHours.options).forEach((option) => {
+            const optionButton = document.createElement('button');
+            optionButton.className = 'custom_select_option';
+            optionButton.type = 'button';
+            optionButton.dataset.value = option.value;
+            optionButton.textContent = option.textContent.trim();
+            optionsContainer.appendChild(optionButton);
+        });
+        auctionDurationHours.style.display = 'none';
+        auctionDurationHours.insertAdjacentElement('afterend', wrapper);
+        auctionDurationHoursUi = wrapper;
     }
 
     function getStepModal(step) {
@@ -595,9 +626,12 @@
                     markInvalid(auctionBuyoutPrice, 'auctionBuyoutPriceError', 'Блиц-цена не может быть ниже стартовой цены');
                     return false;
                 }
-
+                if (buyoutPrice && startPrice + minStep > buyoutPrice) {
+                    markInvalid(auctionBuyoutPrice, 'auctionBuyoutPriceError', 'Стартовая цена вместе с минимальным шагом не должна превышать блиц-цену');
+                    return false;
+                }
                 if (!durationHours || durationHours < 1 || durationHours > 720) {
-                    markInvalid(auctionDurationHours, 'auctionDurationHoursError', 'Выберите длительность аукциона');
+                    markInvalid(auctionDurationHoursUi || auctionDurationHours, 'auctionDurationHoursError', 'Выберите длительность аукциона');
                     return false;
                 }
             }
@@ -826,6 +860,8 @@
         });
     });
 
+    initCustomTimerSelect();
+
     document.addEventListener('click', (event) => {
         if (!event.target.closest('.custom_select')) {
             document.querySelectorAll('.custom_select').forEach((select) => {
@@ -833,6 +869,28 @@
             });
         }
     });
+    if (auctionDurationHoursUi) {
+        const trigger = auctionDurationHoursUi.querySelector('.custom_select_trigger');
+        const text = auctionDurationHoursUi.querySelector('.custom_select_text');
+        const options = auctionDurationHoursUi.querySelectorAll('.custom_select_option');
+        trigger.addEventListener('click', () => {
+            document.querySelectorAll('.custom_select').forEach((item) => {
+                if (item !== auctionDurationHoursUi) {
+                    item.classList.remove('open');
+                }
+            });
+            auctionDurationHoursUi.classList.toggle('open');
+        });
+        options.forEach((option) => {
+            option.addEventListener('click', () => {
+                auctionDurationHours.value = option.dataset.value;
+                text.textContent = option.textContent.trim();
+                auctionDurationHoursUi.classList.remove('open');
+                auctionDurationHoursUi.classList.remove('field_invalid');
+                document.getElementById('auctionDurationHoursError').textContent = '';
+            });
+        });
+    }
 
     priceYouGet.addEventListener('input', updateBuyerPriceFromSeller);
     priceBuyerPays.addEventListener('input', updateSellerPriceFromBuyer);
@@ -848,5 +906,7 @@
 })();
 </script>
 <?php $__env->stopSection(); ?>
+
+
 
 <?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\OSPanel\domains\canvas-laravel01\resources\views\picture\create.blade.php ENDPATH**/ ?>

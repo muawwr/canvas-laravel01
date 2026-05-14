@@ -1,8 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?php echo $__env->make('partials.theme-head', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
     <title>Оформление заказа - Канвас</title>
     <link rel="stylesheet" href="<?php echo e(asset('assets/css/style.css')); ?>">
     <link rel="shortcut icon" href="<?php echo e(asset('assets/images/header/logo.svg')); ?>" type="image/x-icon">
@@ -46,6 +47,15 @@
                     </div>
                 </div>
 
+                <label class="checkout_sold_visibility">
+                    <input type="checkbox" name="keep_sold_in_gallery" value="1">
+                    <span class="checkout_sold_visibility_mark"></span>
+                    <span>
+                        <strong>Оставить картину в галерее</strong>
+                        <small>После оплаты она будет отображаться с плашкой «Продано».</small>
+                    </span>
+                </label>
+
                 <button type="submit" style="width: 100%; padding: 20px; background: #FBFF83; color: #0D0D0D; border: none; border-radius: 15px; font-size: 18px; font-weight: 400; cursor: pointer; font-family: 'InterTight', sans-serif; transition: all 0.3s;">
                     Оформить заказ
                 </button>
@@ -57,7 +67,69 @@
         </div>
     </div>
 
-    <script>
+    <style>
+        .checkout_sold_visibility {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            margin-bottom: 20px;
+            background: #2D2D2D; 
+            padding: 20px; 
+            border-radius: 15px; 
+            color: #E0E0E0;
+            cursor: pointer;
+        }
+
+        .checkout_sold_visibility input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .checkout_sold_visibility_mark {
+            position: relative;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border-radius: 50%;
+    border: 1px solid #5D5D5D;
+    background-color: transparent;
+    transition: all 0.3s ease;
+        }
+
+        .checkout_sold_visibility input:checked + .checkout_sold_visibility_mark {
+                background-color: #FBFF83;
+    border-color: #FBFF83;
+        }
+
+        .checkout_sold_visibility input:checked + .checkout_sold_visibility_mark::after {
+               content: '';
+    position: absolute;
+    display: none;
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid #000000;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    display: block;
+        }
+
+
+        .checkout_sold_visibility strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        .checkout_sold_visibility small {
+            display: block;
+            color: #AFAFAF;
+            line-height: 1.35;
+        }
+    </style>    <script>
     document.addEventListener('DOMContentLoaded', function() {
         const checkoutData = localStorage.getItem('checkout_data');
         if (!checkoutData) { window.location.href = '/cart'; return; }
@@ -97,6 +169,10 @@
         });
     });
     </script>
+    <?php echo $__env->make('partials.theme-toggle', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
+    <script src="<?php echo e(asset('script.js')); ?>"></script>
 </body>
 </html>
+
+
 <?php /**PATH C:\OSPanel\domains\canvas-laravel01\resources\views\checkout.blade.php ENDPATH**/ ?>

@@ -303,6 +303,151 @@
 
 @section('scripts')
 <style>
+body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body[data-theme="dark"] {
+    --admin-page-bg: #0d0d0d;
+    --admin-text: #e0e0e0;
+    --admin-text-soft: rgba(224, 224, 224, 0.72);
+    --admin-text-muted: rgba(224, 224, 224, 0.58);
+    --admin-text-faint: rgba(224, 224, 224, 0.5);
+    --admin-text-subtle: rgba(224, 224, 224, 0.54);
+    --admin-surface: #161616;
+    --admin-surface-strong: #1b1b1b;
+    --admin-surface-soft: #222222;
+    --admin-border: rgba(255, 255, 255, 0.08);
+    --admin-input-bg: rgba(32, 32, 32, 0.31);
+    --admin-input-border: rgba(93, 93, 93, 0.19);
+    background-color: var(--admin-page-bg);
+    color: var(--admin-text);
+}
+
+body[data-theme="light"] {
+    --admin-page-bg: #f4f0e8;
+    --admin-text: #221d16;
+    --admin-text-soft: rgba(34, 29, 22, 0.75);
+    --admin-text-muted: rgba(34, 29, 22, 0.58);
+    --admin-text-faint: rgba(34, 29, 22, 0.42);
+    --admin-text-subtle: rgba(34, 29, 22, 0.56);
+    --admin-surface: #fffdf8;
+    --admin-surface-strong: #f5eee2;
+    --admin-surface-soft: #e8dece;
+    --admin-border: rgba(34, 29, 22, 0.12);
+    --admin-input-bg: rgba(255, 250, 241, 0.96);
+    --admin-input-border: rgba(34, 29, 22, 0.16);
+    background:
+        radial-gradient(circle at top right, rgba(251, 255, 131, 0.34), transparent 28%),
+        linear-gradient(180deg, #f8f4ec 0%, #efe7da 100%);
+    color: var(--admin-text);
+}
+
+.admin_main,
+.admin_main * {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.admin_main {
+    color: var(--admin-text);
+}
+
+.admin_tabs {
+    background-color: var(--admin-surface-soft);
+}
+
+.admin_tab {
+    background-color: var(--admin-surface-soft);
+    color: var(--admin-text);
+}
+
+.admin_tab_active {
+    background-color: var(--admin-text);
+    color: var(--admin-surface);
+}
+
+.admin_tab_badge {
+    background: var(--admin-border);
+}
+
+.admin_tab_active .admin_tab_badge {
+    background: rgba(10, 10, 10, 0.08);
+}
+
+.admin_table thead th {
+    color: var(--admin-text-faint);
+}
+
+.admin_table tbody td,
+.categories_add,
+.admin_reject_dialog,
+.admin_preview_caption {
+    background-color: var(--admin-surface);
+    color: var(--admin-text);
+}
+
+.admin_empty_row td,
+.no_categories {
+    color: var(--admin-text-muted);
+}
+
+.admin_cell_stack small {
+    color: var(--admin-text-subtle);
+}
+
+.admin_btn_watch {
+    background-color: var(--admin-border);
+}
+
+.admin_btn_watch:hover,
+.admin_user_row:hover td,
+.admin_user_row:focus td {
+    background-color: var(--admin-surface-strong);
+}
+
+.categories_add_title,
+.category_label,
+.category_section_title,
+.category_item span,
+.admin_reject_dialog h2,
+.admin_reject_cancel {
+    color: var(--admin-text);
+}
+
+.category_section_title span {
+    color: #d7a819;
+}
+
+.category_input {
+    color: var(--admin-text);
+    background-color: var(--admin-input-bg);
+    border-color: var(--admin-input-border);
+}
+
+.category_input::placeholder {
+    color: var(--admin-text-faint);
+}
+
+.admin_reject_textarea {
+    background: var(--admin-input-bg);
+    color: var(--admin-text);
+    border: 1px solid var(--admin-input-border);
+}
+
+.admin_reject_cancel {
+    border-color: var(--admin-input-border);
+}
+
+.admin_preview_close {
+    background: rgba(17, 17, 17, 0.84);
+    color: #e0e0e0;
+}
+
+body[data-theme="light"] .admin_preview_close {
+    background: rgba(255, 253, 248, 0.94);
+    color: #221d16;
+}
+
 .admin_reject_modal {
     position: fixed;
     inset: 0;

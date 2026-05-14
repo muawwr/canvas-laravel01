@@ -1,3 +1,53 @@
+// Global Theme Toggle
+(function() {
+    function getStoredTheme() {
+        const savedTheme = localStorage.getItem('site-theme');
+        return savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : 'dark';
+    }
+
+    function syncTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        if (document.body) {
+            document.body.setAttribute('data-theme', theme);
+        }
+
+        document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+            const isLight = theme === 'light';
+            const label = button.querySelector('[data-theme-toggle-label]');
+            button.setAttribute('aria-pressed', String(isLight));
+            if (label) {
+                label.textContent = isLight ? 'Темная тема' : 'Светлая тема';
+            }
+        });
+    }
+
+    function init() {
+        syncTheme(document.documentElement.getAttribute('data-theme') || getStoredTheme());
+
+        document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
+            if (button.dataset.themeToggleReady === 'true') {
+                return;
+            }
+
+            button.dataset.themeToggleReady = 'true';
+            button.addEventListener('click', function() {
+                const nextTheme = document.documentElement.getAttribute('data-theme') === 'light'
+                    ? 'dark'
+                    : 'light';
+
+                localStorage.setItem('site-theme', nextTheme);
+                syncTheme(nextTheme);
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+
 // Mobile Burger Menu Toggle
 (function() {
     function init() {

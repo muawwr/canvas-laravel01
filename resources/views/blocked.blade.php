@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @include('partials.theme-head')
     <title>Аккаунт заблокирован</title>
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 </head>
@@ -54,5 +55,7 @@
         window.setInterval(renderCountdown, 1000);
     })();
     </script>
+    @include('partials.theme-toggle')
+    <script src="{{ asset('script.js') }}"></script>
 </body>
 </html>

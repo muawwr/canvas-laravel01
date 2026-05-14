@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @include('partials.theme-head')
     <title>Регистрация - Канвас</title>
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="shortcut icon" href="{{ asset('assets/images/header/logo.svg') }}" type="image/x-icon">
@@ -136,5 +137,7 @@
             <img src="{{ asset($authImage) }}" alt="Арт">
         </div>
     </div>
+    @include('partials.theme-toggle')
+    <script src="{{ asset('script.js') }}"></script>
 </body>
 </html>

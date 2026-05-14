@@ -19,9 +19,23 @@
             <div class="cart_content">
                 <div class="cart_items" id="cartItemsList">
                     <?php $__currentLoopData = $cartItems; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <div class="cart_item" data-picture-id="<?php echo e($item->picture_id); ?>" data-price="<?php echo e($item->picture->price); ?>">
-                            <label class="cart_checkbox">
-                                <input type="checkbox" class="cart_item_checkbox" data-price="<?php echo e($item->picture->price); ?>">
+                        <?php
+                            $latestBidUserId = optional($item->picture->latestAuctionBid)->user_id;
+                            $isLockedAuctionItem = $item->picture->listing_type === 'auction'
+                                && $item->picture->auction_ends_at
+                                && $item->picture->auction_ends_at->isPast()
+                                && $latestBidUserId == session('user_id')
+                                && !$item->picture->orders()->where('payment_status', 'succeeded')->exists();
+                        ?>
+                        <div class="cart_item <?php echo e($isLockedAuctionItem ? 'cart_item_locked' : ''); ?>" data-picture-id="<?php echo e($item->picture_id); ?>" data-price="<?php echo e($item->picture->price); ?>">
+                            <label class="cart_checkbox <?php echo e($isLockedAuctionItem ? 'is-locked' : ''); ?>">
+                                <input
+                                    type="checkbox"
+                                    class="cart_item_checkbox"
+                                    data-price="<?php echo e($item->picture->price); ?>"
+                                    <?php echo e($isLockedAuctionItem ? 'checked disabled' : ''); ?>
+
+                                >
                                 <span class="checkmark"></span>
                             </label>
 
@@ -34,13 +48,18 @@
                             <div class="cart_item_info">
                                 <h4 class="cart_item_name"><?php echo e($item->picture->name); ?></h4>
                                 <p class="cart_item_author"><?php echo e($item->picture->user->name); ?></p>
+                                <?php if($isLockedAuctionItem): ?>
+                                    <p class="cart_item_lock_note">Аукционный лот забронирован за вами до оплаты</p>
+                                <?php endif; ?>
                             </div>
 
                             <p class="cart_item_price"><?php echo e(number_format($item->picture->price, 0, '.', ' ')); ?> <span>₽</span></p>
 
-                            <button class="cart_item_delete" type="button" data-picture-id="<?php echo e($item->picture_id); ?>">
-                                <img src="<?php echo e(asset('assets/images/cart/Trashcan.svg')); ?>" alt="Удалить">
-                            </button>
+                            <?php if (! ($isLockedAuctionItem)): ?>
+                                <button class="cart_item_delete" type="button" data-picture-id="<?php echo e($item->picture_id); ?>">
+                                    <img src="<?php echo e(asset('assets/images/cart/Trashcan.svg')); ?>" alt="Удалить">
+                                </button>
+                            <?php endif; ?>
                         </div>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </div>
@@ -93,7 +112,6 @@
     opacity: 0.3;
     pointer-events: none;
 }
-
 </style>
 
 <script>
@@ -130,7 +148,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const checkoutForm = document.getElementById('checkoutForm');
 
     checkboxes.forEach((checkbox) => {
-        checkbox.addEventListener('change', updateCartSummary);
+        checkbox.addEventListener('change', function() {
+            if (checkbox.disabled) {
+                checkbox.checked = true;
+            }
+            updateCartSummary();
+        });
     });
 
     deleteButtons.forEach((button) => {

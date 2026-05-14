@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @include('partials.theme-head')
     <title>Страница не найдена - Канвас</title>
     <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <link rel="shortcut icon" href="{{ asset('assets/images/header/logo.svg') }}" type="image/x-icon">
@@ -26,5 +27,7 @@
             <a href="{{ url('/') }}" class="hero_btn" style="display:inline-block; padding:15px 30px; background:#FBFF83; color:#1A1A1A; border-radius:12px; text-decoration:none;">На главную</a>
         </div>
     </main>
+    @include('partials.theme-toggle')
+    <script src="{{ asset('script.js') }}"></script>
 </body>
 </html>

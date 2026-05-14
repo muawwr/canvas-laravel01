@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?php echo $__env->make('partials.theme-head', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
     <title>Канвас - Платформа для искусства</title>
     <link rel="stylesheet" href="<?php echo e(asset('assets/css/style.css')); ?>">
     <link rel="shortcut icon" href="<?php echo e(asset('assets/images/header/logo.svg')); ?>" type="image/x-icon">
@@ -13,6 +14,17 @@
 
 <body>
     <?php
+        $hasNotificationsTable = false;
+        try {
+            $hasNotificationsTable = \Illuminate\Support\Facades\Schema::hasTable('user_notifications');
+        } catch (\Throwable $e) {
+            $hasNotificationsTable = false;
+        }
+
+        $notificationCount = session()->has('user_id') && $hasNotificationsTable
+            ? \App\Models\UserNotification::where('user_id', session('user_id'))->whereNull('read_at')->count()
+            : 0;
+
         $manualHomeActive = trim((string) $__env->yieldContent('nav-home-active'));
         $manualGalleryActive = trim((string) $__env->yieldContent('nav-gallery-active'));
         $manualAuctionActive = trim((string) $__env->yieldContent('nav-auction-active'));
@@ -21,6 +33,7 @@
         $isHomeActive = trim(request()->path(), '/') === '' || request()->is('main');
         $isGalleryActive = request()->is('gallery');
         $isAuctionActive = request()->is('auction');
+        $isNotificationsActive = request()->is('notifications');
         $isProfileActive = request()->is(
             'admin',
             'account',
@@ -60,43 +73,54 @@
                         <?php endif; ?>
                     </div>
                 </nav>
-                <?php if(session()->has('user_id')): ?>
-                <div class="profile-dropdown" id="profileDropdown">
-                    <?php if(session('user_role') == 2): ?>
-                        <a href="<?php echo e(url('/admin')); ?>" class="profile-dropdown-item">
-                            <img class="p_d_a" src="<?php echo e(asset('assets/images/admin/admin.svg')); ?>" alt="Админ-панель">
-                        </a>
-                        <a href="<?php echo e(url('/logout')); ?>" class="profile-dropdown-item">
-                            <img src="<?php echo e(asset('assets/images/header/Logout.svg')); ?>" alt="Выход">
-                        </a>
-                    <?php else: ?>
-                        <a href="<?php echo e(url('/cart')); ?>" class="profile-dropdown-item">
-                            <img src="<?php echo e(asset('assets/images/header/Cart.svg')); ?>" alt="Корзина">
-                        </a>
-                        <a href="<?php echo e(url('/fav')); ?>" class="profile-dropdown-item">
-                            <img src="<?php echo e(asset('assets/images/header/fav.svg')); ?>" alt="Избранное">
-                        </a>
-                        <a href="<?php echo e(url('/account')); ?>" class="profile-dropdown-item">
-                            <img src="<?php echo e(asset('assets/images/header/account.svg')); ?>" alt="Настройки">
-                        </a>
-                        <a href="<?php echo e(url('/add')); ?>" class="profile-dropdown-item">
-                            <img src="<?php echo e(asset('assets/images/header/add.svg')); ?>" alt="Добавить">
-                        </a>
-                        <a href="<?php echo e(url('/orders')); ?>" class="profile-dropdown-item">
-                            <img src="<?php echo e(asset('assets/images/header/orders.svg')); ?>" alt="Заказы">
-                        </a>
-                        <a href="<?php echo e(url('/logout')); ?>" class="profile-dropdown-item">
-                            <img src="<?php echo e(asset('assets/images/header/Logout.svg')); ?>" alt="Выход">
+
+                <div class="header-right-tools">
+                    <?php if(session()->has('user_id')): ?>
+                        <a href="<?php echo e(url('/notifications')); ?>" class="header-notification-link <?php echo e($isNotificationsActive ? 'active' : ''); ?>">
+                            <img src="<?php echo e(asset('assets/images/header/notifications.svg')); ?>" alt="Уведомления">
+                            <span class="notification-dot" data-notification-dot style="<?php echo e($notificationCount > 0 ? '' : 'display:none;'); ?>"></span>
                         </a>
                     <?php endif; ?>
-                </div>
-                <?php endif; ?>
-                <?php if(!session()->has('user_id')): ?>
-                    <div class="auth-buttons">
+
+                    <?php if(session()->has('user_id')): ?>
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <?php if(session('user_role') == 2): ?>
+                                <a href="<?php echo e(url('/admin')); ?>" class="profile-dropdown-item">
+                                    <img class="p_d_a" src="<?php echo e(asset('assets/images/admin/admin.svg')); ?>" alt="Админ-панель">
+                                </a>
+                                <a href="<?php echo e(url('/logout')); ?>" class="profile-dropdown-item">
+                                    <img src="<?php echo e(asset('assets/images/header/Logout.svg')); ?>" alt="Выход">
+                                </a>
+                            <?php else: ?>
+                                <a href="<?php echo e(url('/cart')); ?>" class="profile-dropdown-item">
+                                    <img src="<?php echo e(asset('assets/images/header/Cart.svg')); ?>" alt="Корзина">
+                                </a>
+                                <a href="<?php echo e(url('/fav')); ?>" class="profile-dropdown-item">
+                                    <img src="<?php echo e(asset('assets/images/header/fav.svg')); ?>" alt="Избранное">
+                                </a>
+                                <a href="<?php echo e(url('/account')); ?>" class="profile-dropdown-item">
+                                    <img src="<?php echo e(asset('assets/images/header/account.svg')); ?>" alt="Настройки">
+                                </a>
+                                <a href="<?php echo e(url('/add')); ?>" class="profile-dropdown-item">
+                                    <img src="<?php echo e(asset('assets/images/header/add.svg')); ?>" alt="Добавить">
+                                </a>
+                                <a href="<?php echo e(url('/orders')); ?>" class="profile-dropdown-item">
+                                    <img src="<?php echo e(asset('assets/images/header/orders.svg')); ?>" alt="Заказы">
+                                </a>
+                                <a href="<?php echo e(url('/logout')); ?>" class="profile-dropdown-item">
+                                    <img src="<?php echo e(asset('assets/images/header/Logout.svg')); ?>" alt="Выход">
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if(!session()->has('user_id')): ?>
+                        <div class="auth-buttons">
                         <a href="<?php echo e(url('/auth')); ?>" class="btn btn-login">Войти</a>
                         <a href="<?php echo e(url('/reg')); ?>" class="btn btn-register">Регистрация</a>
-                    </div>
-                <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
             </div>
         </div>
     </header>
@@ -127,6 +151,12 @@
             <a href="<?php echo e(url('/auction')); ?>" class="mobile-menu-item <?php echo e($isAuctionActive ? 'active' : $manualAuctionActive); ?>">
                 <img src="<?php echo e(asset('assets/images/header/auction.svg')); ?>" alt="Аукцион">
             </a>
+            <?php if(session()->has('user_id')): ?>
+                <a href="<?php echo e(url('/notifications')); ?>" class="mobile-menu-item notification-nav-item <?php echo e($isNotificationsActive ? 'active' : ''); ?>">
+                    <img src="<?php echo e(asset('assets/images/header/notifications.svg')); ?>" alt="Уведомления">
+                    <span class="notification-dot" data-notification-dot style="<?php echo e($notificationCount > 0 ? '' : 'display:none;'); ?>"></span>
+                </a>
+            <?php endif; ?>
             <div class="mobile-menu-item mobile-profile-toggle <?php echo e($isProfileActive ? 'active' : ''); ?>" id="mobileProfileToggle">
                 <?php if(session()->has('user_id')): ?>
                     <img src="<?php echo e(asset(session('user_img', 'assets/images/account/mainUser.png'))); ?>"
@@ -140,38 +170,39 @@
     </div>
 
     <?php if(session()->has('user_id')): ?>
-    <div class="mobile-profile-dropdown" id="mobileProfileDropdown">
-        <?php if(session('user_role') == 2): ?>
-            <a href="<?php echo e(url('/admin')); ?>" class="mobile-profile-dropdown-item">
-                <img class="p_d_a" src="<?php echo e(asset('assets/images/admin/admin.svg')); ?>" alt="Админ-панель">
-            </a>
-            <a href="<?php echo e(url('/logout')); ?>" class="mobile-profile-dropdown-item">
-                <img src="<?php echo e(asset('assets/images/header/Logout.svg')); ?>" alt="Выход">
-            </a>
-        <?php else: ?>
-            <a href="<?php echo e(url('/cart')); ?>" class="mobile-profile-dropdown-item">
-                <img src="<?php echo e(asset('assets/images/header/Cart.svg')); ?>" alt="Корзина">
-            </a>
-            <a href="<?php echo e(url('/fav')); ?>" class="mobile-profile-dropdown-item">
-                <img src="<?php echo e(asset('assets/images/header/fav.svg')); ?>" alt="Избранное">
-            </a>
-            <a href="<?php echo e(url('/account')); ?>" class="mobile-profile-dropdown-item">
-                <img src="<?php echo e(asset('assets/images/header/account.svg')); ?>" alt="Настройки">
-            </a>
-            <a href="<?php echo e(url('/add')); ?>" class="mobile-profile-dropdown-item">
-                <img src="<?php echo e(asset('assets/images/header/add.svg')); ?>" alt="Добавить">
-            </a>
-            <a href="<?php echo e(url('/orders')); ?>" class="mobile-profile-dropdown-item">
-                <img src="<?php echo e(asset('assets/images/header/orders.svg')); ?>" alt="Заказы">
-            </a>
-            <a href="<?php echo e(url('/logout')); ?>" class="mobile-profile-dropdown-item">
-                <img src="<?php echo e(asset('assets/images/header/Logout.svg')); ?>" alt="Выход">
-            </a>
-        <?php endif; ?>
-    </div>
+        <div class="mobile-profile-dropdown" id="mobileProfileDropdown">
+            <?php if(session('user_role') == 2): ?>
+                <a href="<?php echo e(url('/admin')); ?>" class="mobile-profile-dropdown-item">
+                    <img class="p_d_a" src="<?php echo e(asset('assets/images/admin/admin.svg')); ?>" alt="Админ-панель">
+                </a>
+                <a href="<?php echo e(url('/logout')); ?>" class="mobile-profile-dropdown-item">
+                    <img src="<?php echo e(asset('assets/images/header/Logout.svg')); ?>" alt="Выход">
+                </a>
+            <?php else: ?>
+                <a href="<?php echo e(url('/cart')); ?>" class="mobile-profile-dropdown-item">
+                    <img src="<?php echo e(asset('assets/images/header/Cart.svg')); ?>" alt="Корзина">
+                </a>
+                <a href="<?php echo e(url('/fav')); ?>" class="mobile-profile-dropdown-item">
+                    <img src="<?php echo e(asset('assets/images/header/fav.svg')); ?>" alt="Избранное">
+                </a>
+                <a href="<?php echo e(url('/account')); ?>" class="mobile-profile-dropdown-item">
+                    <img src="<?php echo e(asset('assets/images/header/account.svg')); ?>" alt="Настройки">
+                </a>
+                <a href="<?php echo e(url('/add')); ?>" class="mobile-profile-dropdown-item">
+                    <img src="<?php echo e(asset('assets/images/header/add.svg')); ?>" alt="Добавить">
+                </a>
+                <a href="<?php echo e(url('/orders')); ?>" class="mobile-profile-dropdown-item">
+                    <img src="<?php echo e(asset('assets/images/header/orders.svg')); ?>" alt="Заказы">
+                </a>
+                <a href="<?php echo e(url('/logout')); ?>" class="mobile-profile-dropdown-item">
+                    <img src="<?php echo e(asset('assets/images/header/Logout.svg')); ?>" alt="Выход">
+                </a>
+            <?php endif; ?>
+        </div>
     <?php endif; ?>
 
     <?php echo $__env->yieldContent('content'); ?>
+    <?php echo $__env->make('partials.theme-toggle', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?>
 
     <footer class="footer">
         <div class="container">

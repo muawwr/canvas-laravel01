@@ -6698,8 +6698,6 @@ body[data-theme="light"] .expand-btn:hover{
 
 body[data-theme="light"] .filter-reset-all-btn{
   background: #FBFF83;
-  border: 1px solid #FBFF83;
-
 }
 
 body[data-theme="light"] .filter-reset-all-btn span{
@@ -6785,4 +6783,44 @@ body[data-theme="light"] .input_group input:focus{
 
   body[data-theme="light"] .cart_checkout {
 background-color: #F1EADD;
+ }
+
+   body[data-theme="light"]  h3.product_name{
+color: #1f1a0f;
+ }
+
+    body[data-theme="light"] p.description{
+color: #1f1a0f;
+ }
+
+    body[data-theme="light"]  .filter_card{
+color: #1f1a0f;
+    background-color: #F1EADD;
+ }
+
+     body[data-theme="light"] .filter_card .dote{
+
+    background-color: #1f1a0f;
+ }
+
+     body[data-theme="light"]  p.info_title{
+color: #1f1a0f;
+ }
+
+      body[data-theme="light"] p.info_text{
+color: #1f1a0f;
+ }
+
+body[data-theme="light"] .product_card_author span{
+color: #1f1a0f;
+ }
+
+body[data-theme="light"]  .fav{
+background-color: #F1EADD;
+color: #1f1a0f;
+ }
+
+ body[data-theme="light"]  .fav img{
+          filter: brightness(0) saturate(100%) invert(11%) sepia(5%) saturate(6334%) hue-rotate(347deg) brightness(91%) contrast(77%);
+
  }

@@ -15,8 +15,9 @@
             const isLight = theme === 'light';
             const label = button.querySelector('[data-theme-toggle-label]');
             button.setAttribute('aria-pressed', String(isLight));
+            button.setAttribute('aria-label', isLight ? '\u041f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0438\u0442\u044c \u043d\u0430 \u0442\u0435\u043c\u043d\u0443\u044e \u0442\u0435\u043c\u0443' : '\u041f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0438\u0442\u044c \u043d\u0430 \u0441\u0432\u0435\u0442\u043b\u0443\u044e \u0442\u0435\u043c\u0443');
             if (label) {
-                label.textContent = isLight ? 'Темная тема' : 'Светлая тема';
+                label.textContent = isLight ? '\u0422\u0435\u043c\u043d\u0430\u044f \u0442\u0435\u043c\u0430' : '\u0421\u0432\u0435\u0442\u043b\u0430\u044f \u0442\u0435\u043c\u0430';
             }
         });
     }
@@ -150,17 +151,17 @@
         console.log('profileDropdown:', profileDropdown);
         
         if (!profileToggle || !profileDropdown) {
-            console.warn('✗ Profile elements not found!');
+            console.warn('РІСљвЂ” Profile elements not found!');
             return; // Exit if not on page with profile toggle
         }
         
-        console.log('✓ Profile elements found, adding click listener');
+        console.log('РІСљвЂњ Profile elements found, adding click listener');
         
         // Toggle dropdown on profile icon click
         profileToggle.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('✓ Profile toggle clicked!');
+            console.log('РІСљвЂњ Profile toggle clicked!');
             profileDropdown.classList.toggle('active');
             console.log('Dropdown classes after:', profileDropdown.className);
         });
@@ -197,17 +198,17 @@
         console.log('profileDropdownGallery:', profileDropdown);
         
         if (!profileToggle || !profileDropdown) {
-            console.warn('✗ Gallery profile elements not found!');
+            console.warn('РІСљвЂ” Gallery profile elements not found!');
             return; // Exit if not on gallery page
         }
         
-        console.log('✓ Gallery profile elements found, adding click listener');
+        console.log('РІСљвЂњ Gallery profile elements found, adding click listener');
         
         // Toggle dropdown on profile icon click
         profileToggle.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('✓ Gallery profile toggle clicked!');
+            console.log('РІСљвЂњ Gallery profile toggle clicked!');
             profileDropdown.classList.toggle('active');
             console.log('Gallery dropdown classes after:', profileDropdown.className);
         });
@@ -238,23 +239,23 @@
     if (!track) return; // Exit if carousel not found on page
     const cards = Array.from(track.querySelectorAll('.artist-card'));
   
-    let CARD_W = 332;                      // ширина карточки
-    let GAP = 5;                           // расстояние между карточками
+    let CARD_W = 332;                      // РЎв‚¬Р С‘РЎР‚Р С‘Р Р…Р В° Р С”Р В°РЎР‚РЎвЂљР С•РЎвЂЎР С”Р С‘
+    let GAP = 5;                           // РЎР‚Р В°РЎРѓРЎРѓРЎвЂљР С•РЎРЏР Р…Р С‘Р Вµ Р СР ВµР В¶Р Т‘РЎС“ Р С”Р В°РЎР‚РЎвЂљР С•РЎвЂЎР С”Р В°Р СР С‘
     let SHIFT = CARD_W + GAP;
     let active = 0;
   
-    // Функция для определения параметров карточки в зависимости от размера экрана
+    // Р В¤РЎС“Р Р…Р С”РЎвЂ Р С‘РЎРЏ Р Т‘Р В»РЎРЏ Р С•Р С—РЎР‚Р ВµР Т‘Р ВµР В»Р ВµР Р…Р С‘РЎРЏ Р С—Р В°РЎР‚Р В°Р СР ВµРЎвЂљРЎР‚Р С•Р Р† Р С”Р В°РЎР‚РЎвЂљР С•РЎвЂЎР С”Р С‘ Р Р† Р В·Р В°Р Р†Р С‘РЎРѓР С‘Р СР С•РЎРѓРЎвЂљР С‘ Р С•РЎвЂљ РЎР‚Р В°Р В·Р СР ВµРЎР‚Р В° РЎРЊР С”РЎР‚Р В°Р Р…Р В°
     function getCardDimensions() {
       const screenWidth = window.innerWidth;
       if (screenWidth <= 768) {
-        return { width: 181, gap: 5 }; // мобильная версия
+        return { width: 181, gap: 5 }; // Р СР С•Р В±Р С‘Р В»РЎРЉР Р…Р В°РЎРЏ Р Р†Р ВµРЎР‚РЎРѓР С‘РЎРЏ
       } else if (screenWidth > 768 && screenWidth <= 1024) {
-        return { width: 280, gap: 5 }; // планшет
+        return { width: 280, gap: 5 }; // Р С—Р В»Р В°Р Р…РЎв‚¬Р ВµРЎвЂљ
       }
-      return { width: 332, gap: 5 }; // десктоп версия
+      return { width: 332, gap: 5 }; // Р Т‘Р ВµРЎРѓР С”РЎвЂљР С•Р С— Р Р†Р ВµРЎР‚РЎРѓР С‘РЎРЏ
     }
   
-    // Обновление параметров при изменении размера экрана
+    // Р С›Р В±Р Р…Р С•Р Р†Р В»Р ВµР Р…Р С‘Р Вµ Р С—Р В°РЎР‚Р В°Р СР ВµРЎвЂљРЎР‚Р С•Р Р† Р С—РЎР‚Р С‘ Р С‘Р В·Р СР ВµР Р…Р ВµР Р…Р С‘Р С‘ РЎР‚Р В°Р В·Р СР ВµРЎР‚Р В° РЎРЊР С”РЎР‚Р В°Р Р…Р В°
     function updateDimensions() {
       const dimensions = getCardDimensions();
       CARD_W = dimensions.width;
@@ -267,17 +268,17 @@
   
     function render(){
       cards.forEach((card, i) => {
-        // смещение относительно активной: -2,-1,0,1,2...
+        // РЎРѓР СР ВµРЎвЂ°Р ВµР Р…Р С‘Р Вµ Р С•РЎвЂљР Р…Р С•РЎРѓР С‘РЎвЂљР ВµР В»РЎРЉР Р…Р С• Р В°Р С”РЎвЂљР С‘Р Р†Р Р…Р С•Р в„–: -2,-1,0,1,2...
         let off = i - active;
         const half = Math.floor(cards.length/2);
         if (off >  half) off -= cards.length;
         if (off < -half) off += cards.length;
   
-        // Используем актуальное значение SHIFT для расчета позиции
+        // Р ВРЎРѓР С—Р С•Р В»РЎРЉР В·РЎС“Р ВµР С Р В°Р С”РЎвЂљРЎС“Р В°Р В»РЎРЉР Р…Р С•Р Вµ Р В·Р Р…Р В°РЎвЂЎР ВµР Р…Р С‘Р Вµ SHIFT Р Т‘Р В»РЎРЏ РЎР‚Р В°РЎРѓРЎвЂЎР ВµРЎвЂљР В° Р С—Р С•Р В·Р С‘РЎвЂ Р С‘Р С‘
         let x = off * SHIFT;
         let z = 0, scale = 1, opacity = 1, zIndex = 1, rot = 0;
   
-        // Центральная карточка (активная)
+        // Р В¦Р ВµР Р…РЎвЂљРЎР‚Р В°Р В»РЎРЉР Р…Р В°РЎРЏ Р С”Р В°РЎР‚РЎвЂљР С•РЎвЂЎР С”Р В° (Р В°Р С”РЎвЂљР С‘Р Р†Р Р…Р В°РЎРЏ)
         if (off === 0) { 
             z = 0;   
             scale = 1;    
@@ -285,7 +286,7 @@
             zIndex = 5; 
             rot = 0; 
         }
-        // Соседние карточки (слева и справа от центральной)
+        // Р РЋР С•РЎРѓР ВµР Т‘Р Р…Р С‘Р Вµ Р С”Р В°РЎР‚РЎвЂљР С•РЎвЂЎР С”Р С‘ (РЎРѓР В»Р ВµР Р†Р В° Р С‘ РЎРѓР С—РЎР‚Р В°Р Р†Р В° Р С•РЎвЂљ РЎвЂ Р ВµР Р…РЎвЂљРЎР‚Р В°Р В»РЎРЉР Р…Р С•Р в„–)
         else if (Math.abs(off) === 1) { 
             z = -50;  
             scale = 1; 
@@ -293,7 +294,7 @@
             zIndex = 4; 
             rot = off * -3; 
         }
-        // Вторые соседние карточки
+        // Р вЂ™РЎвЂљР С•РЎР‚РЎвЂ№Р Вµ РЎРѓР С•РЎРѓР ВµР Т‘Р Р…Р С‘Р Вµ Р С”Р В°РЎР‚РЎвЂљР С•РЎвЂЎР С”Р С‘
         else if (Math.abs(off) === 2) { 
             z = -100; 
             scale = 0.8; 
@@ -301,7 +302,7 @@
             zIndex = 3; 
             rot = off * -5; 
         }
-        // Остальные карточки (скрытые сзади)
+        // Р С›РЎРѓРЎвЂљР В°Р В»РЎРЉР Р…РЎвЂ№Р Вµ Р С”Р В°РЎР‚РЎвЂљР С•РЎвЂЎР С”Р С‘ (РЎРѓР С”РЎР‚РЎвЂ№РЎвЂљРЎвЂ№Р Вµ РЎРѓР В·Р В°Р Т‘Р С‘)
         else { 
             opacity = 0; 
             z = -150; 
@@ -312,7 +313,7 @@
   
         card.style.zIndex = zIndex;
         card.style.opacity = opacity;
-        // Используем translateX с calc и актуальным значением x
+        // Р ВРЎРѓР С—Р С•Р В»РЎРЉР В·РЎС“Р ВµР С translateX РЎРѓ calc Р С‘ Р В°Р С”РЎвЂљРЎС“Р В°Р В»РЎРЉР Р…РЎвЂ№Р С Р В·Р Р…Р В°РЎвЂЎР ВµР Р…Р С‘Р ВµР С x
         card.style.transform =
           `translateX(calc(-50% + ${x}px)) translateZ(${z}px) scale(${scale}) rotateY(${rot}deg)`;
       });
@@ -321,18 +322,18 @@
     function next(){ active = clampMod(active + 1, cards.length); render(); }
     function prev(){ active = clampMod(active - 1, cards.length); render(); }
   
-    // колесико / тачпад
+    // Р С”Р С•Р В»Р ВµРЎРѓР С‘Р С”Р С• / РЎвЂљР В°РЎвЂЎР С—Р В°Р Т‘
     let throttle = false;
     const carousel = document.querySelector('.artists-carousel');
     
     carousel.addEventListener('wheel', (e) => {
-      e.preventDefault();                // чтобы страница не скроллилась
+      e.preventDefault();                // РЎвЂЎРЎвЂљР С•Р В±РЎвЂ№ РЎРѓРЎвЂљРЎР‚Р В°Р Р…Р С‘РЎвЂ Р В° Р Р…Р Вµ РЎРѓР С”РЎР‚Р С•Р В»Р В»Р С‘Р В»Р В°РЎРѓРЎРЉ
       if (throttle) return;
       if (e.deltaY > 0 || e.deltaX > 0) next(); else prev();
       throttle = true; setTimeout(() => throttle = false, 450);
     }, { passive:false });
   
-    // свайп для тачей
+    // РЎРѓР Р†Р В°Р в„–Р С— Р Т‘Р В»РЎРЏ РЎвЂљР В°РЎвЂЎР ВµР в„–
     let startX = 0;
     track.addEventListener('pointerdown', e => { startX = e.clientX; track.setPointerCapture(e.pointerId); });
     track.addEventListener('pointerup', e => {
@@ -340,14 +341,14 @@
       if (Math.abs(dx) > 40) (dx < 0 ? next : prev)();
     });
   
-    // Обработчик изменения размера окна с debounce
+    // Р С›Р В±РЎР‚Р В°Р В±Р С•РЎвЂљРЎвЂЎР С‘Р С” Р С‘Р В·Р СР ВµР Р…Р ВµР Р…Р С‘РЎРЏ РЎР‚Р В°Р В·Р СР ВµРЎР‚Р В° Р С•Р С”Р Р…Р В° РЎРѓ debounce
     let resizeTimeout;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(updateDimensions, 150);
     });
   
-    // Инициализация
+    // Р ВР Р…Р С‘РЎвЂ Р С‘Р В°Р В»Р С‘Р В·Р В°РЎвЂ Р С‘РЎРЏ
     updateDimensions();
   })();
 
@@ -630,7 +631,7 @@
             
             // Calculate price with commission
             const withCommission = value / (1 - COMMISSION_RATE);
-            priceBuyerPays.value = Math.round(withCommission) + ' ₽';
+            priceBuyerPays.value = Math.round(withCommission) + ' РІвЂљР…';
         });
     }
     
@@ -716,7 +717,7 @@
             
             // Calculate price with commission
             const withCommission = value / (1 - COMMISSION_RATE);
-            priceBuyerPays.value = Math.round(withCommission) + ' ₽';
+            priceBuyerPays.value = Math.round(withCommission) + ' РІвЂљР…';
         });
     }
     
@@ -881,9 +882,9 @@
             
             // Change button text
             if (hiddenContent.classList.contains('active')) {
-                toggleBtn.textContent = 'Свернуть';
+                toggleBtn.textContent = 'Р РЋР Р†Р ВµРЎР‚Р Р…РЎС“РЎвЂљРЎРЉ';
             } else {
-                toggleBtn.textContent = 'Читать далее';
+                toggleBtn.textContent = 'Р В§Р С‘РЎвЂљР В°РЎвЂљРЎРЉ Р Т‘Р В°Р В»Р ВµР Вµ';
             }
         });
     }

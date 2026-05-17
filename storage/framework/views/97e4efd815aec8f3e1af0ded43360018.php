@@ -110,9 +110,7 @@
         accountAvatar.style.cursor = 'pointer';
         editBtnIcon.src = '<?php echo e(asset("assets/images/account/accept.svg")); ?>';
         editBtnText.textContent = 'Применить';
-        editBtn.style.background = 'transparent';
-        editBtn.style.color = '#E0E0E0';
-        editBtn.style.border = '1px solid #E0E0E0';
+        editBtn.classList.add('account_edit_btn_apply');
     }
 
     function exitEditMode() {
@@ -124,9 +122,7 @@
         accountAvatar.style.cursor = 'default';
         editBtnIcon.src = '<?php echo e(asset("assets/images/account/edit.svg")); ?>';
         editBtnText.textContent = 'Редактировать';
-        editBtn.style.background = '';
-        editBtn.style.color = '';
-        editBtn.style.border = '';
+        editBtn.classList.remove('account_edit_btn_apply');
     }
 
     accountAvatar.addEventListener('click', function() { if (isEditMode) avatarUploadInput.click(); });
@@ -222,6 +218,7 @@
 })();
 </script>
 <style>
+    
 .account_name_edit {     font-family: 'Neue Haas Grotesk', sans-serif;
     font-size: 32px;
     font-weight: 400;
@@ -241,6 +238,56 @@
 .account_edit_btn:hover img {
         filter: brightness(0) saturate(100%) invert(88%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(150%) contrast(88%);
     }
+.account_edit_btn.account_edit_btn_apply {
+    background: transparent;
+    color: #E0E0E0;
+    border: 1px solid #E0E0E0;
+}
+.account_edit_btn.account_edit_btn_apply img {
+    filter: brightness(0) saturate(100%) invert(88%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(150%) contrast(88%);
+}
+body[data-theme="light"] .account_name_edit {
+    color: var(--theme-text);
+    background: var(--theme-bg);
+    border-bottom-color: var(--theme-text);
+}
+body[data-theme="light"] .account_name_edit:focus { background-color: var(--theme-bg); }
+body[data-theme="light"] .account_edit_btn {
+    background-color: var(--theme-accent);
+    border-color: var(--theme-accent);
+    color: var(--theme-accent-contrast);
+}
+body[data-theme="light"] .account_edit_btn:hover {
+    background-color: transparent;
+    border-color: var(--theme-text);
+    color: var(--theme-text);
+}
+body[data-theme="light"] .account_edit_btn:hover img,
+body[data-theme="light"] .account_edit_btn.account_edit_btn_apply img {
+    filter: var(--theme-icon-filter);
+}
+body[data-theme="light"] .account_edit_btn.account_edit_btn_apply {
+    background: transparent;
+    color: var(--theme-text);
+    border-color: var(--theme-text);
+}
+body[data-theme="light"] .account_auction_retry_box {
+    background: rgba(255, 250, 242, 0.94);
+    border-color: rgba(186, 93, 93, 0.26);
+}
+body[data-theme="light"] .account_auction_retry_box strong,
+body[data-theme="light"] .account_retry_info { color: var(--theme-text); }
+body[data-theme="light"] .account_retry_info { border-color: rgba(61, 47, 34, 0.2); }
+body[data-theme="light"] .account_retry_tooltip {
+    background: rgba(255, 250, 242, 0.96);
+    color: var(--theme-text);
+    box-shadow: 0 12px 30px rgba(101, 76, 43, 0.12);
+}
+body[data-theme="light"] .account_auction_retry_text { color: var(--theme-muted); }
+body[data-theme="light"] .account_retry_btn_secondary {
+    color: var(--theme-text);
+    border-color: var(--theme-border);
+}
 .account_picture_card {
     position: relative;
     overflow: hidden;

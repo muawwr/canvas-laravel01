@@ -10,11 +10,11 @@
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 </head>
 <body>
-    <div class="checkout-page" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #0D0D0D;">
-        <div class="checkout-container" style="max-width: 500px; width: 100%; padding: 40px; background: #1A1A1A; border-radius: 20px; margin: 20px;">
-            <h2 style="font-size: 32px; color: #E0E0E0; text-align: center; font-weight:400; margin-bottom: 30px; font-family: 'Neue Haas Grotesk', sans-serif;">Оформление заказа</h2>
+    <div class="checkout-page" style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--theme-bg);">
+        <div class="checkout-container" style="max-width: 500px; width: 100%; padding: 40px; background: var(--theme-surface-strong); border-radius: 20px; margin: 20px; box-shadow: var(--theme-shadow);">
+            <h2 style="font-size: 32px; color: var(--theme-text); text-align: center; font-weight:400; margin-bottom: 30px; font-family: 'Neue Haas Grotesk', sans-serif;">Оформление заказа</h2>
 
-            <div id="loadingMessage" style="text-align: center; color: #939393;">
+            <div id="loadingMessage" style="text-align: center; color: var(--theme-muted);">
                 <p>Загрузка данных...</p>
             </div>
 
@@ -24,26 +24,26 @@
                 <input type="hidden" name="pickup_point" id="pickupPointHidden">
                 <input type="hidden" name="recipient_name" id="recipientNameHidden">
 
-                <div style="background: #2D2D2D; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
-                    <h3 style="font-size: 20px; color: #E0E0E0; font-weight:400; margin-bottom: 15px;">Товары:</h3>
+                <div style="background: var(--theme-surface); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid var(--theme-border);">
+                    <h3 style="font-size: 20px; color: var(--theme-text); font-weight:400; margin-bottom: 15px;">Товары:</h3>
                     <div id="orderItems"></div>
                     <div style="padding-top: 15px;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="color: #939393; font-size: 16px;">Итого:</span>
-                            <span id="totalAmount" style="color: #FBFF83; font-size: 24px; font-weight: 600;"></span>
+                            <span style="color: var(--theme-muted); font-size: 16px;">Итого:</span>
+                            <span id="totalAmount" style="color: var(--theme-accent); font-size: 24px; font-weight: 600;"></span>
                         </div>
                     </div>
                 </div>
 
-                <div style="background: #2D2D2D; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
-                    <h3 style="font-size: 20px; color: #E0E0E0; font-weight:400; margin-bottom: 15px;">Данные доставки:</h3>
+                <div style="background: var(--theme-surface); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid var(--theme-border);">
+                    <h3 style="font-size: 20px; color: var(--theme-text); font-weight:400; margin-bottom: 15px;">Данные доставки:</h3>
                     <div style="margin-bottom: 10px;">
-                        <label style="color: #939393; font-size: 14px; display: block; margin-bottom: 5px;">Пункт выдачи:</label>
-                        <div id="pickupPointDisplay" style="color: #E0E0E0; font-size: 16px;"></div>
+                        <label style="color: var(--theme-muted); font-size: 14px; display: block; margin-bottom: 5px;">Пункт выдачи:</label>
+                        <div id="pickupPointDisplay" style="color: var(--theme-text); font-size: 16px;"></div>
                     </div>
                     <div>
-                        <label style="color: #939393; font-size: 14px; display: block; margin-bottom: 5px;">Получатель:</label>
-                        <div id="recipientNameDisplay" style="color: #E0E0E0; font-size: 16px;"></div>
+                        <label style="color: var(--theme-muted); font-size: 14px; display: block; margin-bottom: 5px;">Получатель:</label>
+                        <div id="recipientNameDisplay" style="color: var(--theme-text); font-size: 16px;"></div>
                     </div>
                 </div>
 
@@ -56,11 +56,11 @@
                     </span>
                 </label>
 
-                <button type="submit" style="width: 100%; padding: 20px; background: #FBFF83; color: #0D0D0D; border: none; border-radius: 15px; font-size: 18px; font-weight: 400; cursor: pointer; font-family: 'InterTight', sans-serif; transition: all 0.3s;">
+                <button type="submit" style="width: 100%; padding: 20px; background: var(--theme-accent); color: var(--theme-accent-contrast); border: none; border-radius: 15px; font-size: 18px; font-weight: 400; cursor: pointer; font-family: 'InterTight', sans-serif; transition: all 0.3s;">
                     Оформить заказ
                 </button>
 
-                <a href="<?php echo e(url('/cart')); ?>" style="display: block; text-align: center; margin-top: 15px; color: #939393; text-decoration: none; transition: color 0.3s;">
+                <a href="<?php echo e(url('/cart')); ?>" style="display: block; text-align: center; margin-top: 15px; color: var(--theme-muted); text-decoration: none; transition: color 0.3s;">
                     Вернуться в корзину
                 </a>
             </form>
@@ -73,10 +73,10 @@
             gap: 14px;
             align-items: center;
             margin-bottom: 20px;
-            background: #2D2D2D; 
+            background: var(--theme-surface); 
             padding: 20px; 
             border-radius: 15px; 
-            color: #E0E0E0;
+            color: var(--theme-text);
             cursor: pointer;
         }
 
@@ -92,14 +92,14 @@
     height: 20px;
     min-width: 20px;
     border-radius: 50%;
-    border: 1px solid #5D5D5D;
+    border: 1px solid var(--theme-border);
     background-color: transparent;
     transition: all 0.3s ease;
         }
 
         .checkout_sold_visibility input:checked + .checkout_sold_visibility_mark {
-                background-color: #FBFF83;
-    border-color: #FBFF83;
+                background-color: var(--theme-accent);
+    border-color: var(--theme-accent);
         }
 
         .checkout_sold_visibility input:checked + .checkout_sold_visibility_mark::after {
@@ -110,7 +110,7 @@
     top: 2px;
     width: 5px;
     height: 10px;
-    border: solid #000000;
+    border: solid var(--theme-accent-contrast);
     border-width: 0 2px 2px 0;
     transform: rotate(45deg);
     display: block;
@@ -126,7 +126,7 @@
 
         .checkout_sold_visibility small {
             display: block;
-            color: #AFAFAF;
+            color: var(--theme-muted);
             line-height: 1.35;
         }
     </style>    <script>
@@ -152,13 +152,13 @@
                 let total = 0;
                 selectedItems.forEach(item => {
                     total += parseFloat(item.price);
-                    itemsHtml += `<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #3D3D3D;">
+                    itemsHtml += `<div style="display: flex; align-items: center; gap: 15px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--theme-border);">
                         <img src="${item.img}" alt="${item.name}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px;">
                         <div style="flex: 1;">
-                            <div style="color: #E0E0E0; font-size: 16px; margin-bottom: 3px;">${item.name}</div>
-                            <div style="color: #939393; font-size: 14px;">${item.author_name}</div>
+                            <div style="color: var(--theme-text); font-size: 16px; margin-bottom: 3px;">${item.name}</div>
+                            <div style="color: var(--theme-muted); font-size: 14px;">${item.author_name}</div>
                         </div>
-                        <div style="color: #FBFF83; font-size: 18px; font-weight: 600;">${item.price.toLocaleString('ru-RU')} ₽</div>
+                        <div style="color: var(--theme-accent); font-size: 18px; font-weight: 600;">${item.price.toLocaleString('ru-RU')} ₽</div>
                     </div>`;
                 });
                 document.getElementById('orderItems').innerHTML = itemsHtml;

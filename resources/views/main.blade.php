@@ -11,7 +11,13 @@
                     <p class="hero-subtitle">Безграничное творческое <br> пространство для покупки и <br> продажи искусства</p>
                 </div>
                 <div class="hero-title">
-                    <img src="{{ asset('assets/images/banner/canvas.svg') }}" alt="">
+                    <img
+                        src="{{ asset('assets/images/banner/canvas.svg') }}"
+                        data-theme-image
+                        data-dark-src="{{ asset('assets/images/banner/canvas.svg') }}"
+                        data-light-src="{{ asset('assets/images/banner/canvas-light.svg') }}"
+                        alt=""
+                    >
                 </div>
             </div>
         </div>

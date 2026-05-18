@@ -11,6 +11,16 @@
             document.body.setAttribute('data-theme', theme);
         }
 
+        document.querySelectorAll('[data-theme-image]').forEach((image) => {
+            const nextSrc = theme === 'light'
+                ? image.dataset.lightSrc
+                : image.dataset.darkSrc;
+
+            if (nextSrc) {
+                image.src = nextSrc;
+            }
+        });
+
         document.querySelectorAll('[data-theme-toggle]').forEach((button) => {
             const isLight = theme === 'light';
             const label = button.querySelector('[data-theme-toggle-label]');

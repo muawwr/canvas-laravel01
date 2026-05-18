@@ -89,7 +89,7 @@
     --theme-placeholder: #5e5e5e;
     --theme-accent: #FBFF83;
     --theme-accent-contrast: #111111;
-    --theme-toggle-bg: rgba(22, 22, 22, 0.88);
+    --theme-toggle-bg:#222222;
     --theme-toggle-border: rgba(255, 255, 255, 0.14);
     --theme-shadow: 0 20px 45px rgba(0, 0, 0, 0.24);
     --theme-icon-filter: brightness(0) saturate(100%) invert(11%) sepia(5%) saturate(6334%) hue-rotate(347deg) brightness(91%) contrast(77%);;
@@ -212,8 +212,6 @@ img.p_d_a{
 
 }
 
-.nav-item.profile-toggle img,
-.mobile-menu-item.mobile-profile-toggle img,
 .nav-item img.profile-avatar,
 .mobile-menu-item img.profile-avatar {
     filter: none !important;
@@ -223,11 +221,9 @@ img.p_d_a{
     filter: brightness(0) saturate(100%) invert(6%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(95%) contrast(97%);
 }   
 
-.nav-item.profile-toggle.active img,
 .nav-item.active img.profile-avatar,
 .mobile-menu-item.active img.profile-avatar,
-.mobile-menu-item.mobile-profile-toggle.active img,
-.mobile-menu-item.mobile-profile-toggle img {
+.mobile-menu-item.mobile-profile-toggle.active img {
     filter: none !important;
 }
 
@@ -384,7 +380,7 @@ img.p_d_a{
 .hero-text {
     position: absolute;
     top: 0;
-    left: 0;
+    left: 0px;
     z-index: 2;
     max-width: 400px;
 }
@@ -399,8 +395,8 @@ img.p_d_a{
 
 .hero-banner {
     position: relative;
-    width: 100%;
-    height: 1800px;
+    width: 70%;
+    height: 1400px;
 left: 50%;
 transform: translateX(-50%);
 
@@ -446,7 +442,7 @@ transform: translateX(-50%);
 }
 
 .gallery{
-    margin-top: -400px;
+    margin-top: -200px;
 }
 .wrap{
     position: relative;
@@ -1508,10 +1504,9 @@ margin-left: 15px;
 
 }
 
-.gallery_page_link:hover,
+
 .gallery_page_number:hover {
     border-color: #FBFF83;
-    color: #FBFF83;
 }
 
 .gallery_page_number_active {
@@ -4106,7 +4101,7 @@ border-radius: 20px;
     color: #FBFF83;
 }
 .edit_btn_submit:hover img {
-    filter: brightness(0) saturate(100%) invert(99%) sepia(95%) saturate(1291%) hue-rotate(2deg) brightness(200%) contrast(90%) !important;
+    filter: brightness(0) saturate(100%) invert(99%) sepia(95%) saturate(1291%) hue-rotate(2deg) brightness(200%) contrast(90%) ;
 }
 
 .edit_btn_submit img {
@@ -6430,7 +6425,7 @@ margin-bottom: 0px;
     gap: 10px;
     min-height: 58px;
     padding: 10px 14px;
-    border: 1px solid var(--theme-toggle-border);
+    border: 1px solid var(--theme-toggle-bg);
     border-radius: 999px;
     background: var(--theme-toggle-bg);
     color: var(--theme-text);
@@ -6534,21 +6529,20 @@ body[data-theme="light"] .profile-btn,
 body[data-theme="light"] .artist-card,
 body[data-theme="light"] .notification_card,
 body[data-theme="light"] .blocked_card,
-body[data-theme="light"] .admin_panel,
 body[data-theme="light"] .admin_table tbody td,
 body[data-theme="light"] .categories_add,
-body[data-theme="light"] .category_item,
+
 body[data-theme="light"] .cart_item,
 body[data-theme="light"] .favorite_item,
 body[data-theme="light"] .one_product_description,
 body[data-theme="light"] .one_product_buy,
 body[data-theme="light"] .one_product_info_card,
-body[data-theme="light"] .auction_lot_card,
+
 body[data-theme="light"] .auction_side_stats,
 body[data-theme="light"] .auction_side_bid_form,
 
 body[data-theme="light"] .notifications_card,
-body[data-theme="light"] .custom_select_trigger,
+
 body[data-theme="light"] .custom_select_dropdown,
 body[data-theme="light"] .add_modal,
 body[data-theme="light"] .edit_modal,
@@ -6558,6 +6552,11 @@ body[data-theme="light"] .form_logo {
     border-color: var(--theme-border);
 }
 
+body[data-theme="light"] .auction_lot_card{
+    background-color: var(--theme-surface) !important;
+    color: var(--theme-text);
+    border-color: #FBFF83;
+}
 body[data-theme="light"] .footer {
     background-color: #F1EADD;
 }
@@ -6604,7 +6603,6 @@ body[data-theme="light"] .blocked_timer_box span,
 body[data-theme="light"] .blocked_logout_link,
 body[data-theme="light"] .admin_title,
 body[data-theme="light"] .admin_subtitle,
-body[data-theme="light"] .admin_table,
 body[data-theme="light"] .admin_table thead th,
 body[data-theme="light"] .admin_tab,
 body[data-theme="light"] .category_label,
@@ -6642,8 +6640,6 @@ body[data-theme="light"] img.p_d_a {
     filter: var(--theme-icon-filter) !important;
 }
 
-body[data-theme="light"] .nav-item.profile-toggle img,
-body[data-theme="light"] .mobile-menu-item.mobile-profile-toggle img,
 body[data-theme="light"] .nav-item img.profile-avatar,
 body[data-theme="light"] .mobile-menu-item img.profile-avatar,
 body[data-theme="light"] .profile-avatar {
@@ -6665,11 +6661,9 @@ body[data-theme="light"] .mobile-menu-item-active img {
     filter: var(--theme-icon-active-filter) !important;
 }
 
-body[data-theme="light"] .nav-item.profile-toggle.active img,
 body[data-theme="light"] .nav-item.active img.profile-avatar,
 body[data-theme="light"] .mobile-menu-item.active img.profile-avatar,
-body[data-theme="light"] .mobile-menu-item.mobile-profile-toggle.active img,
-body[data-theme="light"] .mobile-menu-item.mobile-profile-toggle img {
+body[data-theme="light"] .mobile-menu-item.mobile-profile-toggle.active img {
     filter: none !important;
 }
 
@@ -6700,7 +6694,6 @@ body[data-theme="light"] .link_notification_gallery .notification-dot {
 body[data-theme="light"] .success_modal,
 body[data-theme="light"] .auction_confirm_modal,
 body[data-theme="light"] .delete_modal,
-body[data-theme="light"] .admin_preview_modal,
 body[data-theme="light"] .admin_preview_caption,
 body[data-theme="light"] .admin_reject_dialog {
     background: var(--theme-surface) !important;
@@ -7335,3 +7328,106 @@ border-color: #1f1a0f;
  body[data-theme="light"] .auction_side_buy strong{
 color: #1f1a0f;
  }
+ body[data-theme="light"] .filter-option.active:not(.radio-option):not(.checkbox-option)::before{
+color: #1f1a0f;
+}
+
+body[data-theme="light"] .fav.active{
+    background-color: #CBBFB1;
+}
+
+body[data-theme="light"] .fav.active img
+
+ {
+             filter: brightness(0) saturate(100%) invert(11%) sepia(5%) saturate(6334%) hue-rotate(347deg) brightness(91%) contrast(77%);
+
+ }
+
+body[data-theme="light"]  .admin_btn_decline img{
+filter: brightness(0) saturate(100%) invert(34%) sepia(41%) saturate(5725%) hue-rotate(342deg) brightness(100%) contrast(100%);
+ }
+body[data-theme="light"]  .admin_tabs,
+body[data-theme="light"]  .admin_tab{
+background-color:  #fffaf2;
+ }
+
+body[data-theme="light"] .edit_product_btn{
+background-color:  #eadfce;
+border-color: #eadfce;
+color: #1f1a0f;
+
+}
+
+body[data-theme="light"] .edit_product_btn:hover{
+background-color:  #CBBFB1;
+border-color: #CBBFB1;
+color: #1f1a0f;
+}
+
+body[data-theme="light"] .delete_product_btn{
+background-color: #E0A0A0;
+border-color: #E0A0A0;
+
+}
+
+body[data-theme="light"] .delete_btn_back:hover{
+background-color:  #CBBFB1;
+border-color: #CBBFB1;
+color: #1f1a0f;
+}
+
+body[data-theme="light"] .delete_btn_back img{
+             filter: brightness(0) saturate(100%) invert(11%) sepia(5%) saturate(6334%) hue-rotate(347deg) brightness(91%) contrast(77%);
+
+}
+
+body[data-theme="light"] .edit_container {
+    background-color: #fffaf2;
+}
+
+body[data-theme="light"] .edit_title,
+body[data-theme="light"] .edit_subtitle,
+body[data-theme="light"] .edit_label,
+body[data-theme="light"] .edit_title,
+body[data-theme="light"] .edit_title
+ {
+    color: #1f1a0f;
+}
+
+body[data-theme="light"] .edit_input,
+body[data-theme="light"]  .upload_input,
+body[data-theme="light"]  .edit_textarea,
+body[data-theme="light"] .custom_select_trigger {
+    background-color: #eadfce;
+    border-color: #eadfce;
+    color: #1f1a0f;
+}
+
+body[data-theme="light"] .edit_btn_cancel{
+    color: #1f1a0f;
+    border-color: #1f1a0f;
+}
+
+body[data-theme="light"] .edit_upload_overlay{
+    background-color: #eadfce09;
+    border-color: #eadfce;
+    color: #1f1a0f;
+}
+body[data-theme="light"] .edit_upload_hint{
+    color: #1f1a0f;
+}
+
+body[data-theme="light"] .edit_btn_submit:hover{
+    background-color: #eadfce09;
+    border-color: #eadfce;
+    color: #1f1a0f;
+}
+
+body[data-theme="light"] .edit_btn_submit:hover img{
+                         filter: brightness(0) saturate(100%) invert(11%) sepia(5%) saturate(6334%) hue-rotate(347deg) brightness(91%) contrast(77%);
+
+}
+
+body[data-theme="light"] .edit_btn_cancel:hover{
+    background-color: #CBBFB1;
+}

@@ -18,7 +18,7 @@
     <div class="gallery-grid-masonry">
         @foreach($favorites as $fav)
         <div class="gallery-card" data-picture-id="{{ $fav->picture_id }}">
-            <a href="{{ url('/picture/' . $fav->picture_id) }}">
+            <a href="{{ url('/picture/' . $fav->picture_id . '?return_to=' . urlencode(request()->fullUrl())) }}">
                 <img src="{{ asset($fav->picture->img) }}" alt="{{ $fav->picture->name }}">
             </a>
             <button class="fav_remove_btn" onclick="removeFav({{ $fav->picture_id }})">

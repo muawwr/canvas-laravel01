@@ -45,7 +45,7 @@
                         <button type="button" class="search-toggle-btn" id="gallerySearchToggle" aria-label="Открыть поиск" aria-expanded="false">
                             <img src="{{ asset('assets/images/headerNew/Search.svg') }}" alt="Поиск" class="search-icon-right">
                         </button>
-                        <input type="text" id="searchInput" placeholder="Поиск">
+                        <input type="text" id="searchInput" placeholder="Поиск" value="{{ request('search', '') }}">
                     </div>
                 </div>
                 
@@ -128,7 +128,7 @@
                             </label>
                             @foreach($genres as $genre)
                             <label class="filter-option">
-                                <input type="checkbox" class="filter-checkbox" data-filter-type="genre" data-filter-id="{{ $genre->id }}" style="display: none;">
+                                <input type="checkbox" class="filter-checkbox" data-filter-type="genre" data-filter-id="{{ $genre->id }}" style="display: none;" {{ (string) request('genre_id') === (string) $genre->id ? 'checked' : '' }}>
                                 <span>{{ $genre->name }}</span>
                             </label>
                             @endforeach
@@ -147,7 +147,7 @@
                             <div class="filter-column">
                                 @foreach($column1 as $style)
                                 <label class="filter-option">
-                                    <input type="checkbox" class="filter-checkbox" data-filter-type="style" data-filter-id="{{ $style->id }}" style="display: none;">
+                                    <input type="checkbox" class="filter-checkbox" data-filter-type="style" data-filter-id="{{ $style->id }}" style="display: none;" {{ (string) request('style_id') === (string) $style->id ? 'checked' : '' }}>
                                     <span>{{ $style->name }}</span>
                                 </label>
                                 @endforeach
@@ -155,7 +155,7 @@
                             <div class="filter-column">
                                 @foreach($column2 as $style)
                                 <label class="filter-option">
-                                    <input type="checkbox" class="filter-checkbox" data-filter-type="style" data-filter-id="{{ $style->id }}" style="display: none;">
+                                    <input type="checkbox" class="filter-checkbox" data-filter-type="style" data-filter-id="{{ $style->id }}" style="display: none;" {{ (string) request('style_id') === (string) $style->id ? 'checked' : '' }}>
                                     <span>{{ $style->name }}</span>
                                 </label>
                                 @endforeach
@@ -169,7 +169,7 @@
                         <div class="filter-options">
                             @foreach($eras as $era)
                             <label class="filter-option">
-                                <input type="checkbox" class="filter-checkbox" data-filter-type="era" data-filter-id="{{ $era->id }}" style="display: none;">
+                                <input type="checkbox" class="filter-checkbox" data-filter-type="era" data-filter-id="{{ $era->id }}" style="display: none;" {{ (string) request('era_id') === (string) $era->id ? 'checked' : '' }}>
                                 <span>{{ $era->name }}</span>
                             </label>
                             @endforeach
@@ -181,19 +181,19 @@
                         <div class="filter-title_line"></div>
                         <div class="filter-options back">
                             <label class="filter-option radio-option">
-                                <input type="radio" name="price-sort" value="price-asc">
+                                <input type="radio" name="price-sort" value="price-asc" {{ request('sort') === 'price_asc' ? 'checked' : '' }}>
                                 <span>Цена ↗</span>
                             </label>
                             <label class="filter-option radio-option">
-                                <input type="radio" name="price-sort" value="price-desc">
+                                <input type="radio" name="price-sort" value="price-desc" {{ request('sort') === 'price_desc' ? 'checked' : '' }}>
                                 <span>Цена ↘</span>
                             </label>
                             <label class="filter-option radio-option">
-                                <input type="radio" name="additional-sort" value="popularity">
+                                <input type="radio" name="additional-sort" value="popularity" {{ request('sort') === 'popular' ? 'checked' : '' }}>
                                 <span>Популярность</span>
                             </label>
                             <label class="filter-option radio-option">
-                                <input type="radio" name="additional-sort" value="newest">
+                                <input type="radio" name="additional-sort" value="newest" {{ request('sort', 'newest') === 'newest' ? 'checked' : '' }}>
                                 <span>Новизна</span>
                             </label>
                         </div>
@@ -224,7 +224,7 @@
                          data-price="{{ $picture->price }}"
                          data-likes="{{ $picture->favorite_entries_count ?? 0 }}"
                          data-created="{{ strtotime($picture->created_at) }}">
-                        <a href="{{ url('/picture/' . $picture->id) }}">
+                        <a href="{{ url('/picture/' . $picture->id . '?return_to=' . urlencode(request()->fullUrl())) }}">
                             <img src="{{ asset($picture->img) }}" alt="{{ $picture->name }}">
                             @if($picture->is_sold > 0)
                                 <div class="sold-badge">
@@ -353,63 +353,167 @@
     <script src="{{ asset('script.js') }}"></script>
     
     <script>
-    // ======== ФИЛЬТРАЦИЯ И ПОИСК В ГАЛЕРЕЕ ========
     (function() {
         'use strict';
-        
-        const filterState = {
-            genres: new Set(),
-            styles: new Set(),
-            eras: new Set(),
-            searchQuery: '',
-            priceSort: null,
-            additionalSort: null
-        };
-        
+
         const searchInput = document.getElementById('searchInput');
         const searchBar = document.getElementById('gallerySearchBar');
         const searchToggle = document.getElementById('gallerySearchToggle');
-        const galleryGrid = document.getElementById('galleryGrid');
-        const noResultsMessage = document.getElementById('noResultsMessage');
-        const filterCheckboxes = document.querySelectorAll('.filter-checkbox');
-        const priceSortRadios = document.querySelectorAll('input[name="price-sort"]');
-        const additionalSortRadios = document.querySelectorAll('input[name="additional-sort"]');
+        const filterCheckboxes = Array.from(document.querySelectorAll('.filter-checkbox'));
+        const priceSortRadios = Array.from(document.querySelectorAll('input[name="price-sort"]'));
+        const additionalSortRadios = Array.from(document.querySelectorAll('input[name="additional-sort"]'));
         const sortOptionLabels = document.querySelectorAll('.radio-option');
         const resetAllBtn = document.getElementById('resetAllFiltersBtn');
-        const initialCards = galleryGrid ? Array.from(galleryGrid.querySelectorAll('.gallery-card')) : [];
+        let searchDebounce = null;
 
-        initialCards.forEach((card, index) => {
-            card.dataset.initialOrder = index;
-        });
-        
-        if (searchInput) {
-            searchInput.addEventListener('input', function() {
-                filterState.searchQuery = this.value.toLowerCase().trim();
-                applyFilters();
+        function setSearchOpen(isOpen) {
+            if (!searchBar || !searchToggle) {
+                return;
+            }
+
+            searchBar.classList.toggle('search-bar-open', isOpen);
+            searchBar.classList.toggle('search-bar-collapsed', !isOpen);
+            searchToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+
+            if (isOpen && searchInput) {
+                window.requestAnimationFrame(() => searchInput.focus());
+            }
+        }
+
+        function getSelectedSort() {
+            const checkedPriceSort = document.querySelector('input[name="price-sort"]:checked');
+            const checkedAdditionalSort = document.querySelector('input[name="additional-sort"]:checked');
+
+            if (checkedPriceSort?.value === 'price-asc') return 'price_asc';
+            if (checkedPriceSort?.value === 'price-desc') return 'price_desc';
+            if (checkedAdditionalSort?.value === 'popularity') return 'popular';
+            if (checkedAdditionalSort?.value === 'newest') return 'newest';
+
+            return null;
+        }
+
+        function buildGalleryUrl({ resetPage = true } = {}) {
+            const params = new URLSearchParams(window.location.search);
+
+            const checkedGenre = document.querySelector('.filter-checkbox[data-filter-type="genre"]:checked');
+            const checkedStyle = document.querySelector('.filter-checkbox[data-filter-type="style"]:checked');
+            const checkedEra = document.querySelector('.filter-checkbox[data-filter-type="era"]:checked');
+            const searchValue = searchInput ? searchInput.value.trim() : '';
+            const sortValue = getSelectedSort();
+
+            checkedGenre ? params.set('genre_id', checkedGenre.dataset.filterId) : params.delete('genre_id');
+            checkedStyle ? params.set('style_id', checkedStyle.dataset.filterId) : params.delete('style_id');
+            checkedEra ? params.set('era_id', checkedEra.dataset.filterId) : params.delete('era_id');
+            searchValue ? params.set('search', searchValue) : params.delete('search');
+            sortValue ? params.set('sort', sortValue) : params.delete('sort');
+
+            if (resetPage) {
+                params.delete('page');
+            }
+
+            const query = params.toString();
+            return query ? `${window.location.pathname}?${query}` : window.location.pathname;
+        }
+
+        function submitGalleryFilters(options) {
+            window.location.href = buildGalleryUrl(options);
+        }
+
+        function updateSortOptionStyles() {
+            sortOptionLabels.forEach((label) => {
+                const input = label.querySelector('input[type="radio"]');
+                label.classList.toggle('active', !!input?.checked);
             });
         }
 
-        if (searchToggle && searchBar && searchInput) {
-            const setSearchOpen = (isOpen) => {
-                searchBar.classList.toggle('search-bar-open', isOpen);
-                searchBar.classList.toggle('search-bar-collapsed', !isOpen);
-                searchToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        function activateCheckedOptions() {
+            document.querySelectorAll('.filter-option').forEach((option) => {
+                const input = option.querySelector('input');
+                option.classList.toggle('active', !!input?.checked);
+            });
+        }
 
-                if (isOpen) {
-                    window.requestAnimationFrame(() => searchInput.focus());
+        filterCheckboxes.forEach((checkbox) => {
+            checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    document.querySelectorAll(`.filter-checkbox[data-filter-type="${this.dataset.filterType}"]`).forEach((item) => {
+                        if (item !== this) {
+                            item.checked = false;
+                            item.closest('.filter-option')?.classList.remove('active');
+                        }
+                    });
                 }
-            };
 
-            searchToggle.addEventListener('click', function() {
-                const isOpen = !searchBar.classList.contains('search-bar-open');
-                setSearchOpen(isOpen);
+                this.closest('.filter-option')?.classList.toggle('active', this.checked);
+                submitGalleryFilters();
+            });
+        });
+
+        document.querySelectorAll('[data-filter-reset="genre"]').forEach((label) => {
+            label.addEventListener('click', function(event) {
+                event.preventDefault();
+                document.querySelectorAll('.filter-checkbox[data-filter-type="genre"]').forEach((item) => {
+                    item.checked = false;
+                    item.closest('.filter-option')?.classList.remove('active');
+                });
+                submitGalleryFilters();
+            });
+        });
+
+        sortOptionLabels.forEach((label) => {
+            label.addEventListener('click', function(event) {
+                event.preventDefault();
+
+                const input = this.querySelector('input[type="radio"]');
+                if (!input) {
+                    return;
+                }
+
+                const wasChecked = input.checked;
+                document.querySelectorAll(`input[name="${input.name}"]`).forEach((radio) => {
+                    radio.checked = false;
+                });
+
+                if (!wasChecked) {
+                    input.checked = true;
+                }
+
+                updateSortOptionStyles();
+                submitGalleryFilters();
+            });
+        });
+
+        if (resetAllBtn) {
+            resetAllBtn.addEventListener('click', function(event) {
+                event.preventDefault();
+                window.location.href = window.location.pathname;
+            });
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                window.clearTimeout(searchDebounce);
+                searchDebounce = window.setTimeout(() => submitGalleryFilters(), 350);
             });
 
             searchInput.addEventListener('keydown', function(event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    window.clearTimeout(searchDebounce);
+                    submitGalleryFilters();
+                }
+
                 if (event.key === 'Escape') {
                     setSearchOpen(false);
                     searchInput.blur();
                 }
+            });
+        }
+
+        if (searchToggle && searchBar) {
+            searchToggle.addEventListener('click', function() {
+                const isOpen = !searchBar.classList.contains('search-bar-open');
+                setSearchOpen(isOpen);
             });
 
             document.addEventListener('click', function(event) {
@@ -418,197 +522,10 @@
                 }
             });
         }
-        
-        filterCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                const filterType = this.dataset.filterType;
-                const filterId = this.dataset.filterId;
-                
-                if (this.checked) filterState[filterType + 's'].add(filterId);
-                else filterState[filterType + 's'].delete(filterId);
-                
-                applyFilters();
-            });
-        });
-        
-        document.querySelectorAll('[data-filter-reset="genre"]').forEach(label => {
-            label.addEventListener('click', function(e) {
-                e.preventDefault();
-                resetGenreFilters();
-            });
-        });
-        
-        function syncSortState() {
-            const checkedPriceSort = document.querySelector('input[name="price-sort"]:checked');
-            const checkedAdditionalSort = document.querySelector('input[name="additional-sort"]:checked');
 
-            filterState.priceSort = checkedPriceSort
-                ? (checkedPriceSort.value === 'price-asc' ? 'asc' : 'desc')
-                : null;
-            filterState.additionalSort = checkedAdditionalSort ? checkedAdditionalSort.value : null;
-
-            applyFilters();
-        }
-
-        function updateSortOptionStyles() {
-            sortOptionLabels.forEach(label => {
-                const input = label.querySelector('input[type="radio"]');
-                if (!input) {
-                    return;
-                }
-
-                label.classList.toggle('active', input.checked);
-            });
-        }
-
-        priceSortRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                syncSortState();
-                updateSortOptionStyles();
-            });
-        });
-
-        additionalSortRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                syncSortState();
-                updateSortOptionStyles();
-            });
-        });
-
-        sortOptionLabels.forEach(label => {
-            label.addEventListener('click', function(event) {
-                event.preventDefault();
-                event.stopPropagation();
-
-                const input = this.querySelector('input[type="radio"]');
-                if (!input) {
-                    return;
-                }
-
-                if (input.checked) {
-                    input.checked = false;
-                    syncSortState();
-                    updateSortOptionStyles();
-                    return;
-                }
-
-                document.querySelectorAll(`input[name="${input.name}"]`).forEach(radio => {
-                    radio.checked = false;
-                });
-
-                input.checked = true;
-                syncSortState();
-                updateSortOptionStyles();
-            }, true);
-        });
-        
-        if (resetAllBtn) {
-            resetAllBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                resetAllFilters();
-            });
-        }
-        
-        function resetAllFilters() {
-            filterState.genres.clear();
-            filterState.styles.clear();
-            filterState.eras.clear();
-            filterState.searchQuery = '';
-            filterState.priceSort = null;
-            filterState.additionalSort = null;
-            
-            filterCheckboxes.forEach(cb => cb.checked = false);
-            priceSortRadios.forEach(radio => radio.checked = false);
-            additionalSortRadios.forEach(radio => radio.checked = false);
-            
-            document.querySelectorAll('.filter-option').forEach(option => option.classList.remove('active'));
-            if (searchInput) searchInput.value = '';
-
-            updateSortOptionStyles();
-            
-            applyFilters();
-        }
-        
-        function resetGenreFilters() {
-            filterState.genres.clear();
-            document.querySelectorAll('[data-filter-type="genre"]').forEach(cb => {
-                cb.checked = false;
-                const parentLabel = cb.closest('.filter-option');
-                if (parentLabel) parentLabel.classList.remove('active');
-            });
-            applyFilters();
-        }
-        
-        function applyFilters() {
-            if(!galleryGrid) return;
-            const cards = Array.from(galleryGrid.querySelectorAll('.gallery-card'));
-            let visibleCount = 0;
-            
-            cards.forEach(card => {
-                const genreId = card.dataset.genreId;
-                const styleId = card.dataset.styleId;
-                const eraId = card.dataset.eraId;
-                const name = card.dataset.name || '';
-                const author = card.dataset.author || '';
-                
-                let shouldShow = true;
-                if (filterState.genres.size > 0 && !filterState.genres.has(genreId)) shouldShow = false;
-                if (filterState.styles.size > 0 && !filterState.styles.has(styleId)) shouldShow = false;
-                if (filterState.eras.size > 0 && !filterState.eras.has(eraId)) shouldShow = false;
-                if (filterState.searchQuery) {
-                    const matchesSearch = name.includes(filterState.searchQuery) || author.includes(filterState.searchQuery);
-                    if (!matchesSearch) shouldShow = false;
-                }
-                
-                if (shouldShow) {
-                    card.style.display = '';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-            
-            if (filterState.priceSort || filterState.additionalSort) {
-                sortCards(cards.filter(card => card.style.display !== 'none'));
-            } else {
-                restoreDefaultOrder(cards);
-            }
-            
-            if (visibleCount === 0) {
-                if(noResultsMessage) noResultsMessage.style.display = 'block';
-                galleryGrid.style.display = 'none';
-            } else {
-                if(noResultsMessage) noResultsMessage.style.display = 'none';
-                galleryGrid.style.display = '';
-            }
-        }
-        
-        function sortCards(visibleCards) {
-            visibleCards.sort((a, b) => {
-                let result = 0;
-                if (filterState.additionalSort === 'popularity') {
-                    result = (parseInt(b.dataset.likes) || 0) - (parseInt(a.dataset.likes) || 0);
-                } else if (filterState.additionalSort === 'newest') {
-                    result = (parseInt(b.dataset.created) || 0) - (parseInt(a.dataset.created) || 0);
-                }
-                if (result === 0 && filterState.priceSort) {
-                    const priceA = parseInt(a.dataset.price) || 0;
-                    const priceB = parseInt(b.dataset.price) || 0;
-                    result = filterState.priceSort === 'asc' ? priceA - priceB : priceB - priceA;
-                }
-                return result;
-            });
-            visibleCards.forEach(card => galleryGrid.appendChild(card));
-        }
-
-        function restoreDefaultOrder(cards) {
-            cards
-                .slice()
-                .sort((a, b) => (parseInt(a.dataset.initialOrder) || 0) - (parseInt(b.dataset.initialOrder) || 0))
-                .forEach(card => galleryGrid.appendChild(card));
-        }
-
+        activateCheckedOptions();
         updateSortOptionStyles();
+        setSearchOpen(!!(searchInput && searchInput.value.trim()));
     })();
     </script>
     @include('partials.theme-toggle')

@@ -18,7 +18,7 @@
     <div class="gallery-grid-masonry">
         <?php $__currentLoopData = $favorites; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $fav): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
         <div class="gallery-card" data-picture-id="<?php echo e($fav->picture_id); ?>">
-            <a href="<?php echo e(url('/picture/' . $fav->picture_id)); ?>">
+            <a href="<?php echo e(url('/picture/' . $fav->picture_id . '?return_to=' . urlencode(request()->fullUrl()))); ?>">
                 <img src="<?php echo e(asset($fav->picture->img)); ?>" alt="<?php echo e($fav->picture->name); ?>">
             </a>
             <button class="fav_remove_btn" onclick="removeFav(<?php echo e($fav->picture_id); ?>)">

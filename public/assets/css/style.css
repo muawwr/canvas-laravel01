@@ -1435,6 +1435,75 @@ margin-left: 15px;
     transition: transform 0.3s ease;
 }
 
+.product_image_frame,
+.product_magnifier_lens {
+    position: relative;
+}
+
+.product_image_frame {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    line-height: 0;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.product_image_frame > img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 677px;
+    object-fit: contain;
+}
+
+.product_image_frame::after {
+    content: attr(data-watermark);
+    position: absolute;
+    right: 18px;
+    bottom: 18px;
+    z-index: 2;
+    max-width: calc(100% - 36px);
+    padding: 7px 12px;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+    background: rgba(12, 12, 12, 0.18);
+    backdrop-filter: blur(4px);
+    color: rgba(255, 255, 255, 0.56);
+    font-family: 'Neue Haas Grotesk', sans-serif;
+    font-size: clamp(11px, 1vw, 14px);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: lowercase;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.65);
+    transform: rotate(-5deg);
+    mix-blend-mode: screen;
+    white-space: nowrap;
+}
+
+.product_magnifier_lens::after {
+    content: "canvas.gallery";
+    position: absolute;
+    right: 22px;
+    bottom: 32px;
+    z-index: 2;
+    pointer-events: none;
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.32);
+    font-family: 'Neue Haas Grotesk', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.65);
+    transform: rotate(-8deg);
+    mix-blend-mode: screen;
+}
+
+.sold-badge {
+    z-index: 3;
+}
+
 .card-author {
     display: flex;
     align-items: center;
@@ -1631,7 +1700,7 @@ a.btn_back{
 
 .product_image img{
     border-radius: 15px;
-    width: 100%;
+    max-width: 100%;
     height: auto;
     max-height: 677px;
     object-fit: contain;
@@ -3565,6 +3634,7 @@ border-radius: 20px;
 .auction_lot_content {
     min-width: 0;
     justify-content: space-between;
+    width: 65%;
 }
 
 .auction_lot_top {

@@ -2,6 +2,23 @@
 
 <?php $__env->startSection('content'); ?>
 
+<?php
+    $auctionFromPicturePayload = $auctionFromPicture ? [
+        'id' => $auctionFromPicture->id,
+        'img' => asset($auctionFromPicture->img),
+        'width' => $auctionFromPicture->width,
+        'height' => $auctionFromPicture->height,
+        'name' => $auctionFromPicture->name,
+        'technique' => $auctionFromPicture->technique,
+        'year' => $auctionFromPicture->year,
+        'description' => $auctionFromPicture->description,
+        'genre_id' => $auctionFromPicture->genre_id,
+        'style_id' => $auctionFromPicture->style_id,
+        'era_id' => $auctionFromPicture->era_id,
+        'price' => $auctionFromPicture->price,
+    ] : null;
+?>
+
 <div class="add_steps">
     <div class="add_step active" data-step-indicator="1">
         <span class="step_number">1</span>
@@ -21,7 +38,7 @@
     <div class="step_line end" data-step-line="4"></div>
 </div>
 
-<main class="add_main container" data-managed-add-page="custom">
+<main class="add_main container" data-managed-add-page="custom" <?php if($auctionFromPicture): ?> data-auction-conversion="true" <?php endif; ?>>
     <div class="add_modal active" data-step="1">
         <div class="add_modal_content">
             <h1 class="add_title">Загрузка картины</h1>
@@ -183,16 +200,16 @@
 
     <div class="add_modal" data-step="4">
         <div class="add_modal_content">
-            <h1 class="add_title">Расчет стоимости</h1>
-            <p class="add_subtitle">Выберите формат размещения и заполните данные о цене</p>
+            <h1 class="add_title"><?php echo e($auctionFromPicture ? 'Добавление в аукцион' : 'Расчет стоимости'); ?></h1>
+            <p class="add_subtitle"><?php echo e($auctionFromPicture ? 'Заполните ценовые значения для аукциона. Данные картины уже сохранены.' : 'Выберите формат размещения и заполните данные о цене'); ?></p>
             <div class="add_line"></div>
 
             <div class="listing_tabs" role="tablist" aria-label="Формат размещения">
-                <button class="listing_tab active" type="button" data-listing-type="gallery">Продажа в галерее</button>
-                <button class="listing_tab" type="button" data-listing-type="auction">Аукцион</button>
+                <button class="listing_tab <?php echo e($auctionFromPicture ? 'disabled' : 'active'); ?>" type="button" data-listing-type="gallery" <?php echo e($auctionFromPicture ? 'disabled' : ''); ?>>Продажа в галерее</button>
+                <button class="listing_tab <?php echo e($auctionFromPicture ? 'active' : ''); ?>" type="button" data-listing-type="auction">Аукцион</button>
             </div>
 
-            <div class="listing_panel active" data-listing-panel="gallery">
+            <div class="listing_panel <?php echo e($auctionFromPicture ? '' : 'active'); ?>" data-listing-panel="gallery">
                 <div class="add_section">
                     <div class="add_price_header">
                         <label class="add_label" for="priceYouGet">Цена, ₽</label>
@@ -211,7 +228,7 @@
                 </div>
             </div>
 
-            <div class="listing_panel" data-listing-panel="auction">
+            <div class="listing_panel <?php echo e($auctionFromPicture ? 'active' : ''); ?>" data-listing-panel="auction">
                 <div class="add_section">
                     <div class="add_price_header">
                         <label class="add_label" for="auctionStartPrice">Стартовая цена, ₽</label>
@@ -257,7 +274,12 @@
             </div>
 
             <div class="add_buttons">
-                <button class="add_btn add_btn_back" type="button" data-prev="3">
+                <?php if($auctionFromPicture): ?>
+                    <button class="add_btn add_btn_cancel" type="button" id="cancelAuctionConversion">
+                        Отмена
+                    </button>
+                <?php endif; ?>
+                <button class="add_btn add_btn_back" type="button" data-prev="3" <?php if($auctionFromPicture): ?> style="display: none;" disabled <?php endif; ?>>
                     <img src="<?php echo e(asset('assets/images/add/Left.svg')); ?>" alt="Back">
                     Назад
                 </button>
@@ -345,6 +367,12 @@
     color: #0D0D0D;
 }
 
+.listing_tab:disabled,
+.listing_tab.disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
 .listing_panel {
     display: none;
 }
@@ -359,13 +387,16 @@
     const currentYear = new Date().getFullYear();
     const commissionRate = 0.07;
     const addPictureUrl = "<?php echo e(url('/api/picture/add')); ?>";
+    const galleryToAuctionUrl = "<?php echo e(url('/api/picture/gallery-to-auction')); ?>";
     const accountUrl = "<?php echo e(url('/account')); ?>";
+    const auctionFromPicture = <?php echo json_encode($auctionFromPicturePayload, 15, 512) ?>;
+    const isAuctionConversion = Boolean(auctionFromPicture);
     const formState = {
         image: null,
-        listing_type: 'gallery',
-        genre_id: Number(document.getElementById('genreId')?.value || 0),
-        style_id: Number(document.getElementById('styleId')?.value || 0),
-        era_id: Number(document.getElementById('eraId')?.value || 0),
+        listing_type: isAuctionConversion ? 'auction' : 'gallery',
+        genre_id: Number(auctionFromPicture?.genre_id || document.getElementById('genreId')?.value || 0),
+        style_id: Number(auctionFromPicture?.style_id || document.getElementById('styleId')?.value || 0),
+        era_id: Number(auctionFromPicture?.era_id || document.getElementById('eraId')?.value || 0),
     };
 
     const modals = Array.from(document.querySelectorAll('.add_modal'));
@@ -399,6 +430,28 @@
         description: document.getElementById('pictureDescription'),
         agreeTerms: document.getElementById('agreeTerms'),
     };
+
+    if (isAuctionConversion) {
+        fields.width.value = auctionFromPicture.width || '';
+        fields.height.value = auctionFromPicture.height || '';
+        fields.name.value = auctionFromPicture.name || '';
+        fields.technique.value = auctionFromPicture.technique || '';
+        fields.year.value = auctionFromPicture.year || '';
+        fields.description.value = auctionFromPicture.description || '';
+
+        document.getElementById('genreId').value = auctionFromPicture.genre_id || '';
+        document.getElementById('styleId').value = auctionFromPicture.style_id || '';
+        document.getElementById('eraId').value = auctionFromPicture.era_id || '';
+
+        if (auctionFromPicture.price) {
+            auctionStartPrice.value = auctionFromPicture.price;
+        }
+
+        uploadArea.classList.add('uploaded');
+        uploadPlaceholder.style.display = 'none';
+        uploadPreview.style.display = 'block';
+        uploadPreview.src = auctionFromPicture.img;
+    }
 
     function clearInvalidState() {
         document.querySelectorAll('.field_invalid').forEach((element) => {
@@ -674,6 +727,47 @@
             return;
         }
 
+        if (isAuctionConversion) {
+            const formData = new FormData();
+            formData.append('picture_id', auctionFromPicture.id);
+            formData.append('auction_start_price', auctionStartPrice.value);
+            formData.append('auction_min_step', auctionMinStep.value);
+            formData.append('auction_buyout_price', auctionBuyoutPrice.value);
+            formData.append('auction_duration_hours', auctionDurationHours.value);
+
+            submitButton.disabled = true;
+            submitButton.textContent = 'Отправка...';
+
+            try {
+                const response = await fetch(galleryToAuctionUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'Accept': 'application/json',
+                    },
+                });
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    markInvalid(null, 'agreeTermsError', result.message || 'Не удалось добавить картину в аукцион');
+                    submitButton.disabled = false;
+                    updateSubmitText();
+                    return;
+                }
+
+                successTitle.innerHTML = 'Ваша картина будет выставлена<br>на аукцион после модерации';
+                successModal.classList.add('show');
+            } catch (error) {
+                markInvalid(null, 'agreeTermsError', 'Ошибка сервера. Попробуйте еще раз.');
+                submitButton.disabled = false;
+                updateSubmitText();
+            }
+
+            return;
+        }
+
         const formData = new FormData();
         formData.append('image', formState.image);
         formData.append('width', fields.width.value);
@@ -737,6 +831,10 @@
     }
 
     function setListingType(type) {
+        if (isAuctionConversion && type !== 'auction') {
+            return;
+        }
+
         formState.listing_type = type;
 
         listingTabs.forEach((tab) => {
@@ -775,6 +873,10 @@
 
     document.getElementById('cancelAdd').addEventListener('click', () => {
         window.location.href = accountUrl;
+    });
+
+    document.getElementById('cancelAuctionConversion')?.addEventListener('click', () => {
+        window.location.href = `/picture/${auctionFromPicture.id}`;
     });
 
     imageUpload.addEventListener('change', (event) => handleImage(event.target.files[0]));
@@ -900,8 +1002,14 @@
         window.location.href = accountUrl;
     });
 
-    updateStepIndicators(1);
-    setListingType('gallery');
+    if (isAuctionConversion) {
+        modals.forEach((modal) => modal.classList.toggle('active', modal.dataset.step === '4'));
+        updateStepIndicators(4);
+        setListingType('auction');
+    } else {
+        updateStepIndicators(1);
+        setListingType('gallery');
+    }
     updateBuyerPriceFromSeller();
 })();
 </script>

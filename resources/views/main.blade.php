@@ -3,7 +3,6 @@
 
 @section('content')
 <main>
-    <!-- Hero Section -->
     <section class="hero section-spacing">
         <div class="hero-banner">
             <div class="hero-content container">
@@ -23,16 +22,14 @@
         </div>
     </section>
 
-    <!-- Gallery Section -->
     <div class="gallery container">
         <div class="title">
             <p class="section-subtitle">веб-платформа</p>
             <h2 class="section-title">ГАЛЕРЕЯ</h2>
             <div class="line"></div>
         </div>
-        
+
         <div class="wrap">
-            <!-- верхний текстовый блок -->
             <div class="lead">
                 <div>
                     <p>
@@ -41,21 +38,17 @@
                     </p>
                 </div>
             </div>
-        
 
-                <!-- Fallback на статические изображения если нет данных в БД -->
-                <figure class="tile i1"><img src="{{ asset('assets/images/mainGallery/1.png') }}" alt=""></figure>
-                <figure class="tile i2"><img src="{{ asset('assets/images/mainGallery/2.png') }}" alt=""></figure>
-                <figure class="tile i3"><img src="{{ asset('assets/images/mainGallery/3.png') }}" alt=""></figure>
-                <figure class="tile i4"><img src="{{ asset('assets/images/mainGallery/5.png') }}" alt=""></figure>
-                <figure class="tile i5"><img src="{{ asset('assets/images/mainGallery/4.png') }}" alt=""></figure>
-                <figure class="tile i6"><img src="{{ asset('assets/images/mainGallery/6.png') }}" alt=""></figure>
-                <figure class="tile i7"><img src="{{ asset('assets/images/mainGallery/7.png') }}" alt=""></figure>
-
+            <figure class="tile i1"><img src="{{ asset('assets/images/mainGallery/1.png') }}" alt=""></figure>
+            <figure class="tile i2"><img src="{{ asset('assets/images/mainGallery/2.png') }}" alt=""></figure>
+            <figure class="tile i3"><img src="{{ asset('assets/images/mainGallery/3.png') }}" alt=""></figure>
+            <figure class="tile i4"><img src="{{ asset('assets/images/mainGallery/5.png') }}" alt=""></figure>
+            <figure class="tile i5"><img src="{{ asset('assets/images/mainGallery/4.png') }}" alt=""></figure>
+            <figure class="tile i6"><img src="{{ asset('assets/images/mainGallery/6.png') }}" alt=""></figure>
+            <figure class="tile i7"><img src="{{ asset('assets/images/mainGallery/7.png') }}" alt=""></figure>
         </div>
     </div>
 
-    <!-- Artists Section -->
     <section class="artists container section-spacing">
         <div class="artists-content">
             <div class="title">
@@ -63,13 +56,13 @@
                 <h2 class="section-title">ХУДОЖНИКИ</h2>
                 <div class="line"></div>
             </div>
-            
+
             <section class="artists container">
                 <div class="artists-carousel">
                     <div class="artists-track">
                         @if($topArtists->count() > 0)
                             @foreach($topArtists as $artist)
-                                <a href="{{ url('/account?user_id=' . $artist->id) }}" class="artist-card">
+                                <a href="{{ url('/account?user_id=' . $artist->id) }}" class="artist-card" data-artist-link>
                                     <div class="artist-avatar">
                                         <img src="{{ asset($artist->img ?? 'assets/images/account/mainUser.png') }}" alt="{{ $artist->name }}">
                                     </div>
@@ -88,4 +81,34 @@
         </div>
     </section>
 </main>
+@endsection
+
+@section('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[data-artist-link]').forEach((card) => {
+        let startX = 0;
+        let startY = 0;
+
+        card.addEventListener('pointerdown', function(event) {
+            startX = event.clientX;
+            startY = event.clientY;
+        });
+
+        card.addEventListener('pointerup', function(event) {
+            const dx = Math.abs(event.clientX - startX);
+            const dy = Math.abs(event.clientY - startY);
+
+            if (dx < 10 && dy < 10) {
+                window.location.href = card.href;
+            }
+        });
+
+        card.addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = card.href;
+        });
+    });
+});
+</script>
 @endsection

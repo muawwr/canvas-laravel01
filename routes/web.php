@@ -50,6 +50,7 @@ Route::middleware('auth.custom')->group(function () {
     Route::get('/edit/{id}', [PictureController::class , 'edit'])->name('picture.edit');
     Route::get('/checkout', [CheckoutController::class , 'index'])->name('checkout');
     Route::post('/checkout', [CheckoutController::class , 'process']);
+    Route::get('/checkout/callback', [CheckoutController::class, 'callback'])->name('checkout.callback');
 
     // API маршруты
     Route::post('/api/cart', [CartApiController::class , 'handle']);
@@ -57,6 +58,7 @@ Route::middleware('auth.custom')->group(function () {
     Route::post('/api/picture/add', [PictureApiController::class , 'store']);
     Route::post('/api/picture/edit', [PictureApiController::class , 'update']);
     Route::post('/api/picture/delete', [PictureApiController::class , 'destroy']);
+    Route::post('/api/picture/gallery-to-auction', [PictureApiController::class , 'moveGalleryPictureToAuction']);
     Route::post('/api/picture/relist-auction', [PictureApiController::class , 'relistAuction']);
     Route::post('/api/auction/bid', [AuctionApiController::class , 'bid']);
     Route::post('/api/auction/buyout', [AuctionApiController::class , 'buyout']);

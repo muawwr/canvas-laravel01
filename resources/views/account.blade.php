@@ -46,7 +46,7 @@
     <div class="gallery-grid-masonry">
         @forelse($user_pictures as $picture)
         <div class="gallery-card account_picture_card">
-            <a href="{{ url('/picture/' . $picture->id) }}">
+            <a href="{{ url('/picture/' . $picture->id . '?return_to=' . urlencode(request()->fullUrl())) }}">
                 <img src="{{ asset($picture->img) }}" alt="{{ $picture->name }}">
                 @if($picture->is_sold > 0)
                     <div class="sold-badge">

@@ -345,10 +345,27 @@
   
     // РЎРѓР Р†Р В°Р в„–Р С— Р Т‘Р В»РЎРЏ РЎвЂљР В°РЎвЂЎР ВµР в„–
     let startX = 0;
-    track.addEventListener('pointerdown', e => { startX = e.clientX; track.setPointerCapture(e.pointerId); });
+    let startY = 0;
+    track.addEventListener('pointerdown', e => {
+      startX = e.clientX;
+      startY = e.clientY;
+      track.setPointerCapture(e.pointerId);
+    });
     track.addEventListener('pointerup', e => {
       const dx = e.clientX - startX;
-      if (Math.abs(dx) > 40) (dx < 0 ? next : prev)();
+      const dy = e.clientY - startY;
+
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+        (dx < 0 ? next : prev)();
+        return;
+      }
+
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+        const card = e.target.closest('.artist-card[href]');
+        if (card) {
+          window.location.href = card.href;
+        }
+      }
     });
   
     // Р С›Р В±РЎР‚Р В°Р В±Р С•РЎвЂљРЎвЂЎР С‘Р С” Р С‘Р В·Р СР ВµР Р…Р ВµР Р…Р С‘РЎРЏ РЎР‚Р В°Р В·Р СР ВµРЎР‚Р В° Р С•Р С”Р Р…Р В° РЎРѓ debounce

@@ -10,6 +10,7 @@ use App\Models\AuctionBid;
 use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
@@ -254,6 +255,111 @@ class PictureApiController extends Controller
         );
 
         return response()->json(['success' => true, 'message' => 'Картина удалена']);
+    }
+
+    public function moveGalleryPictureToAuction(Request $request)
+    {
+        if (!session()->has('user_id')) {
+            return response()->json(['success' => false, 'message' => 'Необходима авторизация'], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'picture_id' => ['required', 'integer'],
+            'auction_start_price' => ['required', 'integer', 'min:100'],
+            'auction_min_step' => ['required', 'integer', 'min:50'],
+            'auction_buyout_price' => ['nullable', 'integer', 'min:100', 'gte:auction_start_price'],
+            'auction_duration_hours' => ['required', 'integer', 'min:1', 'max:720'],
+        ], [
+            'auction_start_price.required' => 'Укажите стартовую цену аукциона',
+            'auction_start_price.min' => 'Минимальная стартовая цена 100 ₽',
+            'auction_min_step.required' => 'Укажите минимальный шаг ставки',
+            'auction_min_step.min' => 'Минимальный шаг ставки 50 ₽',
+            'auction_buyout_price.gte' => 'Блиц-цена не может быть ниже стартовой цены',
+            'auction_duration_hours.required' => 'Укажите длительность аукциона',
+            'auction_duration_hours.max' => 'Максимальная длительность аукциона 30 дней',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first(),
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $validated = $validator->validated();
+        $startPrice = (int) $validated['auction_start_price'];
+        $minStep = (int) $validated['auction_min_step'];
+        $buyoutPrice = !empty($validated['auction_buyout_price']) ? (int) $validated['auction_buyout_price'] : null;
+
+        if ($buyoutPrice && $startPrice + $minStep > $buyoutPrice) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Стартовая цена вместе с минимальным шагом не должна превышать блиц-цену',
+                'errors' => [
+                    'auction_buyout_price' => ['Стартовая цена вместе с минимальным шагом не должна превышать блиц-цену'],
+                ],
+            ], 422);
+        }
+
+        $picture = Picture::where('id', (int) $validated['picture_id'])
+            ->where('user_id', session('user_id'))
+            ->where('status', 'approved')
+            ->where('listing_type', 'gallery')
+            ->first();
+
+        if (!$picture) {
+            return response()->json(['success' => false, 'message' => 'Картина не найдена'], 404);
+        }
+
+        $isSold = $picture->show_sold_badge
+            || Order::where('picture_id', $picture->id)
+                ->where('payment_status', 'succeeded')
+                ->exists();
+
+        if ($isSold) {
+            return response()->json(['success' => false, 'message' => 'Проданную картину нельзя добавить в аукцион'], 422);
+        }
+
+        AuctionBid::where('picture_id', $picture->id)->delete();
+        $picture->cartEntries()->delete();
+
+        $auctionData = [
+            'listing_type' => 'auction',
+            'price' => $startPrice,
+            'auction_start_price' => $startPrice,
+            'auction_current_price' => $startPrice,
+            'auction_min_step' => $minStep,
+            'auction_buyout_price' => $buyoutPrice,
+            'auction_starts_at' => now(),
+            'auction_ends_at' => now()->addHours((int) $validated['auction_duration_hours']),
+            'status' => 'pending',
+        ];
+
+        if (Schema::hasColumn('pictures', 'show_sold_badge')) {
+            $auctionData['show_sold_badge'] = false;
+        }
+
+        if (Schema::hasColumn('pictures', 'hidden_after_sale')) {
+            $auctionData['hidden_after_sale'] = false;
+        }
+
+        $picture->update($auctionData);
+
+        NotificationService::push(
+            session('user_id'),
+            'picture_auction_pending',
+            'Картина отправлена на аукцион',
+            'Картина "' . $picture->name . '" будет выставлена на аукцион после модерации.',
+            url('/account'),
+            $picture->id
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Картина отправлена на модерацию для аукциона',
+            'redirect_url' => url('/account'),
+        ]);
     }
 
     public function moderate(Request $request)

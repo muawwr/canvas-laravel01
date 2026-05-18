@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Schema;
 
 class PictureController extends Controller
 {
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $is_logged_in = session()->has('user_id');
         $user_avatar = session('user_img', 'assets/images/account/mainUser.png');
@@ -52,13 +52,26 @@ class PictureController extends Controller
                 ->where('payment_status', 'succeeded')
                 ->exists();
 
+        $fallbackBackUrl = $picture->listing_type === 'auction' ? url('/auction') : url('/gallery');
+        $requestedBackUrl = (string) $request->query('return_to', '');
+        $backUrl = $fallbackBackUrl;
+
+        if ($requestedBackUrl !== '' && str_starts_with($requestedBackUrl, url('/'))) {
+            $backUrl = $requestedBackUrl;
+        } else {
+            $previousUrl = url()->previous();
+            if (is_string($previousUrl) && !str_contains($previousUrl, '/picture/')) {
+                $backUrl = $previousUrl;
+            }
+        }
+
         return view('picture.show', compact(
             'is_logged_in', 'user_avatar', 'user_name',
-            'picture', 'likes_count', 'is_in_favorites', 'is_sold'
+            'picture', 'likes_count', 'is_in_favorites', 'is_sold', 'backUrl'
         ));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $is_logged_in = session()->has('user_id');
         $user_avatar = session('user_img', 'assets/images/account/mainUser.png');
@@ -67,10 +80,28 @@ class PictureController extends Controller
         $genres = Genre::orderBy('name')->get();
         $styles = Style::orderBy('name')->get();
         $eras = Era::orderBy('name')->get();
+        $auctionFromPicture = null;
+
+        if ($request->filled('auction_from')) {
+            $auctionFromPicture = Picture::with(['genre', 'style', 'era'])
+                ->where('user_id', session('user_id'))
+                ->where('status', 'approved')
+                ->where('listing_type', 'gallery')
+                ->findOrFail((int) $request->query('auction_from'));
+
+            $isSold = $auctionFromPicture->show_sold_badge
+                || Order::where('picture_id', $auctionFromPicture->id)
+                    ->where('payment_status', 'succeeded')
+                    ->exists();
+
+            if ($isSold) {
+                abort(404);
+            }
+        }
 
         return view('picture.create', compact(
             'is_logged_in', 'user_avatar', 'user_name',
-            'genres', 'styles', 'eras'
+            'genres', 'styles', 'eras', 'auctionFromPicture'
         ));
     }
 

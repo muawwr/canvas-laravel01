@@ -39,7 +39,7 @@
                                 <span class="checkmark"></span>
                             </label>
 
-                            <a href="<?php echo e(url('/picture/' . $item->picture_id)); ?>">
+                            <a href="<?php echo e(url('/picture/' . $item->picture_id . '?return_to=' . urlencode(request()->fullUrl()))); ?>">
                                 <div class="cart_item_image">
                                     <img src="<?php echo e(asset($item->picture->img)); ?>" alt="<?php echo e($item->picture->name); ?>">
                                 </div>

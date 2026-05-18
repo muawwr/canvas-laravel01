@@ -40,7 +40,7 @@
                                 <span class="checkmark"></span>
                             </label>
 
-                            <a href="{{ url('/picture/' . $item->picture_id) }}">
+                            <a href="{{ url('/picture/' . $item->picture_id . '?return_to=' . urlencode(request()->fullUrl())) }}">
                                 <div class="cart_item_image">
                                     <img src="{{ asset($item->picture->img) }}" alt="{{ $item->picture->name }}">
                                 </div>

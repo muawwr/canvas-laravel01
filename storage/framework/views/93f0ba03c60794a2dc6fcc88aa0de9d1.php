@@ -57,7 +57,7 @@
                 </label>
 
                 <button type="submit" style="width: 100%; padding: 20px; background: var(--theme-accent); color: var(--theme-accent-contrast); border: none; border-radius: 15px; font-size: 18px; font-weight: 400; cursor: pointer; font-family: 'InterTight', sans-serif; transition: all 0.3s;">
-                    Оформить заказ
+                    Перейти к оплате
                 </button>
 
                 <a href="<?php echo e(url('/cart')); ?>" style="display: block; text-align: center; margin-top: 15px; color: var(--theme-muted); text-decoration: none; transition: color 0.3s;">

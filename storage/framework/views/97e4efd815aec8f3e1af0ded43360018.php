@@ -46,7 +46,7 @@
     <div class="gallery-grid-masonry">
         <?php $__empty_1 = true; $__currentLoopData = $user_pictures; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $picture): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
         <div class="gallery-card account_picture_card">
-            <a href="<?php echo e(url('/picture/' . $picture->id)); ?>">
+            <a href="<?php echo e(url('/picture/' . $picture->id . '?return_to=' . urlencode(request()->fullUrl()))); ?>">
                 <img src="<?php echo e(asset($picture->img)); ?>" alt="<?php echo e($picture->name); ?>">
                 <?php if($picture->is_sold > 0): ?>
                     <div class="sold-badge">

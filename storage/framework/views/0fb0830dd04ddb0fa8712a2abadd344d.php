@@ -1,7 +1,4 @@
 <?php $__env->startSection('content'); ?>
-<?php
-    $watermarkArtist = '@' . preg_replace('/\s+/', '_', trim($picture->user->name ?? 'artist'));
-?>
 <main>
     <div class="one_product container">
         <div>
@@ -9,7 +6,7 @@
         </div>
 
         <div class="product_image product_image_magnifier" data-magnifier>
-            <span class="product_image_frame" data-watermark="canvas.gallery / <?php echo e($watermarkArtist); ?>">
+            <span class="product_image_frame">
                 <img src="<?php echo e(asset($picture->img)); ?>" alt="<?php echo e($picture->name); ?>" data-magnifier-image>
             </span>
             <div class="product_magnifier_lens" data-magnifier-lens aria-hidden="true"></div>
@@ -175,7 +172,12 @@
                             </div>
                         <?php else: ?>
                             <?php if(session()->has('user_id')): ?>
-                                <div class="cart" id="addToCartBtn" data-picture-id="<?php echo e($picture->id); ?>" style="cursor: pointer;">
+                                <div
+                                    class="cart <?php echo e($isUserBlocked ?? false ? 'cart-disabled' : ''); ?>"
+                                    id="addToCartBtn"
+                                    data-picture-id="<?php echo e($picture->id); ?>"
+                                    <?php if($isUserBlocked ?? false): ?> data-blocked-message="<?php echo e($cartRestrictionMessage); ?>" title="<?php echo e($cartRestrictionMessage); ?>" <?php endif; ?>
+                                >
                                     В корзину<img src="<?php echo e(asset('assets/images/oneProduct/Right.svg')); ?>" alt="">
                                 </div>
                             <?php else: ?>
@@ -224,6 +226,12 @@
 .fav.active img { filter: brightness(0) saturate(100%) invert(92%) sepia(93%) saturate(497%) hue-rotate(359deg) brightness(104%) contrast(103%); }
 .fav:hover { opacity: 0.8; transform: scale(1.02); }
 .fav.loading { pointer-events: none; opacity: 0.6; }
+.cart-disabled,
+.cart-disabled:hover {
+    cursor: not-allowed !important;
+    opacity: 0.55;
+    pointer-events: auto;
+}
 </style>
 
 <script src="<?php echo e(asset('script.js')); ?>"></script>
@@ -326,6 +334,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const addToCartBtn = document.getElementById('addToCartBtn');
     if (addToCartBtn) {
         addToCartBtn.addEventListener('click', async function() {
+            if (this.classList.contains('cart-disabled')) {
+                return;
+            }
+
             if (this.classList.contains('loading')) return;
 
             const pictureId = this.getAttribute('data-picture-id');

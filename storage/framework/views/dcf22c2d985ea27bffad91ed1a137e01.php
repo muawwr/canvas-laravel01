@@ -1,20 +1,20 @@
-﻿@extends('layouts.app')
+﻿
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <main class="admin_main container">
 
     <div class="admin_tabs">
         <button class="admin_tab admin_tab_active" type="button" data-tab="processing">
             На обработку
-            <span class="admin_tab_badge">{{ $pending_pictures->count() }}</span>
+            <span class="admin_tab_badge"><?php echo e($pending_pictures->count()); ?></span>
         </button>
         <button class="admin_tab" type="button" data-tab="deals">
             Сделки
-            <span class="admin_tab_badge">{{ $deals->count() }}</span>
+            <span class="admin_tab_badge"><?php echo e($deals->count()); ?></span>
         </button>
         <button class="admin_tab" type="button" data-tab="users">
             Пользователи
-            <span class="admin_tab_badge">{{ $users->count() }}</span>
+            <span class="admin_tab_badge"><?php echo e($users->count()); ?></span>
         </button>
         <button class="admin_tab" type="button" data-tab="categories">Категории</button>
     </div>
@@ -36,43 +36,43 @@
                         </tr>
                     </thead>
                     <tbody id="processing_table_body">
-                        @forelse ($pending_pictures as $picture)
-                            <tr data-picture-id="{{ $picture->id }}">
-                                <td>{{ $picture->id }}</td>
-                                <td>{{ optional($picture->created_at)->format('d.m.Y') }}</td>
-                                <td>{{ $picture->user->name ?? 'Неизвестно' }}</td>
+                        <?php $__empty_1 = true; $__currentLoopData = $pending_pictures; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $picture): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                            <tr data-picture-id="<?php echo e($picture->id); ?>">
+                                <td><?php echo e($picture->id); ?></td>
+                                <td><?php echo e(optional($picture->created_at)->format('d.m.Y')); ?></td>
+                                <td><?php echo e($picture->user->name ?? 'Неизвестно'); ?></td>
                                 <td>
                                     <div class="admin_cell_stack">
-                                        <span>{{ $picture->name }}</span>
-                                        <small>{{ \Illuminate\Support\Str::limit($picture->description, 56) }}</small>
+                                        <span><?php echo e($picture->name); ?></span>
+                                        <small><?php echo e(\Illuminate\Support\Str::limit($picture->description, 56)); ?></small>
                                     </div>
                                 </td>
-                                <td>{{ number_format($picture->price, 0, '.', ' ') }} ₽</td>
+                                <td><?php echo e(number_format($picture->price, 0, '.', ' ')); ?> ₽</td>
                                 <td class="admin_action_watch">
                                     <button
                                         class="admin_btn_watch js-view-picture"
                                         type="button"
-                                        data-image="{{ asset($picture->img) }}"
-                                        data-name="{{ $picture->name }}"
-                                        aria-label="Открыть изображение {{ $picture->name }}"
+                                        data-image="<?php echo e(asset($picture->img)); ?>"
+                                        data-name="<?php echo e($picture->name); ?>"
+                                        aria-label="Открыть изображение <?php echo e($picture->name); ?>"
                                     >
-                                        <img src="{{ asset('assets/images/admin/watch.svg') }}" alt="Просмотр">
+                                        <img src="<?php echo e(asset('assets/images/admin/watch.svg')); ?>" alt="Просмотр">
                                     </button>
                                 </td>
                                 <td class="admin_actions">
-                                    <button class="admin_btn admin_btn_accept js-moderate-picture" type="button" data-picture-id="{{ $picture->id }}" data-action="approve">
-                                        <img src="{{ asset('assets/images/admin/accept.svg') }}" alt="Одобрить">
+                                    <button class="admin_btn admin_btn_accept js-moderate-picture" type="button" data-picture-id="<?php echo e($picture->id); ?>" data-action="approve">
+                                        <img src="<?php echo e(asset('assets/images/admin/accept.svg')); ?>" alt="Одобрить">
                                     </button>
-                                    <button class="admin_btn admin_btn_decline js-moderate-picture" type="button" data-picture-id="{{ $picture->id }}" data-action="reject">
-                                        <img src="{{ asset('assets/images/admin/decline.svg') }}" alt="Отклонить">
+                                    <button class="admin_btn admin_btn_decline js-moderate-picture" type="button" data-picture-id="<?php echo e($picture->id); ?>" data-action="reject">
+                                        <img src="<?php echo e(asset('assets/images/admin/decline.svg')); ?>" alt="Отклонить">
                                     </button>
                                 </td>
                             </tr>
-                        @empty
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <tr class="admin_empty_row" id="processing_empty_row">
                                 <td colspan="7">Нет картин на модерации</td>
                             </tr>
-                        @endforelse
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -96,20 +96,20 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($deals as $deal)
+                        <?php $__empty_1 = true; $__currentLoopData = $deals; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $deal): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                             <tr>
-                                <td>{{ $deal->id }}</td>
-                                <td>{{ optional($deal->created_at)->format('d.m.Y') }}</td>
-                                <td>{{ $deal->seller->name ?? 'Неизвестно' }}</td>
-                                <td>{{ $deal->buyer->name ?? 'Неизвестно' }}</td>
-                                <td>{{ $deal->picture->name ?? 'Картина удалена' }}</td>
-                                <td>{{ number_format($deal->price, 0, '.', ' ') }} ₽</td>
+                                <td><?php echo e($deal->id); ?></td>
+                                <td><?php echo e(optional($deal->created_at)->format('d.m.Y')); ?></td>
+                                <td><?php echo e($deal->seller->name ?? 'Неизвестно'); ?></td>
+                                <td><?php echo e($deal->buyer->name ?? 'Неизвестно'); ?></td>
+                                <td><?php echo e($deal->picture->name ?? 'Картина удалена'); ?></td>
+                                <td><?php echo e(number_format($deal->price, 0, '.', ' ')); ?> ₽</td>
                             </tr>
-                        @empty
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <tr class="admin_empty_row">
                                 <td colspan="6">Сделок пока нет</td>
                             </tr>
-                        @endforelse
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -134,39 +134,39 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($users as $user)
+                        <?php $__empty_1 = true; $__currentLoopData = $users; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                             <tr
                                 class="admin_user_row"
-                                data-user-id="{{ $user->id }}"
+                                data-user-id="<?php echo e($user->id); ?>"
                                 role="button"
                                 tabindex="0"
-                                aria-label="Открыть профиль пользователя {{ $user->name }}"
+                                aria-label="Открыть профиль пользователя <?php echo e($user->name); ?>"
                             >
-                                <td>{{ $user->id }}</td>
-                                <td>{{ $user->date_of_reg ? \Carbon\Carbon::parse($user->date_of_reg)->format('d.m.Y') : '-' }}</td>
+                                <td><?php echo e($user->id); ?></td>
+                                <td><?php echo e($user->date_of_reg ? \Carbon\Carbon::parse($user->date_of_reg)->format('d.m.Y') : '-'); ?></td>
                                 <td>
                                     <div class="admin_user_identity">
                                         <img
-                                            src="{{ asset($user->img ?: 'assets/images/account/mainUser.png') }}"
-                                            alt="{{ $user->name }}"
+                                            src="<?php echo e(asset($user->img ?: 'assets/images/account/mainUser.png')); ?>"
+                                            alt="<?php echo e($user->name); ?>"
                                             class="admin_user_avatar"
                                         >
                                         <div class="admin_cell_stack">
-                                            <span>{{ $user->name }}</span>
-                                            <small>{{ $user->email }}</small>
+                                            <span><?php echo e($user->name); ?></span>
+                                            <small><?php echo e($user->email); ?></small>
                                         </div>
                                     </div>
                                 </td>
-                                <td>{{ $user->role == 2 ? 'Администратор' : 'Пользователь' }}</td>
-                                <td>{{ $user->rank ?: 'Не указан' }}</td>
-                                <td>{{ $user->pictures_count }}</td>
-                                <td>{{ $user->orders_count }}</td>
+                                <td><?php echo e($user->role == 2 ? 'Администратор' : 'Пользователь'); ?></td>
+                                <td><?php echo e($user->rank ?: 'Не указан'); ?></td>
+                                <td><?php echo e($user->pictures_count); ?></td>
+                                <td><?php echo e($user->orders_count); ?></td>
                             </tr>
-                        @empty
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <tr class="admin_empty_row">
                                 <td colspan="7">Пользователи не найдены</td>
                             </tr>
-                        @endforelse
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -207,69 +207,69 @@
                 <div class="category_section">
                     <h3 class="category_section_title"><span>I</span> Жанры</h3>
                     <div class="category_items" id="genres_list">
-                        @forelse ($genres as $genre)
-                            <div class="category_item" data-id="{{ $genre->id }}">
-                                <span>{{ $genre->name }}</span>
-                                <button class="category_delete_btn js-delete-category" type="button" data-type="genre" data-id="{{ $genre->id }}">
-                                    <img src="{{ asset('assets/images/admin/delete.svg') }}" alt="Удалить">
+                        <?php $__empty_1 = true; $__currentLoopData = $genres; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $genre): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                            <div class="category_item" data-id="<?php echo e($genre->id); ?>">
+                                <span><?php echo e($genre->name); ?></span>
+                                <button class="category_delete_btn js-delete-category" type="button" data-type="genre" data-id="<?php echo e($genre->id); ?>">
+                                    <img src="<?php echo e(asset('assets/images/admin/delete.svg')); ?>" alt="Удалить">
                                 </button>
                             </div>
-                        @empty
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <p class="no_categories">Жанры не добавлены</p>
-                        @endforelse
+                        <?php endif; ?>
                     </div>
                 </div>
 
                 <div class="category_section">
                     <h3 class="category_section_title"><span>II</span> Стили</h3>
                     <div class="category_items category_items_columns" id="styles_list">
-                        @php
+                        <?php
                             $stylesHalf = (int) ceil($styles->count() / 2);
                             $stylesFirstColumn = $styles->slice(0, $stylesHalf);
                             $stylesSecondColumn = $styles->slice($stylesHalf);
-                        @endphp
+                        ?>
 
                         <div class="category_column">
-                            @foreach ($stylesFirstColumn as $style)
-                                <div class="category_item" data-id="{{ $style->id }}">
-                                    <span>{{ $style->name }}</span>
-                                    <button class="category_delete_btn js-delete-category" type="button" data-type="style" data-id="{{ $style->id }}">
-                                        <img src="{{ asset('assets/images/admin/delete.svg') }}" alt="Удалить">
+                            <?php $__currentLoopData = $stylesFirstColumn; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $style): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <div class="category_item" data-id="<?php echo e($style->id); ?>">
+                                    <span><?php echo e($style->name); ?></span>
+                                    <button class="category_delete_btn js-delete-category" type="button" data-type="style" data-id="<?php echo e($style->id); ?>">
+                                        <img src="<?php echo e(asset('assets/images/admin/delete.svg')); ?>" alt="Удалить">
                                     </button>
                                 </div>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </div>
 
                         <div class="category_column">
-                            @foreach ($stylesSecondColumn as $style)
-                                <div class="category_item" data-id="{{ $style->id }}">
-                                    <span>{{ $style->name }}</span>
-                                    <button class="category_delete_btn js-delete-category" type="button" data-type="style" data-id="{{ $style->id }}">
-                                        <img src="{{ asset('assets/images/admin/delete.svg') }}" alt="Удалить">
+                            <?php $__currentLoopData = $stylesSecondColumn; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $style): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <div class="category_item" data-id="<?php echo e($style->id); ?>">
+                                    <span><?php echo e($style->name); ?></span>
+                                    <button class="category_delete_btn js-delete-category" type="button" data-type="style" data-id="<?php echo e($style->id); ?>">
+                                        <img src="<?php echo e(asset('assets/images/admin/delete.svg')); ?>" alt="Удалить">
                                     </button>
                                 </div>
-                            @endforeach
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                         </div>
 
-                        @if ($styles->isEmpty())
+                        <?php if($styles->isEmpty()): ?>
                             <p class="no_categories">Стили не добавлены</p>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
 
                 <div class="category_section">
                     <h3 class="category_section_title"><span>III</span> Эпохи</h3>
                     <div class="category_items" id="eras_list">
-                        @forelse ($eras as $era)
-                            <div class="category_item" data-id="{{ $era->id }}">
-                                <span>{{ $era->name }}</span>
-                                <button class="category_delete_btn js-delete-category" type="button" data-type="era" data-id="{{ $era->id }}">
-                                    <img src="{{ asset('assets/images/admin/delete.svg') }}" alt="Удалить">
+                        <?php $__empty_1 = true; $__currentLoopData = $eras; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $era): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                            <div class="category_item" data-id="<?php echo e($era->id); ?>">
+                                <span><?php echo e($era->name); ?></span>
+                                <button class="category_delete_btn js-delete-category" type="button" data-type="era" data-id="<?php echo e($era->id); ?>">
+                                    <img src="<?php echo e(asset('assets/images/admin/delete.svg')); ?>" alt="Удалить">
                                 </button>
                             </div>
-                        @empty
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <p class="no_categories">Эпохи не добавлены</p>
-                        @endforelse
+                        <?php endif; ?>
                     </div>
                 </div>
             </section>
@@ -299,9 +299,9 @@
     </div>
 </main>
 
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('scripts')
+<?php $__env->startSection('scripts'); ?>
 <style>
 body {
     transition: background-color 0.3s ease, color 0.3s ease;
@@ -577,7 +577,7 @@ body[data-theme="light"] .admin_preview_close {
         item.innerHTML = `
             <span>${escapeHtml(name)}</span>
             <button class="category_delete_btn js-delete-category" type="button" data-type="${type}" data-id="${id}">
-                <img src="{{ asset('assets/images/admin/delete.svg') }}" alt="Удалить">
+                <img src="<?php echo e(asset('assets/images/admin/delete.svg')); ?>" alt="Удалить">
             </button>
         `;
 
@@ -867,5 +867,7 @@ body[data-theme="light"] .admin_preview_close {
         });
     });
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
 
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\OSPanel\domains\canvas-laravel01\resources\views/admin.blade.php ENDPATH**/ ?>

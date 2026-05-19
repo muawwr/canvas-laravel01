@@ -29,6 +29,7 @@
         $manualGalleryActive = trim((string) $__env->yieldContent('nav-gallery-active'));
         $manualAuctionActive = trim((string) $__env->yieldContent('nav-auction-active'));
         $manualProfileActive = trim((string) $__env->yieldContent('nav-profile-active'));
+        $isAdminUser = session('user_role') == 2;
 
         $isHomeActive = trim(request()->path(), '/') === '' || request()->is('main');
         $isGalleryActive = request()->is('gallery');
@@ -57,12 +58,14 @@
                     <a href="{{ url('/') }}" class="nav-item {{ $isHomeActive ? 'active' : $manualHomeActive }}">
                         <img src="{{ asset('assets/images/header/home.svg') }}" alt="Главная">
                     </a>
+                    @unless($isAdminUser)
                     <a href="{{ url('/gallery') }}" class="nav-item {{ $isGalleryActive ? 'active' : $manualGalleryActive }}">
                         <img src="{{ asset('assets/images/header/gallery.svg') }}" alt="Галерея">
                     </a>
                     <a href="{{ url('/auction') }}" class="nav-item {{ $isAuctionActive ? 'active' : $manualAuctionActive }}">
                         <img src="{{ asset('assets/images/header/auction.svg') }}" alt="Аукцион">
                     </a>
+                    @endunless
                     <div class="nav-item profile-toggle {{ $isProfileActive ? 'active' : '' }}" id="profileToggle">
                         @if(session()->has('user_id'))
                             <img width="40" height="40" src="{{ asset(session('user_img', 'assets/images/account/mainUser.png')) }}"
@@ -75,7 +78,7 @@
                 </nav>
 
                 <div class="header-right-tools">
-                    @if(session()->has('user_id'))
+                    @if(session()->has('user_id') && !$isAdminUser)
                         <a href="{{ url('/notifications') }}" class="header-notification-link {{ $isNotificationsActive ? 'active' : '' }}">
                             <img src="{{ asset('assets/images/header/notifications.svg') }}" alt="Уведомления">
                             <span class="notification-dot" data-notification-dot style="{{ $notificationCount > 0 ? '' : 'display:none;' }}"></span>
@@ -145,13 +148,15 @@
             <a href="{{ url('/') }}" class="mobile-menu-item {{ $isHomeActive ? 'active' : $manualHomeActive }}">
                 <img src="{{ asset('assets/images/header/home.svg') }}" alt="Главная">
             </a>
+            @unless($isAdminUser)
             <a href="{{ url('/gallery') }}" class="mobile-menu-item {{ $isGalleryActive ? 'active' : $manualGalleryActive }}">
                 <img src="{{ asset('assets/images/header/gallery.svg') }}" alt="Галерея">
             </a>
             <a href="{{ url('/auction') }}" class="mobile-menu-item {{ $isAuctionActive ? 'active' : $manualAuctionActive }}">
                 <img src="{{ asset('assets/images/header/auction.svg') }}" alt="Аукцион">
             </a>
-            @if(session()->has('user_id'))
+            @endunless
+            @if(session()->has('user_id') && !$isAdminUser)
                 <a href="{{ url('/notifications') }}" class="mobile-menu-item notification-nav-item {{ $isNotificationsActive ? 'active' : '' }}">
                     <img src="{{ asset('assets/images/header/notifications.svg') }}" alt="Уведомления">
                     <span class="notification-dot" data-notification-dot style="{{ $notificationCount > 0 ? '' : 'display:none;' }}"></span>
@@ -231,8 +236,8 @@
                 </div>
 
                 <div class="footer-column">
-                    <p class="footer-year">2025</p>
-                    <p class="footer-email">info@kanvas.ru</p>
+                    <p class="footer-year">2026</p>
+                    <a class="footer-email" href="mailto:info@kanvas.ru">info@kanvas.ru</a>
                     <a href="#" class="footer-link">Политика конфиденциальности</a>
                     <div class="social-links">
                         <a href="#" class="social-link">

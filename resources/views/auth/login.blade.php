@@ -26,6 +26,18 @@
         .input_group.error input {
             border-color: #c76060;
         }
+
+        .auth-field-label {
+                font-family: 'InterTight', sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    color: #E0E0E0;
+    margin-top: 5px;
+        }
+
+        .required-star {
+            color: #FBFF83;
+        }
     </style>
 </head>
 <body>
@@ -87,21 +99,23 @@
                 @endif
 
                 <div class="form_inputs">
+                    <label class="auth-field-label" for="loginEmail">Электронная почта</label>
                     <div class="input_group {{ $errors->has('email') ? 'error' : '' }}">
                         <div class="input_icon">
                             <img src="{{ asset('assets/images/reg/Mail.svg') }}" alt="Email">
                         </div>
-                        <input type="email" name="email" placeholder="Электронная почта" value="{{ old('email') }}" autocomplete="off">
+                        <input type="email" id="loginEmail" name="email" placeholder="Электронная почта" value="{{ old('email') }}" autocomplete="off" required>
                     </div>
                     @if($errors->has('email'))
                         <span class="error-message">{{ $errors->first('email') }}</span>
                     @endif
 
+                    <label class="auth-field-label" for="loginPassword">Пароль </label>
                     <div class="input_group {{ $errors->has('password') ? 'error' : '' }}">
                         <div class="input_icon">
                             <img src="{{ asset('assets/images/reg/Lock.svg') }}" alt="Пароль">
                         </div>
-                        <input type="password" name="password" placeholder="Пароль" autocomplete="current-password">
+                        <input type="password" id="loginPassword" name="password" placeholder="Пароль" autocomplete="current-password" required>
                     </div>
                     @if($errors->has('password'))
                         <span class="error-message">{{ $errors->first('password') }}</span>

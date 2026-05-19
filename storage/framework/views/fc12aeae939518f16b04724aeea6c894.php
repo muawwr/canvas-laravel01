@@ -1,8 +1,8 @@
-﻿@extends('layouts.app')
+﻿
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 
-@php
+<?php
     $auctionFromPicturePayload = $auctionFromPicture ? [
         'id' => $auctionFromPicture->id,
         'img' => asset($auctionFromPicture->img),
@@ -17,7 +17,7 @@
         'era_id' => $auctionFromPicture->era_id,
         'price' => $auctionFromPicture->price,
     ] : null;
-@endphp
+?>
 
 <div class="add_steps">
     <div class="add_step active" data-step-indicator="1">
@@ -38,7 +38,7 @@
     <div class="step_line end" data-step-line="4"></div>
 </div>
 
-<main class="add_main container" data-managed-add-page="custom" @if($auctionFromPicture) data-auction-conversion="true" @endif>
+<main class="add_main container" data-managed-add-page="custom" <?php if($auctionFromPicture): ?> data-auction-conversion="true" <?php endif; ?>>
     <div class="add_modal active" data-step="1">
         <div class="add_modal_content">
             <h1 class="add_title">Загрузка картины</h1>
@@ -49,7 +49,7 @@
                 <img id="uploadPreview" class="add_upload_preview" alt="Предпросмотр картины" style="display: none;">
                 <div class="upload_placeholder" id="uploadPlaceholder">
                     <div class="upload_icon">
-                        <img src="{{ asset('assets/images/add/Upload.svg') }}" alt="Upload">
+                        <img src="<?php echo e(asset('assets/images/add/Upload.svg')); ?>" alt="Upload">
                     </div>
                     <p class="upload_text" id="uploadText">Перетащите файл или загрузите</p>
                 </div>
@@ -60,9 +60,9 @@
             <div class="add_section">
                 <label class="add_label" for="pictureWidth">Размер картины <span class="required-star">*</span></label>
                 <div class="add_size_inputs">
-                    <input type="number" id="pictureWidth" class="add_input" placeholder="Ширина" min="1" value="{{ old('width') }}" required>
+                    <input type="number" id="pictureWidth" class="add_input" placeholder="Ширина" min="1" value="<?php echo e(old('width')); ?>" required>
                     <span class="size_separator">x</span>
-                    <input type="number" id="pictureHeight" class="add_input" placeholder="Высота" min="1" value="{{ old('height') }}" required>
+                    <input type="number" id="pictureHeight" class="add_input" placeholder="Высота" min="1" value="<?php echo e(old('height')); ?>" required>
                 </div>
                 <div class="field_error" id="pictureWidthError"></div>
                 <div class="field_error" id="pictureHeightError"></div>
@@ -70,7 +70,7 @@
 
             <div class="add_section">
                 <label class="add_label" for="pictureName">Название картины <span class="required-star">*</span></label>
-                <input type="text" id="pictureName" class="add_input add_input_full" placeholder="Введите название картины" maxlength="255" value="{{ old('name') }}" required>
+                <input type="text" id="pictureName" class="add_input add_input_full" placeholder="Введите название картины" maxlength="255" value="<?php echo e(old('name')); ?>" required>
                 <div class="field_error" id="pictureNameError"></div>
             </div>
 
@@ -78,7 +78,7 @@
                 <button class="add_btn add_btn_cancel" type="button" id="cancelAdd">Отмена</button>
                 <button class="add_btn add_btn_next" type="button" data-next="2">
                     Следующий шаг
-                    <img src="{{ asset('assets/images/add/Right.svg') }}" alt="Next">
+                    <img src="<?php echo e(asset('assets/images/add/Right.svg')); ?>" alt="Next">
                 </button>
             </div>
         </div>
@@ -93,30 +93,30 @@
             <div class="add_row">
                 <div class="add_section add_section_half">
                     <label class="add_label" for="pictureTechnique">Техника написания <span class="required-star">*</span></label>
-                    <input type="text" id="pictureTechnique" class="add_input" placeholder="Гуашь, пастель" maxlength="255" value="{{ old('technique') }}" required>
+                    <input type="text" id="pictureTechnique" class="add_input" placeholder="Гуашь, пастель" maxlength="255" value="<?php echo e(old('technique')); ?>" required>
                     <div class="field_error" id="pictureTechniqueError"></div>
                 </div>
                 <div class="add_section add_section_half">
                     <label class="add_label" for="pictureYear">Год написания <span class="required-star">*</span></label>
-                    <input type="number" id="pictureYear" class="add_input" placeholder="ГГГГ" min="1000" max="{{ date('Y') }}" value="{{ old('year') }}" required>
+                    <input type="number" id="pictureYear" class="add_input" placeholder="ГГГГ" min="1000" max="<?php echo e(date('Y')); ?>" value="<?php echo e(old('year')); ?>" required>
                     <div class="field_error" id="pictureYearError"></div>
                 </div>
             </div>
 
             <div class="add_section">
                 <label class="add_label" for="pictureDescription">Описание картины <span class="required-star">*</span></label>
-                <textarea id="pictureDescription" class="add_textarea" placeholder="Введите описание картины" required>{{ old('description') }}</textarea>
+                <textarea id="pictureDescription" class="add_textarea" placeholder="Введите описание картины" required><?php echo e(old('description')); ?></textarea>
                 <div class="field_error" id="pictureDescriptionError"></div>
             </div>
 
             <div class="add_buttons">
                 <button class="add_btn add_btn_back" type="button" data-prev="1">
-                    <img src="{{ asset('assets/images/add/Left.svg') }}" alt="Back">
+                    <img src="<?php echo e(asset('assets/images/add/Left.svg')); ?>" alt="Back">
                     Назад
                 </button>
                 <button class="add_btn add_btn_next" type="button" data-next="3">
                     Следующий шаг
-                    <img src="{{ asset('assets/images/add/Right.svg') }}" alt="Next">
+                    <img src="<?php echo e(asset('assets/images/add/Right.svg')); ?>" alt="Next">
                 </button>
             </div>
         </div>
@@ -131,17 +131,17 @@
             <div class="add_section">
                 <label class="add_label">Жанр <span class="required-star">*</span></label>
                 <div class="custom_select" data-select="genre_id">
-                    <input type="hidden" id="genreId" value="{{ old('genre_id') }}">
+                    <input type="hidden" id="genreId" value="<?php echo e(old('genre_id')); ?>">
                     <div class="custom_select_trigger">
                         <span class="custom_select_text">Выберите жанр вашей картины</span>
-                        <img src="{{ asset('assets/images/add/Arrow.svg') }}" alt="Arrow" class="select_arrow">
+                        <img src="<?php echo e(asset('assets/images/add/Arrow.svg')); ?>" alt="Arrow" class="select_arrow">
                     </div>
                     <div class="custom_select_options">
-                        @forelse($genres as $genre)
-                            <button class="custom_select_option" type="button" data-value="{{ $genre->id }}">{{ $genre->name }}</button>
-                        @empty
+                        <?php $__empty_1 = true; $__currentLoopData = $genres; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $genre): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                            <button class="custom_select_option" type="button" data-value="<?php echo e($genre->id); ?>"><?php echo e($genre->name); ?></button>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <button class="custom_select_option" type="button" disabled>Жанры не добавлены</button>
-                        @endforelse
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="field_error" id="genreIdError"></div>
@@ -150,17 +150,17 @@
             <div class="add_section">
                 <label class="add_label">Стиль <span class="required-star">*</span></label>
                 <div class="custom_select" data-select="style_id">
-                    <input type="hidden" id="styleId" value="{{ old('style_id') }}">
+                    <input type="hidden" id="styleId" value="<?php echo e(old('style_id')); ?>">
                     <div class="custom_select_trigger">
                         <span class="custom_select_text">Выберите стиль написания</span>
-                        <img src="{{ asset('assets/images/add/Arrow.svg') }}" alt="Arrow" class="select_arrow">
+                        <img src="<?php echo e(asset('assets/images/add/Arrow.svg')); ?>" alt="Arrow" class="select_arrow">
                     </div>
                     <div class="custom_select_options">
-                        @forelse($styles as $style)
-                            <button class="custom_select_option" type="button" data-value="{{ $style->id }}">{{ $style->name }}</button>
-                        @empty
+                        <?php $__empty_1 = true; $__currentLoopData = $styles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $style): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                            <button class="custom_select_option" type="button" data-value="<?php echo e($style->id); ?>"><?php echo e($style->name); ?></button>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <button class="custom_select_option" type="button" disabled>Стили не добавлены</button>
-                        @endforelse
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="field_error" id="styleIdError"></div>
@@ -169,17 +169,17 @@
             <div class="add_section">
                 <label class="add_label">Эпоха <span class="required-star">*</span></label>
                 <div class="custom_select" data-select="era_id">
-                    <input type="hidden" id="eraId" value="{{ old('era_id') }}">
+                    <input type="hidden" id="eraId" value="<?php echo e(old('era_id')); ?>">
                     <div class="custom_select_trigger">
                         <span class="custom_select_text">Выберите эпоху картины</span>
-                        <img src="{{ asset('assets/images/add/Arrow.svg') }}" alt="Arrow" class="select_arrow">
+                        <img src="<?php echo e(asset('assets/images/add/Arrow.svg')); ?>" alt="Arrow" class="select_arrow">
                     </div>
                     <div class="custom_select_options">
-                        @forelse($eras as $era)
-                            <button class="custom_select_option" type="button" data-value="{{ $era->id }}">{{ $era->name }}</button>
-                        @empty
+                        <?php $__empty_1 = true; $__currentLoopData = $eras; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $era): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                            <button class="custom_select_option" type="button" data-value="<?php echo e($era->id); ?>"><?php echo e($era->name); ?></button>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                             <button class="custom_select_option" type="button" disabled>Эпохи не добавлены</button>
-                        @endforelse
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="field_error" id="eraIdError"></div>
@@ -187,12 +187,12 @@
 
             <div class="add_buttons">
                 <button class="add_btn add_btn_back" type="button" data-prev="2">
-                    <img src="{{ asset('assets/images/add/Left.svg') }}" alt="Back">
+                    <img src="<?php echo e(asset('assets/images/add/Left.svg')); ?>" alt="Back">
                     Назад
                 </button>
                 <button class="add_btn add_btn_next" type="button" data-next="4">
                     Следующий шаг
-                    <img src="{{ asset('assets/images/add/Right.svg') }}" alt="Next">
+                    <img src="<?php echo e(asset('assets/images/add/Right.svg')); ?>" alt="Next">
                 </button>
             </div>
         </div>
@@ -200,22 +200,22 @@
 
     <div class="add_modal" data-step="4">
         <div class="add_modal_content">
-            <h1 class="add_title">{{ $auctionFromPicture ? 'Добавление в аукцион' : 'Расчет стоимости' }}</h1>
-            <p class="add_subtitle">{{ $auctionFromPicture ? 'Заполните ценовые значения для аукциона. Данные картины уже сохранены.' : 'Выберите формат размещения и заполните данные о цене' }}</p>
+            <h1 class="add_title"><?php echo e($auctionFromPicture ? 'Добавление в аукцион' : 'Расчет стоимости'); ?></h1>
+            <p class="add_subtitle"><?php echo e($auctionFromPicture ? 'Заполните ценовые значения для аукциона. Данные картины уже сохранены.' : 'Выберите формат размещения и заполните данные о цене'); ?></p>
             <div class="add_line"></div>
 
             <div class="listing_tabs" role="tablist" aria-label="Формат размещения">
-                <button class="listing_tab {{ $auctionFromPicture ? 'disabled' : 'active' }}" type="button" data-listing-type="gallery" {{ $auctionFromPicture ? 'disabled' : '' }}>Продажа в галерее</button>
-                <button class="listing_tab {{ $auctionFromPicture ? 'active' : '' }}" type="button" data-listing-type="auction">Аукцион</button>
+                <button class="listing_tab <?php echo e($auctionFromPicture ? 'disabled' : 'active'); ?>" type="button" data-listing-type="gallery" <?php echo e($auctionFromPicture ? 'disabled' : ''); ?>>Продажа в галерее</button>
+                <button class="listing_tab <?php echo e($auctionFromPicture ? 'active' : ''); ?>" type="button" data-listing-type="auction">Аукцион</button>
             </div>
 
-            <div class="listing_panel {{ $auctionFromPicture ? '' : 'active' }}" data-listing-panel="gallery">
+            <div class="listing_panel <?php echo e($auctionFromPicture ? '' : 'active'); ?>" data-listing-panel="gallery">
                 <div class="add_section">
                     <div class="add_price_header">
                         <label class="add_label" for="priceYouGet">Цена, ₽ <span class="required-star">*</span></label>
                         <span class="add_price_hint">Сколько вы получите</span>
                     </div>
-                    <input type="number" class="add_input add_input_full" placeholder="Введите цену вашей картины" id="priceYouGet" min="100" value="{{ old('price') }}" required>
+                    <input type="number" class="add_input add_input_full" placeholder="Введите цену вашей картины" id="priceYouGet" min="100" value="<?php echo e(old('price')); ?>" required>
                     <div class="field_error" id="priceYouGetError"></div>
                 </div>
 
@@ -228,7 +228,7 @@
                 </div>
             </div>
 
-            <div class="listing_panel {{ $auctionFromPicture ? 'active' : '' }}" data-listing-panel="auction">
+            <div class="listing_panel <?php echo e($auctionFromPicture ? 'active' : ''); ?>" data-listing-panel="auction">
                 <div class="add_section">
                     <div class="add_price_header">
                         <label class="add_label" for="auctionStartPrice">Стартовая цена, ₽ <span class="required-star">*</span></label>
@@ -274,13 +274,13 @@
             </div>
 
             <div class="add_buttons">
-                @if($auctionFromPicture)
+                <?php if($auctionFromPicture): ?>
                     <button class="add_btn add_btn_cancel" type="button" id="cancelAuctionConversion">
                         Отмена
                     </button>
-                @endif
-                <button class="add_btn add_btn_back" type="button" data-prev="3" @if($auctionFromPicture) style="display: none;" disabled @endif>
-                    <img src="{{ asset('assets/images/add/Left.svg') }}" alt="Back">
+                <?php endif; ?>
+                <button class="add_btn add_btn_back" type="button" data-prev="3" <?php if($auctionFromPicture): ?> style="display: none;" disabled <?php endif; ?>>
+                    <img src="<?php echo e(asset('assets/images/add/Left.svg')); ?>" alt="Back">
                     Назад
                 </button>
                 <button class="add_btn add_btn_submit" type="button" id="submitPicture">
@@ -293,7 +293,7 @@
     <div class="success_modal_overlay" id="successModal">
         <div class="success_modal">
             <div class="success_icon">
-                <img src="{{ asset('assets/images/add/Success.svg') }}" alt="Success">
+                <img src="<?php echo e(asset('assets/images/add/Success.svg')); ?>" alt="Success">
             </div>
             <h2 class="success_title" id="successTitle">Ваша картина будет выставлена<br>в галерею после модерации</h2>
             <button class="success_btn" id="successOkBtn" type="button">OK!</button>
@@ -301,9 +301,9 @@
     </div>
 </main>
 
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('scripts')
+<?php $__env->startSection('scripts'); ?>
 <style>
 .add_upload_area.drag-over,
 .add_upload_area.uploaded {
@@ -395,10 +395,10 @@
 (() => {
     const currentYear = new Date().getFullYear();
     const commissionRate = 0.07;
-    const addPictureUrl = "{{ url('/api/picture/add') }}";
-    const galleryToAuctionUrl = "{{ url('/api/picture/gallery-to-auction') }}";
-    const accountUrl = "{{ url('/account') }}";
-    const auctionFromPicture = @json($auctionFromPicturePayload);
+    const addPictureUrl = "<?php echo e(url('/api/picture/add')); ?>";
+    const galleryToAuctionUrl = "<?php echo e(url('/api/picture/gallery-to-auction')); ?>";
+    const accountUrl = "<?php echo e(url('/account')); ?>";
+    const auctionFromPicture = <?php echo json_encode($auctionFromPicturePayload, 15, 512) ?>;
     const isAuctionConversion = Boolean(auctionFromPicture);
     const formState = {
         image: null,
@@ -493,7 +493,7 @@
         wrapper.innerHTML = `
             <div class="custom_select_trigger">
                 <span class="custom_select_text">${auctionDurationHours.options[auctionDurationHours.selectedIndex]?.textContent.trim() || 'Выберите таймер'}</span>
-                <img src="{{ asset('assets/images/add/Arrow.svg') }}" alt="Arrow" class="select_arrow">
+                <img src="<?php echo e(asset('assets/images/add/Arrow.svg')); ?>" alt="Arrow" class="select_arrow">
             </div>
             <div class="custom_select_options"></div>
         `;
@@ -1022,4 +1022,6 @@
     updateBuyerPriceFromSeller();
 })();
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\OSPanel\domains\canvas-laravel01\resources\views/picture/create.blade.php ENDPATH**/ ?>

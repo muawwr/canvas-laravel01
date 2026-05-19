@@ -334,8 +334,8 @@
                 </div>
                 
                 <div class="footer-column">
-                    <p class="footer-year">2025</p>
-                    <p class="footer-email">info@kanvas.ru</p>
+                    <p class="footer-year">2026</p>
+                    <a class="footer-email" href="mailto:info@kanvas.ru">info@kanvas.ru</a>
                     <a href="#" class="footer-link">Политика конфиденциальности</a>
                     <div class="social-links">
                         <a href="#" class="social-link">

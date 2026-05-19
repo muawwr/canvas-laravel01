@@ -17,6 +17,11 @@ class NotificationController extends Controller
             return view('notifications.index', compact('notifications'));
         }
 
+        $hasFreshAuctionWin = UserNotification::where('user_id', $userId)
+            ->where('type', 'auction_winner')
+            ->whereNull('read_at')
+            ->exists();
+
         UserNotification::where('user_id', $userId)
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
@@ -26,7 +31,7 @@ class NotificationController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
-        return view('notifications.index', compact('notifications'));
+        return view('notifications.index', compact('notifications', 'hasFreshAuctionWin'));
     }
 
     public function markAsRead(Request $request)

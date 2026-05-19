@@ -15,6 +15,7 @@ class CheckUserBan
             $user = User::find(session('user_id'));
 
             if ($user) {
+                UserBanService::processAuctionWins($user);
                 UserBanService::processAuctionPaymentViolations($user);
             }
         }

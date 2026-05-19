@@ -5,6 +5,9 @@ namespace App\Services;
 use App\Models\Order;
 use App\Models\Picture;
 use App\Models\User;
+use App\Models\UserNotification;
+use App\Models\Cart;
+use Illuminate\Support\Facades\Schema;
 
 class UserBanService
 {
@@ -36,6 +39,7 @@ class UserBanService
     {
         $activeBan = self::getActiveBan($user);
         if ($activeBan) {
+            self::ensureBlockNotification($activeBan);
             return $activeBan;
         }
 
@@ -79,6 +83,73 @@ class UserBanService
             'banned_until' => now()->addDays(7),
         ]);
 
-        return $user->fresh();
+        $freshUser = $user->fresh();
+
+        self::ensureBlockNotification($freshUser);
+
+        return $freshUser;
+    }
+
+    public static function processAuctionWins(User $user): void
+    {
+        $wonPictures = Picture::where('status', 'approved')
+            ->where('listing_type', 'auction')
+            ->whereNotNull('auction_ends_at')
+            ->where('auction_ends_at', '<=', now())
+            ->where('user_id', '!=', $user->id)
+            ->whereHas('latestAuctionBid', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->whereDoesntHave('orders', function ($query) {
+                $query->where('payment_status', 'succeeded');
+            })
+            ->with('latestAuctionBid')
+            ->get();
+
+        foreach ($wonPictures as $picture) {
+            Cart::firstOrCreate([
+                'user_id' => $user->id,
+                'picture_id' => $picture->id,
+            ]);
+
+            if (!Schema::hasTable('user_notifications')) {
+                continue;
+            }
+
+            NotificationService::pushOnce(
+                $user->id,
+                'auction_winner',
+                'Аукцион завершен',
+                'Вы победили в аукционе по картине "' . $picture->name . '". Перейдите в корзину для оформления заказа. В случае неоплаты в течение 24 часов доступ к покупкам будет ограничен на 7 дней.',
+                url('/cart'),
+                $picture->id
+            );
+        }
+    }
+
+    private static function ensureBlockNotification(User $user): void
+    {
+        if (!$user->banned_until || !Schema::hasTable('user_notifications')) {
+            return;
+        }
+
+        $banStartedAt = $user->banned_until->copy()->subDays(7)->subMinute();
+
+        $alreadyNotified = UserNotification::where('user_id', $user->id)
+            ->where('type', 'user_blocked')
+            ->where('created_at', '>=', $banStartedAt)
+            ->exists();
+
+        if ($alreadyNotified) {
+            return;
+        }
+
+        NotificationService::push(
+            $user->id,
+            'user_blocked',
+            'Доступ к покупкам ограничен',
+            'Вы временно заблокированы до ' . $user->banned_until->format('d.m.Y H:i') . ' из-за неоплаты выигранной аукционной картины.',
+            url('/cart')
+        );
     }
 }

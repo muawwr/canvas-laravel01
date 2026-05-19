@@ -1,7 +1,6 @@
-@extends('layouts.app')
-@section('nav-home-active', 'active')
+<?php $__env->startSection('nav-home-active', 'active'); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <main>
     <section class="hero section-spacing">
         <div class="hero-banner">
@@ -11,10 +10,10 @@
                 </div>
                 <div class="hero-title">
                     <img
-                        src="{{ asset('assets/images/banner/canvas.svg') }}"
+                        src="<?php echo e(asset('assets/images/banner/canvas.svg')); ?>"
                         data-theme-image
-                        data-dark-src="{{ asset('assets/images/banner/canvas.svg') }}"
-                        data-light-src="{{ asset('assets/images/banner/canvas-light.svg') }}"
+                        data-dark-src="<?php echo e(asset('assets/images/banner/canvas.svg')); ?>"
+                        data-light-src="<?php echo e(asset('assets/images/banner/canvas-light.svg')); ?>"
                         alt=""
                     >
                 </div>
@@ -39,13 +38,13 @@
                 </div>
             </div>
 
-            <figure class="tile i1"><img src="{{ asset('assets/images/mainGallery/1.png') }}" alt=""></figure>
-            <figure class="tile i2"><img src="{{ asset('assets/images/mainGallery/2.png') }}" alt=""></figure>
-            <figure class="tile i3"><img src="{{ asset('assets/images/mainGallery/3.png') }}" alt=""></figure>
-            <figure class="tile i4"><img src="{{ asset('assets/images/mainGallery/5.png') }}" alt=""></figure>
-            <figure class="tile i5"><img src="{{ asset('assets/images/mainGallery/4.png') }}" alt=""></figure>
-            <figure class="tile i6"><img src="{{ asset('assets/images/mainGallery/6.png') }}" alt=""></figure>
-            <figure class="tile i7"><img src="{{ asset('assets/images/mainGallery/7.png') }}" alt=""></figure>
+            <figure class="tile i1"><img src="<?php echo e(asset('assets/images/mainGallery/1.png')); ?>" alt=""></figure>
+            <figure class="tile i2"><img src="<?php echo e(asset('assets/images/mainGallery/2.png')); ?>" alt=""></figure>
+            <figure class="tile i3"><img src="<?php echo e(asset('assets/images/mainGallery/3.png')); ?>" alt=""></figure>
+            <figure class="tile i4"><img src="<?php echo e(asset('assets/images/mainGallery/5.png')); ?>" alt=""></figure>
+            <figure class="tile i5"><img src="<?php echo e(asset('assets/images/mainGallery/4.png')); ?>" alt=""></figure>
+            <figure class="tile i6"><img src="<?php echo e(asset('assets/images/mainGallery/6.png')); ?>" alt=""></figure>
+            <figure class="tile i7"><img src="<?php echo e(asset('assets/images/mainGallery/7.png')); ?>" alt=""></figure>
         </div>
     </div>
 
@@ -60,30 +59,30 @@
             <section class="artists container">
                 <div class="artists-carousel">
                     <div class="artists-track">
-                        @if($topArtists->count() > 0)
-                            @foreach($topArtists as $artist)
-                                <a href="{{ url('/account?user_id=' . $artist->id) }}" class="artist-card" data-artist-link>
+                        <?php if($topArtists->count() > 0): ?>
+                            <?php $__currentLoopData = $topArtists; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $artist): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <a href="<?php echo e(url('/account?user_id=' . $artist->id)); ?>" class="artist-card" data-artist-link>
                                     <div class="artist-avatar">
-                                        <img src="{{ asset($artist->img ?? 'assets/images/account/mainUser.png') }}" alt="{{ $artist->name }}">
+                                        <img src="<?php echo e(asset($artist->img ?? 'assets/images/account/mainUser.png')); ?>" alt="<?php echo e($artist->name); ?>">
                                     </div>
-                                    <h3 class="artist-name">{{ $artist->name }}</h3>
-                                    <p class="artist-sales">{{ $artist->sales_count }} продаж</p>
+                                    <h3 class="artist-name"><?php echo e($artist->name); ?></h3>
+                                    <p class="artist-sales"><?php echo e($artist->sales_count); ?> продаж</p>
                                 </a>
-                            @endforeach
-                        @else
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        <?php else: ?>
                             <div class="artist-card" style="text-align: center; color: #999;">
                                 <p>Пока нет художников с продажами</p>
                             </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
             </section>
         </div>
     </section>
 </main>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('scripts')
+<?php $__env->startSection('scripts'); ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('[data-artist-link]').forEach((card) => {
@@ -111,4 +110,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\OSPanel\domains\canvas-laravel01\resources\views/main.blade.php ENDPATH**/ ?>

@@ -6,9 +6,11 @@ use Illuminate\Http\Request;
 use App\Models\Picture;
 use App\Models\Favorite;
 use App\Models\Order;
+use App\Models\User;
 use App\Models\Genre;
 use App\Models\Style;
 use App\Models\Era;
+use App\Services\UserBanService;
 use Illuminate\Support\Facades\Schema;
 
 class PictureController extends Controller
@@ -18,6 +20,10 @@ class PictureController extends Controller
         $is_logged_in = session()->has('user_id');
         $user_avatar = session('user_img', 'assets/images/account/mainUser.png');
         $user_name = session('user_name', 'Гость');
+
+        $currentUser = $is_logged_in ? User::find(session('user_id')) : null;
+        $cartRestrictionMessage = $currentUser ? UserBanService::getRestrictionMessage($currentUser) : null;
+        $isUserBlocked = (bool) $cartRestrictionMessage;
 
         $pictureQuery = Picture::with(['user', 'genre', 'style', 'era', 'latestAuctionBid.user'])
             ->withCount('auctionBids')
@@ -67,7 +73,8 @@ class PictureController extends Controller
 
         return view('picture.show', compact(
             'is_logged_in', 'user_avatar', 'user_name',
-            'picture', 'likes_count', 'is_in_favorites', 'is_sold', 'backUrl'
+            'picture', 'likes_count', 'is_in_favorites', 'is_sold', 'backUrl',
+            'isUserBlocked', 'cartRestrictionMessage'
         ));
     }
 

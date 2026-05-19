@@ -33,6 +33,7 @@ class MainController extends Controller
 
         // Получаем топ художников по продажам
         $topArtists = User::select('users.*')
+            ->selectRaw('COUNT(DISTINCT orders.id) as sales_count')
             ->join('pictures', 'pictures.user_id', '=', 'users.id')
             ->join('orders', 'orders.picture_id', '=', 'pictures.id')
             ->where('orders.payment_status', 'succeeded')

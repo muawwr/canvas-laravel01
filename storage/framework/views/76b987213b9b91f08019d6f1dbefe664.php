@@ -1,42 +1,41 @@
-@extends('layouts.app')
-
-@section('content')
-<main class="auction_workspace container notifications_screen" data-auction-win-fireworks="{{ $hasFreshAuctionWin ?? false ? 'true' : 'false' }}">
+<?php $__env->startSection('content'); ?>
+<main class="auction_workspace container notifications_screen" data-auction-win-fireworks="<?php echo e($hasFreshAuctionWin ?? false ? 'true' : 'false'); ?>">
     <div class="auction_workspace_title">
         <h1>Уведомления:</h1>
-        <span>{{ $notifications->count() }}</span>
+        <span><?php echo e($notifications->count()); ?></span>
     </div>
 
-    @if($notifications->isEmpty())
+    <?php if($notifications->isEmpty()): ?>
         <div class="auction_empty">
             <h2>Уведомлений пока нет</h2>
             <p>Когда появятся новые события по картинам, заказам и аукционам, они отобразятся здесь.</p>
         </div>
-    @else
+    <?php else: ?>
         <div class="notifications_list">
-            @foreach($notifications as $notification)
+            <?php $__currentLoopData = $notifications; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $notification): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <article
-                    class="notification_card {{ $notification->type === 'auction_winner' ? 'notification_card_winner' : '' }}"
+                    class="notification_card <?php echo e($notification->type === 'auction_winner' ? 'notification_card_winner' : ''); ?>"
                     data-notification-card
-                    @if($notification->url) data-notification-url="{{ $notification->url }}" @endif
+                    <?php if($notification->url): ?> data-notification-url="<?php echo e($notification->url); ?>" <?php endif; ?>
                 >
                     <div class="notification_card_head">
                         <div class="notification_card_title_wrap">
-                            <h2>{{ $notification->title }}</h2>
+                            <h2><?php echo e($notification->title); ?></h2>
                         </div>
-                        <time datetime="{{ optional($notification->created_at)->toIso8601String() }}">
-                            {{ optional($notification->created_at)->format('d.m.Y H:i') }}
+                        <time datetime="<?php echo e(optional($notification->created_at)->toIso8601String()); ?>">
+                            <?php echo e(optional($notification->created_at)->format('d.m.Y H:i')); ?>
+
                         </time>
                     </div>
-                    <p class="notification_card_text">{{ $notification->message }}</p>
+                    <p class="notification_card_text"><?php echo e($notification->message); ?></p>
                 </article>
-            @endforeach
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
-    @endif
+    <?php endif; ?>
 </main>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('scripts')
+<?php $__env->startSection('scripts'); ?>
 <script>
 (() => {
     const screen = document.querySelector('.notifications_screen');
@@ -86,4 +85,6 @@
     });
 })();
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\OSPanel\domains\canvas-laravel01\resources\views/notifications/index.blade.php ENDPATH**/ ?>

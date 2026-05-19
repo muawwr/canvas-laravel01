@@ -26,6 +26,19 @@
         .input_group.error input {
             border-color: #c76060;
         }
+
+        .auth-field-label {
+            font-family: 'InterTight', sans-serif;
+    font-size: 18px;
+    font-weight: 400;
+    color: #E0E0E0;
+    margin-top: 5px;
+
+        }
+
+        .required-star {
+            color: #FBFF83;
+        }
     </style>
 </head>
 <body>
@@ -81,41 +94,45 @@
                 @endif
 
                 <div class="form_inputs">
+                    <label class="auth-field-label" for="registerName">Отображаемое имя <span class="required-star">*</span></label>
                     <div class="input_group {{ $errors->has('name') ? 'error' : '' }}">
                         <div class="input_icon">
                             <img src="{{ asset('assets/images/reg/User.svg') }}" alt="Пользователь">
                         </div>
-                        <input type="text" name="name" placeholder="Отображаемое имя" value="{{ old('name') }}" autocomplete="off">
+                        <input type="text" id="registerName" name="name" placeholder="Отображаемое имя" value="{{ old('name') }}" autocomplete="off" required>
                     </div>
                     @if($errors->has('name'))
                         <span class="error-message">{{ $errors->first('name') }}</span>
                     @endif
 
+                    <label class="auth-field-label" for="registerEmail">Электронная почта <span class="required-star">*</span></label>
                     <div class="input_group {{ $errors->has('email') ? 'error' : '' }}">
                         <div class="input_icon">
                             <img src="{{ asset('assets/images/reg/Mail.svg') }}" alt="Email">
                         </div>
-                        <input type="email" name="email" placeholder="Электронная почта" value="{{ old('email') }}" autocomplete="off">
+                        <input type="email" id="registerEmail" name="email" placeholder="Электронная почта" value="{{ old('email') }}" autocomplete="off" required>
                     </div>
                     @if($errors->has('email'))
                         <span class="error-message">{{ $errors->first('email') }}</span>
                     @endif
 
+                    <label class="auth-field-label" for="registerPassword">Пароль <span class="required-star">*</span></label>
                     <div class="input_group {{ $errors->has('password') ? 'error' : '' }}">
                         <div class="input_icon">
                             <img src="{{ asset('assets/images/reg/Lock.svg') }}" alt="Пароль">
                         </div>
-                        <input type="password" name="password" placeholder="Пароль" autocomplete="new-password">
+                        <input type="password" id="registerPassword" name="password" placeholder="Пароль" autocomplete="new-password" required>
                     </div>
                     @if($errors->has('password'))
                         <span class="error-message">{{ $errors->first('password') }}</span>
                     @endif
 
+                    <label class="auth-field-label" for="registerPasswordConfirmation">Повтор пароля <span class="required-star">*</span></label>
                     <div class="input_group {{ $errors->has('password_confirmation') ? 'error' : '' }}">
                         <div class="input_icon">
                             <img src="{{ asset('assets/images/reg/Lock.svg') }}" alt="Подтверждение пароля">
                         </div>
-                        <input type="password" name="password_confirmation" placeholder="Повтор пароля" autocomplete="new-password">
+                        <input type="password" id="registerPasswordConfirmation" name="password_confirmation" placeholder="Повтор пароля" autocomplete="new-password" required>
                     </div>
                     @if($errors->has('password_confirmation'))
                         <span class="error-message">{{ $errors->first('password_confirmation') }}</span>

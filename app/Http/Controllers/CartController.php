@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use App\Models\Picture;
+use App\Models\User;
 use App\Services\NotificationService;
+use App\Services\UserBanService;
 
 class CartController extends Controller
 {
@@ -14,6 +16,28 @@ class CartController extends Controller
         $user_avatar = session('user_img', 'assets/images/account/mainUser.png');
         $user_name = session('user_name', 'Гость');
         $user_id = session('user_id');
+
+        $user = $user_id ? User::find($user_id) : null;
+        $ban = $user ? UserBanService::getActiveBan($user) : null;
+        $isBlocked = (bool) $ban;
+        $restrictionMessage = $user ? UserBanService::getRestrictionMessage($user) : null;
+        $bannedUntil = $ban?->banned_until;
+
+        if ($isBlocked) {
+            $cartItems = collect();
+            $totalPrice = 0;
+
+            return view('cart', compact(
+                'is_logged_in',
+                'user_avatar',
+                'user_name',
+                'cartItems',
+                'totalPrice',
+                'isBlocked',
+                'restrictionMessage',
+                'bannedUntil'
+            ));
+        }
 
         if ($is_logged_in) {
             $wonAuctionIds = Picture::where('status', 'approved')
@@ -66,7 +90,10 @@ class CartController extends Controller
             'user_avatar',
             'user_name',
             'cartItems',
-            'totalPrice'
+            'totalPrice',
+            'isBlocked',
+            'restrictionMessage',
+            'bannedUntil'
         ));
     }
 }

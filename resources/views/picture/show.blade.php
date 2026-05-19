@@ -1,9 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-@php
-    $watermarkArtist = '@' . preg_replace('/\s+/', '_', trim($picture->user->name ?? 'artist'));
-@endphp
 <main>
     <div class="one_product container">
         <div>
@@ -11,7 +8,7 @@
         </div>
 
         <div class="product_image product_image_magnifier" data-magnifier>
-            <span class="product_image_frame" data-watermark="canvas.gallery / {{ $watermarkArtist }}">
+            <span class="product_image_frame">
                 <img src="{{ asset($picture->img) }}" alt="{{ $picture->name }}" data-magnifier-image>
             </span>
             <div class="product_magnifier_lens" data-magnifier-lens aria-hidden="true"></div>
@@ -177,7 +174,12 @@
                             </div>
                         @else
                             @if(session()->has('user_id'))
-                                <div class="cart" id="addToCartBtn" data-picture-id="{{ $picture->id }}" style="cursor: pointer;">
+                                <div
+                                    class="cart {{ $isUserBlocked ?? false ? 'cart-disabled' : '' }}"
+                                    id="addToCartBtn"
+                                    data-picture-id="{{ $picture->id }}"
+                                    @if($isUserBlocked ?? false) data-blocked-message="{{ $cartRestrictionMessage }}" title="{{ $cartRestrictionMessage }}" @endif
+                                >
                                     В корзину<img src="{{ asset('assets/images/oneProduct/Right.svg') }}" alt="">
                                 </div>
                             @else
@@ -226,6 +228,12 @@
 .fav.active img { filter: brightness(0) saturate(100%) invert(92%) sepia(93%) saturate(497%) hue-rotate(359deg) brightness(104%) contrast(103%); }
 .fav:hover { opacity: 0.8; transform: scale(1.02); }
 .fav.loading { pointer-events: none; opacity: 0.6; }
+.cart-disabled,
+.cart-disabled:hover {
+    cursor: not-allowed !important;
+    opacity: 0.55;
+    pointer-events: auto;
+}
 </style>
 
 <script src="{{ asset('script.js') }}"></script>
@@ -328,6 +336,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const addToCartBtn = document.getElementById('addToCartBtn');
     if (addToCartBtn) {
         addToCartBtn.addEventListener('click', async function() {
+            if (this.classList.contains('cart-disabled')) {
+                return;
+            }
+
             if (this.classList.contains('loading')) return;
 
             const pictureId = this.getAttribute('data-picture-id');

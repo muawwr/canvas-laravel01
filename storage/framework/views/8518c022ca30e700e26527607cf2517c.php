@@ -1,15 +1,13 @@
-@extends('layouts.app')
+<?php $__env->startSection('nav-profile-active', 'active'); ?>
 
-@section('nav-profile-active', 'active')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <main
     class="edit_main container"
     data-managed-edit-page="custom"
-    data-picture-id="{{ $picture->id }}"
-    data-genre-id="{{ $picture->genre_id }}"
-    data-style-id="{{ $picture->style_id }}"
-    data-era-id="{{ $picture->era_id }}"
+    data-picture-id="<?php echo e($picture->id); ?>"
+    data-genre-id="<?php echo e($picture->genre_id); ?>"
+    data-style-id="<?php echo e($picture->style_id); ?>"
+    data-era-id="<?php echo e($picture->era_id); ?>"
 >
     <div class="edit_container">
         <div class="edit_header">
@@ -25,10 +23,10 @@
                     <label class="edit_label">Изображение</label>
                     <button class="edit_upload_area" id="uploadArea" type="button">
                         <input type="file" id="imageInput" class="upload_input" accept="image/jpeg,image/png,image/jpg,image/webp">
-                        <img id="previewImage" class="edit_upload_preview" src="{{ asset($picture->img) }}" alt="{{ $picture->name }}">
+                        <img id="previewImage" class="edit_upload_preview" src="<?php echo e(asset($picture->img)); ?>" alt="<?php echo e($picture->name); ?>">
                         <div class="edit_upload_overlay">
                             <div class="upload_icon">
-                                <img src="{{ asset('assets/images/add/Upload.svg') }}" alt="Загрузить">
+                                <img src="<?php echo e(asset('assets/images/add/Upload.svg')); ?>" alt="Загрузить">
                             </div>
                             <p class="upload_text" id="uploadText">Заменить изображение</p>
                             <span class="edit_upload_hint">PNG, JPG или WEBP</span>
@@ -37,95 +35,95 @@
                 </div>
 
                 <div class="edit_section">
-                    <label class="edit_label">Размер картины <span class="required-star">*</span></label>
+                    <label class="edit_label">Размер картины</label>
                     <div class="edit_size_inputs">
-                        <input type="number" id="widthInput" class="edit_input" placeholder="Ширина" min="1" value="{{ $picture->width }}" required>
+                        <input type="number" id="widthInput" class="edit_input" placeholder="Ширина" min="1" value="<?php echo e($picture->width); ?>">
                         <span class="size_separator">×</span>
-                        <input type="number" id="heightInput" class="edit_input" placeholder="Высота" min="1" value="{{ $picture->height }}" required>
+                        <input type="number" id="heightInput" class="edit_input" placeholder="Высота" min="1" value="<?php echo e($picture->height); ?>">
                     </div>
                 </div>
 
                 <div class="edit_section">
-                    <label class="edit_label" for="nameInput">Название картины <span class="required-star">*</span></label>
-                    <input type="text" class="edit_input edit_input_full" id="nameInput" placeholder="Введите название картины" maxlength="255" value="{{ $picture->name }}" required>
+                    <label class="edit_label" for="nameInput">Название картины</label>
+                    <input type="text" class="edit_input edit_input_full" id="nameInput" placeholder="Введите название картины" maxlength="255" value="<?php echo e($picture->name); ?>">
                 </div>
 
                 <div class="edit_row">
                     <div class="edit_section edit_section_half">
-                        <label class="edit_label" for="techniqueInput">Техника написания <span class="required-star">*</span></label>
-                        <input type="text" class="edit_input" id="techniqueInput" placeholder="Гуашь, пастель" maxlength="255" value="{{ $picture->technique }}" required>
+                        <label class="edit_label" for="techniqueInput">Техника написания</label>
+                        <input type="text" class="edit_input" id="techniqueInput" placeholder="Гуашь, пастель" maxlength="255" value="<?php echo e($picture->technique); ?>">
                     </div>
 
                     <div class="edit_section edit_section_half">
-                        <label class="edit_label" for="yearInput">Год написания <span class="required-star">*</span></label>
-                        <input type="number" class="edit_input" id="yearInput" placeholder="ГГГГ" min="1000" max="{{ date('Y') }}" value="{{ $picture->year }}" required>
+                        <label class="edit_label" for="yearInput">Год написания</label>
+                        <input type="number" class="edit_input" id="yearInput" placeholder="ГГГГ" min="1000" max="<?php echo e(date('Y')); ?>" value="<?php echo e($picture->year); ?>">
                     </div>
                 </div>
 
                 <div class="edit_section">
-                    <label class="edit_label" for="descriptionInput">Описание картины <span class="required-star">*</span></label>
-                    <textarea class="edit_textarea" id="descriptionInput" placeholder="Введите описание картины" maxlength="5000" required>{{ $picture->description }}</textarea>
+                    <label class="edit_label" for="descriptionInput">Описание картины</label>
+                    <textarea class="edit_textarea" id="descriptionInput" placeholder="Введите описание картины" maxlength="5000"><?php echo e($picture->description); ?></textarea>
                 </div>
             </section>
 
             <aside class="edit_right">
                 <div class="edit_section">
-                    <label class="edit_label">Жанр <span class="required-star">*</span></label>
+                    <label class="edit_label">Жанр</label>
                     <div class="custom_select has-value" data-select="genre_id" id="genreSelect">
                         <div class="custom_select_trigger">
-                            <span class="custom_select_text">{{ optional($genres->firstWhere('id', $picture->genre_id))->name ?? 'Выберите жанр' }}</span>
-                            <img src="{{ asset('assets/images/add/Arrow.svg') }}" alt="Открыть список" class="select_arrow">
+                            <span class="custom_select_text"><?php echo e(optional($genres->firstWhere('id', $picture->genre_id))->name ?? 'Выберите жанр'); ?></span>
+                            <img src="<?php echo e(asset('assets/images/add/Arrow.svg')); ?>" alt="Открыть список" class="select_arrow">
                         </div>
                         <div class="custom_select_options">
-                            @forelse ($genres as $genre)
-                                <button class="custom_select_option {{ $picture->genre_id == $genre->id ? 'selected' : '' }}" type="button" data-value="{{ $genre->id }}">{{ $genre->name }}</button>
-                            @empty
+                            <?php $__empty_1 = true; $__currentLoopData = $genres; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $genre): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                <button class="custom_select_option <?php echo e($picture->genre_id == $genre->id ? 'selected' : ''); ?>" type="button" data-value="<?php echo e($genre->id); ?>"><?php echo e($genre->name); ?></button>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                 <button class="custom_select_option" type="button" disabled>Жанры не добавлены</button>
-                            @endforelse
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
 
                 <div class="edit_section">
-                    <label class="edit_label">Стиль <span class="required-star">*</span></label>
+                    <label class="edit_label">Стиль</label>
                     <div class="custom_select has-value" data-select="style_id" id="styleSelect">
                         <div class="custom_select_trigger">
-                            <span class="custom_select_text">{{ optional($styles->firstWhere('id', $picture->style_id))->name ?? 'Выберите стиль' }}</span>
-                            <img src="{{ asset('assets/images/add/Arrow.svg') }}" alt="Открыть список" class="select_arrow">
+                            <span class="custom_select_text"><?php echo e(optional($styles->firstWhere('id', $picture->style_id))->name ?? 'Выберите стиль'); ?></span>
+                            <img src="<?php echo e(asset('assets/images/add/Arrow.svg')); ?>" alt="Открыть список" class="select_arrow">
                         </div>
                         <div class="custom_select_options">
-                            @forelse ($styles as $style)
-                                <button class="custom_select_option {{ $picture->style_id == $style->id ? 'selected' : '' }}" type="button" data-value="{{ $style->id }}">{{ $style->name }}</button>
-                            @empty
+                            <?php $__empty_1 = true; $__currentLoopData = $styles; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $style): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                <button class="custom_select_option <?php echo e($picture->style_id == $style->id ? 'selected' : ''); ?>" type="button" data-value="<?php echo e($style->id); ?>"><?php echo e($style->name); ?></button>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                 <button class="custom_select_option" type="button" disabled>Стили не добавлены</button>
-                            @endforelse
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
 
                 <div class="edit_section">
-                    <label class="edit_label">Эпоха <span class="required-star">*</span></label>
+                    <label class="edit_label">Эпоха</label>
                     <div class="custom_select has-value" data-select="era_id" id="eraSelect">
                         <div class="custom_select_trigger">
-                            <span class="custom_select_text">{{ optional($eras->firstWhere('id', $picture->era_id))->name ?? 'Выберите эпоху' }}</span>
-                            <img src="{{ asset('assets/images/add/Arrow.svg') }}" alt="Открыть список" class="select_arrow">
+                            <span class="custom_select_text"><?php echo e(optional($eras->firstWhere('id', $picture->era_id))->name ?? 'Выберите эпоху'); ?></span>
+                            <img src="<?php echo e(asset('assets/images/add/Arrow.svg')); ?>" alt="Открыть список" class="select_arrow">
                         </div>
                         <div class="custom_select_options">
-                            @forelse ($eras as $era)
-                                <button class="custom_select_option {{ $picture->era_id == $era->id ? 'selected' : '' }}" type="button" data-value="{{ $era->id }}">{{ $era->name }}</button>
-                            @empty
+                            <?php $__empty_1 = true; $__currentLoopData = $eras; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $era): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                <button class="custom_select_option <?php echo e($picture->era_id == $era->id ? 'selected' : ''); ?>" type="button" data-value="<?php echo e($era->id); ?>"><?php echo e($era->name); ?></button>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                 <button class="custom_select_option" type="button" disabled>Эпохи не добавлены</button>
-                            @endforelse
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
 
                 <div class="edit_section">
                     <div class="edit_price_header">
-                        <label class="edit_label" for="editPriceYouGet">Цена, ₽ <span class="required-star">*</span></label>
+                        <label class="edit_label" for="editPriceYouGet">Цена, ₽</label>
                         <span class="edit_price_hint">Сколько вы получите</span>
                     </div>
-                    <input type="number" class="edit_input edit_input_full" id="editPriceYouGet" placeholder="Введите цену" min="100" value="{{ $picture->price }}" required>
+                    <input type="number" class="edit_input edit_input_full" id="editPriceYouGet" placeholder="Введите цену" min="100" value="<?php echo e($picture->price); ?>">
                 </div>
 
                 <div class="edit_section">
@@ -133,15 +131,15 @@
                         <label class="edit_label" for="editPriceBuyerPays">Цена, ₽</label>
                         <span class="edit_price_hint">Сколько заплатит покупатель с комиссией</span>
                     </div>
-                    <input type="number" class="edit_input edit_input_full" id="editPriceBuyerPays" value="{{ (int) round($picture->price / (1 - 0.10)) }}" readonly>
+                    <input type="number" class="edit_input edit_input_full" id="editPriceBuyerPays" value="<?php echo e((int) round($picture->price / (1 - 0.10))); ?>" readonly>
                 </div>
 
 
                 <div class="edit_buttons">
-                    <a href="{{ url('/picture/' . $picture->id) }}" class="edit_btn edit_btn_cancel">Отмена</a>
+                    <a href="<?php echo e(url('/picture/' . $picture->id)); ?>" class="edit_btn edit_btn_cancel">Отмена</a>
                     <button class="edit_btn edit_btn_submit" id="saveBtn" type="button">
                         Сохранить
-                        <img src="{{ asset('assets/images/add/Right.svg') }}" alt="Сохранить">
+                        <img src="<?php echo e(asset('assets/images/add/Right.svg')); ?>" alt="Сохранить">
                     </button>
                 </div>
             </aside>
@@ -152,16 +150,16 @@
 <div class="success_modal_overlay" id="editSuccessModal" style="display: none;">
     <div class="success_modal">
         <div class="success_icon">
-            <img src="{{ asset('assets/images/add/Success.svg') }}" alt="Успешно">
+            <img src="<?php echo e(asset('assets/images/add/Success.svg')); ?>" alt="Успешно">
         </div>
         <h2 class="success_title">Изменения отправлены на модерацию</h2>
         <button class="success_btn" id="editSuccessOkBtn" type="button">OK!</button>
     </div>
 </div>
 
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('scripts')
+<?php $__env->startSection('scripts'); ?>
 <style>
     .error-message {
         display: block;
@@ -501,4 +499,6 @@
         });
     });
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\OSPanel\domains\canvas-laravel01\resources\views/picture/edit.blade.php ENDPATH**/ ?>

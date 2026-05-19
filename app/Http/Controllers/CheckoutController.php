@@ -42,7 +42,11 @@ class CheckoutController extends Controller
         $keepSoldInGallery = $request->boolean('keep_sold_in_gallery');
 
         if ($pictureIds === '' || $pickupPoint === '' || $recipientName === '') {
-            return redirect('/cart')->with('error', 'Заполните все поля');
+            return redirect('/cart')->with('error', 'Заполните все обязательные поля');
+        }
+
+        if (!$this->isValidPickupPoint($pickupPoint)) {
+            return redirect('/cart')->with('error', 'Адрес должен быть в формате: г. Москва, ул. Ленина, д. 1.');
         }
 
         $pictureIdsArray = array_values(array_filter(array_map('intval', explode(',', $pictureIds))));
@@ -135,6 +139,17 @@ class CheckoutController extends Controller
             ->whereIn('picture_id', $pictureIdsArray)
             ->with(['picture.user', 'picture.latestAuctionBid'])
             ->get();
+    }
+
+    protected function isValidPickupPoint(string $pickupPoint): bool
+    {
+        $normalized = mb_strtolower(trim($pickupPoint));
+
+        if (preg_match('/бари\s+галеева/u', $normalized)) {
+            return false;
+        }
+
+        return (bool) preg_match('/^г\.\s*[^,]+,\s*ул\.\s*[^,]+,\s*д\.\s*\d+[а-яёa-z]?$/ui', $pickupPoint);
     }
 
     protected function createYooKassaPayment(int $totalAmount, int $userId, string $pictureIds, string $pickupPoint, string $recipientName): array

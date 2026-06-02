@@ -3,10 +3,12 @@
 @section('content')
 <main>
     <div class="cart_main container">
+        @unless($isBlocked ?? false)
         <div class="main_page_title">
             <h3 class="main_title">В корзине:</h3>
             <div class="count_page" id="cartTotalCount">{{ $cartItems->count() }}</div>
         </div>
+        @endunless
 
         @if($isBlocked ?? false)
             <div class="blocked-cart-state" data-banned-until="{{ optional($bannedUntil)->toIso8601String() }}">
@@ -84,7 +86,7 @@
                         <div class="cart_checkout_field">
                             <label class="checkout_label" for="pickupPoint">Заполните пункт выдачи <span class="required-star">*</span></label>
                             <div class="checkout_input_wrapper">
-                                <input type="text" placeholder="г. Москва, ул. Ленина, д. 1" class="checkout_input" id="pickupPoint" name="pickup_point" title="Укажите адрес в формате: г. Москва, ул. Ленина, д. 1" required>
+                                <input type="text" placeholder="Например: Москва, Ленина 1" class="checkout_input" id="pickupPoint" name="pickup_point" title="Укажите город, улицу и дом в свободной форме" minlength="5" required>
                             </div>
                         </div>
 
@@ -250,7 +252,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const recipientInput = document.getElementById('recipientName');
             const pickupPoint = pickupInput.value.trim();
             const recipientName = recipientInput.value.trim();
-            const addressPattern = /^г\.\s*[^,]+,\s*ул\.\s*[^,]+,\s*д\.\s*[0-9]+[а-яёa-z]?$/iu;
 
             if (!pickupPoint || !recipientName) {
                 const error = document.createElement('div');
@@ -260,10 +261,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            if (!addressPattern.test(pickupPoint) || /бари\s+галеева/i.test(pickupPoint)) {
+            if (pickupPoint.length < 5 || /бари\s+галеева/i.test(pickupPoint)) {
                 const error = document.createElement('div');
                 error.className = 'checkout_error';
-                error.textContent = 'Адрес должен быть в формате: г. Москва, ул. Ленина, д. 1.';
+                error.textContent = 'Укажите адрес в свободной форме, например: Москва, Ленина 1.';
                 pickupInput.closest('.cart_checkout_field').append(error);
                 return;
             }

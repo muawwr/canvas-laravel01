@@ -8,8 +8,11 @@ use App\Models\User;
 use App\Services\NotificationService;
 use App\Services\UserBanService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
@@ -46,7 +49,7 @@ class CheckoutController extends Controller
         }
 
         if (!$this->isValidPickupPoint($pickupPoint)) {
-            return redirect('/cart')->with('error', 'Адрес должен быть в формате: г. Москва, ул. Ленина, д. 1.');
+            return redirect('/cart')->with('error', 'Укажите адрес в свободной форме, например: Москва, Ленина 1.');
         }
 
         $pictureIdsArray = array_values(array_filter(array_map('intval', explode(',', $pictureIds))));
@@ -75,62 +78,136 @@ class CheckoutController extends Controller
         }
 
         $totalAmount = (int) $cartItems->sum(fn ($item) => (int) $item->picture->price);
-        $payment = $this->createYooKassaPayment($totalAmount, $userId, $pictureIds, $pickupPoint, $recipientName);
+        $checkoutToken = (string) Str::uuid();
+        $returnUrl = $request->getSchemeAndHttpHost() . '/checkout/callback?checkout_token=' . urlencode($checkoutToken);
+
+        Log::info('Checkout payment creation started.', [
+            'buyer_id' => $userId,
+            'picture_ids' => $pictureIdsArray,
+            'amount' => $totalAmount,
+            'return_url' => $returnUrl,
+        ]);
+
+        $payment = $this->createYooKassaPayment($totalAmount, $userId, $pictureIds, $pickupPoint, $recipientName, $returnUrl);
 
         if (!$payment['success']) {
+            Log::warning('Checkout payment creation failed.', [
+                'buyer_id' => $userId,
+                'picture_ids' => $pictureIdsArray,
+                'message' => $payment['message'],
+            ]);
+
             return redirect('/cart')->with('error', $payment['message']);
         }
 
-        session([
-            'pending_payment' => [
-                'payment_id' => $payment['payment_id'],
-                'picture_ids' => $pictureIdsArray,
-                'pickup_point' => $pickupPoint,
-                'recipient_name' => $recipientName,
-                'keep_sold_in_gallery' => $keepSoldInGallery,
-                'cart_items' => $cartItems->map(function ($item) {
-                    return [
-                        'picture_id' => (int) $item->picture_id,
-                        'seller_id' => (int) $item->picture->user_id,
-                        'price' => (int) $item->picture->price,
-                        'name' => (string) $item->picture->name,
-                    ];
-                })->values()->all(),
-            ],
+        Log::info('Checkout payment creation succeeded.', [
+            'buyer_id' => $userId,
+            'payment_id' => $payment['payment_id'],
+            'checkout_token' => $checkoutToken,
         ]);
+
+        $pendingPayment = [
+            'checkout_token' => $checkoutToken,
+            'payment_id' => $payment['payment_id'],
+            'buyer_id' => $userId,
+            'picture_ids' => $pictureIdsArray,
+            'pickup_point' => $pickupPoint,
+            'recipient_name' => $recipientName,
+            'keep_sold_in_gallery' => $keepSoldInGallery,
+            'cart_items' => $cartItems->map(function ($item) {
+                return [
+                    'picture_id' => (int) $item->picture_id,
+                    'seller_id' => (int) $item->picture->user_id,
+                    'price' => (int) $item->picture->price,
+                    'name' => (string) $item->picture->name,
+                ];
+            })->values()->all(),
+        ];
+
+        session(['pending_payment' => $pendingPayment]);
+        session()->save();
+        Cache::put($this->pendingPaymentCacheKey($checkoutToken), $pendingPayment, now()->addHours(3));
 
         return redirect()->away($payment['confirmation_url']);
     }
 
     public function callback(Request $request)
     {
+        $checkoutToken = (string) $request->query('checkout_token', '');
         $pendingPayment = session('pending_payment');
+
+        Log::info('Checkout callback received.', [
+            'checkout_token' => $checkoutToken,
+            'has_session_payment' => is_array($pendingPayment) && !empty($pendingPayment['payment_id']),
+            'full_url' => $request->fullUrl(),
+        ]);
+
+        if ((!$pendingPayment || empty($pendingPayment['payment_id'])) && $checkoutToken !== '') {
+            $pendingPayment = Cache::get($this->pendingPaymentCacheKey($checkoutToken));
+
+            Log::info('Checkout callback cache lookup completed.', [
+                'checkout_token' => $checkoutToken,
+                'has_cached_payment' => is_array($pendingPayment) && !empty($pendingPayment['payment_id']),
+            ]);
+        }
+
         if (!$pendingPayment || empty($pendingPayment['payment_id'])) {
+            Log::warning('Checkout callback has no pending payment.', [
+                'checkout_token' => $checkoutToken,
+            ]);
+
             return redirect('/cart')->with('error', 'Не найден ожидающий платеж');
         }
 
-        $paymentStatus = $this->fetchYooKassaPaymentStatus((string) $pendingPayment['payment_id']);
+        $paymentStatus = $this->waitForYooKassaPaymentStatus((string) $pendingPayment['payment_id']);
         if (!$paymentStatus['success']) {
+            Log::warning('Checkout callback could not fetch payment status.', [
+                'payment_id' => $pendingPayment['payment_id'],
+                'message' => $paymentStatus['message'],
+            ]);
+
             return redirect('/cart')->with('error', $paymentStatus['message']);
         }
 
-        if ($paymentStatus['status'] === 'succeeded') {
+        Log::info('Checkout callback payment status received.', [
+            'payment_id' => $pendingPayment['payment_id'],
+            'status' => $paymentStatus['status'],
+        ]);
+
+        if ($this->isYooKassaPaymentPaid($paymentStatus['status'])) {
             try {
                 $this->finalizeSucceededPayment($pendingPayment);
                 session()->forget('pending_payment');
+                if (!empty($pendingPayment['checkout_token'])) {
+                    Cache::forget($this->pendingPaymentCacheKey((string) $pendingPayment['checkout_token']));
+                }
+
+                Log::info('Checkout payment finalized successfully.', [
+                    'payment_id' => $pendingPayment['payment_id'],
+                    'buyer_id' => $pendingPayment['buyer_id'] ?? null,
+                ]);
 
                 return response()->view('checkout-success');
             } catch (\Throwable $e) {
+                Log::error('Checkout payment finalization failed.', [
+                    'payment_id' => $pendingPayment['payment_id'],
+                    'buyer_id' => $pendingPayment['buyer_id'] ?? null,
+                    'error' => $e->getMessage(),
+                ]);
+
                 return redirect('/cart')->with('error', 'Ошибка при создании заказа: ' . $e->getMessage());
             }
         }
 
         if ($paymentStatus['status'] === 'canceled') {
             session()->forget('pending_payment');
+            if (!empty($pendingPayment['checkout_token'])) {
+                Cache::forget($this->pendingPaymentCacheKey((string) $pendingPayment['checkout_token']));
+            }
             return redirect('/cart')->with('error', 'Оплата отменена');
         }
 
-        return redirect('/cart')->with('error', 'Платеж еще не завершен');
+        return redirect('/cart')->with('error', 'Платеж еще не завершен. Если оплата прошла, нажмите «Вернуться на сайт» на странице ЮKassa еще раз или обновите страницу возврата.');
     }
 
     protected function loadCheckoutCartItems(int $userId, array $pictureIdsArray)
@@ -149,10 +226,10 @@ class CheckoutController extends Controller
             return false;
         }
 
-        return (bool) preg_match('/^г\.\s*[^,]+,\s*ул\.\s*[^,]+,\s*д\.\s*\d+[а-яёa-z]?$/ui', $pickupPoint);
+        return mb_strlen($pickupPoint) >= 5;
     }
 
-    protected function createYooKassaPayment(int $totalAmount, int $userId, string $pictureIds, string $pickupPoint, string $recipientName): array
+    protected function createYooKassaPayment(int $totalAmount, int $userId, string $pictureIds, string $pickupPoint, string $recipientName, string $returnUrl): array
     {
         $idempotenceKey = uniqid('', true);
         $paymentData = [
@@ -163,7 +240,7 @@ class CheckoutController extends Controller
             'capture' => true,
             'confirmation' => [
                 'type' => 'redirect',
-                'return_url' => route('checkout.callback'),
+                'return_url' => $returnUrl,
             ],
             'description' => 'Покупка картин на сайте Канвас',
             'metadata' => [
@@ -235,16 +312,57 @@ class CheckoutController extends Controller
         return ['success' => true, 'status' => $paymentInfo['status']];
     }
 
+    protected function waitForYooKassaPaymentStatus(string $paymentId): array
+    {
+        $lastStatus = ['success' => false, 'message' => 'Не удалось получить статус платежа'];
+
+        for ($attempt = 0; $attempt < 6; $attempt++) {
+            $lastStatus = $this->fetchYooKassaPaymentStatus($paymentId);
+
+            if (
+                !$lastStatus['success']
+                || $this->isYooKassaPaymentPaid($lastStatus['status'])
+                || $lastStatus['status'] === 'canceled'
+            ) {
+                return $lastStatus;
+            }
+
+            sleep(1);
+        }
+
+        return $lastStatus;
+    }
+
+    protected function isYooKassaPaymentPaid(string $status): bool
+    {
+        return in_array($status, ['succeeded', 'waiting_for_capture'], true);
+    }
+
+    protected function pendingPaymentCacheKey(string $checkoutToken): string
+    {
+        return 'pending_payment:' . $checkoutToken;
+    }
+
     protected function finalizeSucceededPayment(array $pendingPayment): void
     {
         DB::transaction(function () use ($pendingPayment) {
             $paymentId = (string) $pendingPayment['payment_id'];
 
+            Log::info('Checkout finalization transaction started.', [
+                'payment_id' => $paymentId,
+                'buyer_id' => $pendingPayment['buyer_id'] ?? null,
+                'cart_items_count' => count($pendingPayment['cart_items'] ?? []),
+            ]);
+
             if (Order::where('payment_id', $paymentId)->where('payment_status', 'succeeded')->exists()) {
+                Log::info('Checkout finalization skipped because order already exists.', [
+                    'payment_id' => $paymentId,
+                ]);
+
                 return;
             }
 
-            $userId = (int) session('user_id');
+            $userId = (int) ($pendingPayment['buyer_id'] ?? session('user_id'));
             $pickupPoint = (string) $pendingPayment['pickup_point'];
             $recipientName = (string) $pendingPayment['recipient_name'];
             $keepSoldInGallery = (bool) ($pendingPayment['keep_sold_in_gallery'] ?? false);
@@ -271,25 +389,26 @@ class CheckoutController extends Controller
                     'status' => 'waiting_shipment',
                 ]);
 
-                NotificationService::push(
-                    (int) $item['seller_id'],
-                    'picture_sold',
-                    'Картина продана',
-                    'Картина "' . $picture->name . '" успешно оплачена покупателем.',
-                    url('/orders'),
-                    $pictureId,
-                    $order->id
-                );
-
-                if (
-                    Schema::hasColumn('pictures', 'show_sold_badge')
-                    && Schema::hasColumn('pictures', 'hidden_after_sale')
-                ) {
-                    $picture->update([
-                        'show_sold_badge' => $keepSoldInGallery,
-                        'hidden_after_sale' => !$keepSoldInGallery,
+                try {
+                    NotificationService::push(
+                        (int) $item['seller_id'],
+                        'picture_sold',
+                        'Картина продана',
+                        'Картина "' . $picture->name . '" успешно оплачена покупателем.',
+                        url('/orders'),
+                        $pictureId,
+                        $order->id
+                    );
+                } catch (\Throwable $e) {
+                    Log::warning('Seller notification failed during checkout finalization.', [
+                        'payment_id' => $paymentId,
+                        'order_id' => $order->id,
+                        'seller_id' => (int) $item['seller_id'],
+                        'error' => $e->getMessage(),
                     ]);
                 }
+
+                $this->updateSoldVisibilityIfSupported($picture, $keepSoldInGallery);
 
                 if ($keepSoldInGallery) {
                     Cart::where('user_id', $userId)->where('picture_id', $pictureId)->delete();
@@ -306,6 +425,12 @@ class CheckoutController extends Controller
             foreach ($sellerCounts as $sellerId => $count) {
                 User::whereKey($sellerId)->increment('orders_count', $count);
             }
+
+            Log::info('Checkout finalization transaction completed.', [
+                'payment_id' => $paymentId,
+                'buyer_id' => $userId,
+                'orders_count' => $cartItems->count(),
+            ]);
         });
     }
 
@@ -316,6 +441,28 @@ class CheckoutController extends Controller
         } while (Order::where('unique_code', $code)->exists());
 
         return $code;
+    }
+
+    protected function updateSoldVisibilityIfSupported(\App\Models\Picture $picture, bool $keepSoldInGallery): void
+    {
+        try {
+            if (
+                Schema::hasColumn('pictures', 'show_sold_badge')
+                && Schema::hasColumn('pictures', 'hidden_after_sale')
+            ) {
+                DB::table('pictures')
+                    ->where('id', $picture->id)
+                    ->update([
+                        'show_sold_badge' => $keepSoldInGallery,
+                        'hidden_after_sale' => !$keepSoldInGallery,
+                    ]);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Sale visibility columns are unavailable during checkout finalization.', [
+                'picture_id' => $picture->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     protected function getYooKassaShopId(): string

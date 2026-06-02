@@ -3,11 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Picture;
+use App\Models\User;
+use App\Services\UserBanService;
 
 class AuctionController extends Controller
 {
     public function index()
     {
+        $user = session()->has('user_id') ? User::find(session('user_id')) : null;
+        $ban = $user ? UserBanService::processAuctionPaymentViolations($user) : null;
+        $isBlocked = (bool) $ban;
+        $restrictionMessage = $ban ? UserBanService::getRestrictionMessage($ban) : null;
+        $bannedUntil = $ban?->banned_until;
+
         $auctions = Picture::where('status', 'approved')
             ->where('listing_type', 'auction')
             ->whereNotNull('auction_ends_at')
@@ -27,6 +35,6 @@ class AuctionController extends Controller
             ->orderBy('auction_ends_at')
             ->get();
 
-        return view('auction.index', compact('auctions'));
+        return view('auction.index', compact('auctions', 'isBlocked', 'restrictionMessage', 'bannedUntil'));
     }
 }

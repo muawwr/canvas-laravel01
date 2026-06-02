@@ -563,11 +563,6 @@
             return;
         }
 
-        if (file.size > 1 * 1024 * 1024) {
-            markInvalid(uploadArea, 'imageUploadError', 'Размер файла не должен превышать 1 МБ');
-            return;
-        }
-
         formState.image = file;
         uploadArea.classList.add('uploaded');
         uploadArea.classList.remove('field_invalid');

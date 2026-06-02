@@ -37,6 +37,7 @@ Route::get('/reg', [AuthController::class , 'showRegister'])->name('auth.registe
 Route::post('/reg', [AuthController::class , 'register']);
 Route::get('/logout', [AuthController::class , 'logout'])->name('auth.logout');
 Route::get('/blocked', [BlockedController::class, 'index'])->name('blocked');
+Route::get('/checkout/callback', [CheckoutController::class, 'callback'])->name('checkout.callback');
 
 /* |-------------------------------------------------------------------------- | Защищённые маршруты (авторизованные пользователи) |-------------------------------------------------------------------------- */
 
@@ -50,7 +51,6 @@ Route::middleware('auth.custom')->group(function () {
     Route::get('/edit/{id}', [PictureController::class , 'edit'])->name('picture.edit');
     Route::get('/checkout', [CheckoutController::class , 'index'])->name('checkout');
     Route::post('/checkout', [CheckoutController::class , 'process']);
-    Route::get('/checkout/callback', [CheckoutController::class, 'callback'])->name('checkout.callback');
 
     // API маршруты
     Route::post('/api/cart', [CartApiController::class , 'handle']);

@@ -26,7 +26,7 @@ class PictureApiController extends Controller
 
         try {
             $validator = Validator::make($request->all(), [
-                'image' => ['required', 'file', 'image', 'mimes:jpeg,jpg,png,webp', 'max:1024'],
+                'image' => ['required', 'file', 'image', 'mimes:jpeg,jpg,png,webp'],
                 'width' => ['required', 'integer', 'min:1'],
                 'height' => ['required', 'integer', 'min:1'],
                 'name' => ['required', 'string', 'min:3', 'max:255'],
@@ -47,7 +47,6 @@ class PictureApiController extends Controller
                 'image.file' => 'Не удалось обработать загруженный файл',
                 'image.image' => 'Файл должен быть изображением',
                 'image.mimes' => 'Допустимы только изображения JPEG, JPG, PNG и WEBP',
-                'image.max' => 'Размер файла не должен превышать 1 МБ',
                 'width.required' => 'Укажите ширину картины',
                 'width.integer' => 'Ширина должна быть числом',
                 'width.min' => 'Ширина должна быть больше 0',

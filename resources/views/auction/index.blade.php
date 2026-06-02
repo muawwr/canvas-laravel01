@@ -4,15 +4,24 @@
 
 @section('content')
 <main class="auction_workspace container">
-    <div class="auction_workspace_title">
-        <h1>Аукцион:</h1>
-        <span data-auction-count>{{ $auctions->count() }}</span>
-    </div>
+    @if($isBlocked ?? false)
+        <div class="blocked-cart-state" data-auction-banned-until="{{ optional($bannedUntil)->toIso8601String() }}">
+            <h3>Вам ограничен доступ</h3>
+            <p>{{ $restrictionMessage }}</p>
+            <div class="blocked_timer_box">
+                <strong id="auctionBlockedCountdown">{{ optional($bannedUntil)->format('d.m.Y H:i') }}</strong>
+            </div>
+        </div>
+    @else
+        <div class="auction_workspace_title">
+            <h1>Аукцион:</h1>
+            <span data-auction-count>{{ $auctions->count() }}</span>
+        </div>
 
-    @if($auctions->isNotEmpty())
-        <div class="auction_workspace_layout">
-            <section class="auction_lots_list" aria-label="Картины на аукционе">
-                @foreach($auctions as $picture)
+        @if($auctions->isNotEmpty())
+            <div class="auction_workspace_layout">
+                <section class="auction_lots_list" aria-label="Картины на аукционе">
+                    @foreach($auctions as $picture)
                     @php
                         $currentUserId = session('user_id');
                         $endsAt = $picture->auction_ends_at;
@@ -55,6 +64,8 @@
                         data-is-finished="{{ $isFinished ? '1' : '0' }}"
                         data-is-auth="{{ session()->has('user_id') ? '1' : '0' }}"
                         data-is-owner="{{ session('user_id') == $picture->user_id ? '1' : '0' }}"
+                        data-is-blocked="{{ ($isBlocked ?? false) ? '1' : '0' }}"
+                        data-blocked-message="{{ $restrictionMessage ?? '' }}"
                         data-user-status="{{ $userStatus }}"
                         data-leader-name="{{ $leaderName }}"
                     >
@@ -91,10 +102,10 @@
                             </span>
                         </span>
                     </button>
-                @endforeach
-            </section>
+                    @endforeach
+                </section>
 
-            <aside class="auction_side_panel" data-auction-side>
+                <aside class="auction_side_panel" data-auction-side>
                 <div class="auction_side_status" data-side-user-status style="display: none;"></div>
 
                 <section class="auction_side_card auction_side_card_stats">
@@ -147,13 +158,14 @@
                 </section>
 
                 <div class="auction_side_message" data-side-message></div>
-            </aside>
-        </div>
-    @else
-        <div class="auction_empty">
-            <h2>Активных аукционов пока нет</h2>
-            <p>Когда продавцы выставят картины на торги и модератор их одобрит, они появятся здесь.</p>
-        </div>
+                </aside>
+            </div>
+        @else
+            <div class="auction_empty">
+                <h2>Активных аукционов пока нет</h2>
+                <p>Когда продавцы выставят картины на торги и модератор их одобрит, они появятся здесь.</p>
+            </div>
+        @endif
     @endif
 </main>
 
@@ -172,6 +184,8 @@
 (() => {
     let lots = Array.from(document.querySelectorAll('[data-auction-lot]'));
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    const blockedCountdown = document.getElementById('auctionBlockedCountdown');
+    const blockedState = document.querySelector('[data-auction-banned-until]');
     const confirmModal = document.getElementById('auctionConfirmModal');
     const bidUrl = "{{ url('/api/auction/bid') }}";
     const buyoutUrl = "{{ url('/api/auction/buyout') }}";
@@ -181,6 +195,28 @@
     const confirmCancel = document.getElementById('auctionConfirmCancel');
     let activeLot = lots[0] || null;
     let pendingAction = null;
+
+    if (blockedCountdown && blockedState?.dataset.auctionBannedUntil) {
+        const endsAt = new Date(blockedState.dataset.auctionBannedUntil);
+        const tickBlockedCountdown = () => {
+            const diff = endsAt.getTime() - Date.now();
+            if (diff <= 0) {
+                blockedCountdown.textContent = 'Блокировка завершена';
+                window.setTimeout(() => window.location.reload(), 1000);
+                return;
+            }
+
+            const totalSeconds = Math.floor(diff / 1000);
+            const days = Math.floor(totalSeconds / 86400);
+            const hours = Math.floor((totalSeconds % 86400) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            blockedCountdown.textContent = `${days} д ${hours} ч ${minutes} мин ${seconds} сек`;
+        };
+
+        tickBlockedCountdown();
+        window.setInterval(tickBlockedCountdown, 1000);
+    }
 
     if (!activeLot) {
         return;
@@ -255,6 +291,7 @@
         const isFinished = dataset.isFinished === '1' || isEnded(dataset.endsAt);
         const isAuth = dataset.isAuth === '1';
         const isOwner = dataset.isOwner === '1';
+        const isBlocked = dataset.isBlocked === '1';
         const userStatus = dataset.userStatus || '';
 
         document.querySelector('[data-side-current-price]').textContent = formatPrice(currentPrice);
@@ -292,6 +329,12 @@
         const buyoutPriceNode = document.querySelector('[data-side-buyout-price]');
         bidPanel.style.display = isOwner ? 'none' : '';
         buyoutPanel.style.display = isOwner ? 'none' : '';
+
+        if (isBlocked) {
+            setSideDisabled(true, dataset.blockedMessage || 'Доступ к покупкам временно ограничен');
+            showMessage(dataset.blockedMessage || 'Доступ к покупкам временно ограничен', false);
+            return;
+        }
 
         if (isOwner) {
             setSideDisabled(true);

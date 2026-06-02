@@ -364,6 +364,10 @@
         const additionalSortRadios = Array.from(document.querySelectorAll('input[name="additional-sort"]'));
         const sortOptionLabels = document.querySelectorAll('.radio-option');
         const resetAllBtn = document.getElementById('resetAllFiltersBtn');
+        const galleryGrid = document.getElementById('galleryGrid');
+        const noResultsMessage = document.getElementById('noResultsMessage');
+        const pagination = document.querySelector('.gallery_pagination');
+        const galleryCards = galleryGrid ? Array.from(galleryGrid.querySelectorAll('.gallery-card')) : [];
         let searchDebounce = null;
 
         function setSearchOpen(isOpen) {
@@ -405,7 +409,7 @@
             checkedStyle ? params.set('style_id', checkedStyle.dataset.filterId) : params.delete('style_id');
             checkedEra ? params.set('era_id', checkedEra.dataset.filterId) : params.delete('era_id');
             searchValue ? params.set('search', searchValue) : params.delete('search');
-            sortValue ? params.set('sort', sortValue) : params.delete('sort');
+            sortValue && sortValue !== 'newest' ? params.set('sort', sortValue) : params.delete('sort');
 
             if (resetPage) {
                 params.delete('page');
@@ -415,8 +419,80 @@
             return query ? `${window.location.pathname}?${query}` : window.location.pathname;
         }
 
-        function submitGalleryFilters(options) {
-            window.location.href = buildGalleryUrl(options);
+        function updatePaginationLinks() {
+            if (!pagination) {
+                return;
+            }
+
+            const activeUrl = new URL(buildGalleryUrl({ resetPage: false }), window.location.origin);
+            const filterKeys = ['genre_id', 'style_id', 'era_id', 'search', 'sort'];
+
+            pagination.querySelectorAll('a[href]').forEach((link) => {
+                const linkUrl = new URL(link.href, window.location.origin);
+
+                filterKeys.forEach((key) => {
+                    if (activeUrl.searchParams.has(key)) {
+                        linkUrl.searchParams.set(key, activeUrl.searchParams.get(key));
+                    } else {
+                        linkUrl.searchParams.delete(key);
+                    }
+                });
+
+                link.href = linkUrl.pathname + linkUrl.search;
+            });
+        }
+
+        function sortCards(cards, sortValue) {
+            const sortedCards = [...cards];
+
+            if (sortValue === 'price_asc') {
+                sortedCards.sort((a, b) => Number(a.dataset.price || 0) - Number(b.dataset.price || 0));
+            } else if (sortValue === 'price_desc') {
+                sortedCards.sort((a, b) => Number(b.dataset.price || 0) - Number(a.dataset.price || 0));
+            } else if (sortValue === 'popular') {
+                sortedCards.sort((a, b) => Number(b.dataset.likes || 0) - Number(a.dataset.likes || 0));
+            } else if (sortValue === 'newest') {
+                sortedCards.sort((a, b) => Number(b.dataset.created || 0) - Number(a.dataset.created || 0));
+            }
+
+            return sortedCards;
+        }
+
+        function applyGalleryFilters(options = {}) {
+            const checkedGenre = document.querySelector('.filter-checkbox[data-filter-type="genre"]:checked');
+            const checkedStyle = document.querySelector('.filter-checkbox[data-filter-type="style"]:checked');
+            const checkedEra = document.querySelector('.filter-checkbox[data-filter-type="era"]:checked');
+            const searchValue = searchInput ? searchInput.value.trim().toLowerCase() : '';
+            const sortValue = getSelectedSort();
+
+            const visibleCards = galleryCards.filter((card) => {
+                const matchesGenre = !checkedGenre || card.dataset.genreId === checkedGenre.dataset.filterId;
+                const matchesStyle = !checkedStyle || card.dataset.styleId === checkedStyle.dataset.filterId;
+                const matchesEra = !checkedEra || card.dataset.eraId === checkedEra.dataset.filterId;
+                const searchableText = `${card.dataset.name || ''} ${card.dataset.author || ''}`;
+                const matchesSearch = !searchValue || searchableText.includes(searchValue);
+
+                return matchesGenre && matchesStyle && matchesEra && matchesSearch;
+            });
+
+            if (galleryGrid) {
+                sortCards(visibleCards, sortValue).forEach((card) => galleryGrid.appendChild(card));
+                galleryCards.forEach((card) => {
+                    card.style.display = visibleCards.includes(card) ? '' : 'none';
+                });
+            }
+
+            if (noResultsMessage) {
+                noResultsMessage.style.display = galleryCards.length > 0 && visibleCards.length === 0 ? 'block' : 'none';
+            }
+
+            const nextUrl = buildGalleryUrl(options);
+            window.history.replaceState({}, '', nextUrl);
+            updatePaginationLinks();
+        }
+
+        function submitGalleryFilters(options = { resetPage: false }) {
+            applyGalleryFilters(options);
         }
 
         function updateSortOptionStyles() {
@@ -486,7 +562,21 @@
         if (resetAllBtn) {
             resetAllBtn.addEventListener('click', function(event) {
                 event.preventDefault();
-                window.location.href = window.location.pathname;
+                if (searchInput) {
+                    searchInput.value = '';
+                }
+
+                filterCheckboxes.forEach((checkbox) => {
+                    checkbox.checked = false;
+                });
+
+                [...priceSortRadios, ...additionalSortRadios].forEach((radio) => {
+                    radio.checked = radio.value === 'newest';
+                });
+
+                activateCheckedOptions();
+                updateSortOptionStyles();
+                applyGalleryFilters();
             });
         }
 
@@ -526,6 +616,7 @@
         activateCheckedOptions();
         updateSortOptionStyles();
         setSearchOpen(!!(searchInput && searchInput.value.trim()));
+        applyGalleryFilters({ resetPage: false });
     })();
     </script>
     @include('partials.theme-toggle')

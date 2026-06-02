@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\UserNotification;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 
 class NotificationService
 {
@@ -15,7 +17,7 @@ class NotificationService
         ?int $pictureId = null,
         ?int $orderId = null
     ): UserNotification {
-        return UserNotification::create([
+        $data = [
             'user_id' => $userId,
             'type' => $type,
             'title' => $title,
@@ -23,7 +25,26 @@ class NotificationService
             'url' => $url,
             'picture_id' => $pictureId,
             'order_id' => $orderId,
-        ]);
+        ];
+
+        try {
+            return UserNotification::create($data);
+        } catch (QueryException $e) {
+            if (($e->errorInfo[1] ?? null) !== 1062) {
+                throw $e;
+            }
+
+            $now = now();
+            $id = ((int) DB::table('user_notifications')->max('id')) + 1;
+
+            DB::table('user_notifications')->insert($data + [
+                'id' => $id,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+            return UserNotification::findOrFail($id);
+        }
     }
 
     public static function pushOnce(

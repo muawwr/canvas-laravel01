@@ -34,9 +34,9 @@
 
 @section('scripts')
 <style>
-.fav_remove_btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); border: none; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
-.gallery-card:hover .fav_remove_btn { opacity: 1; }
-.fav_remove_btn img { width: 16px; height: 16px; }
+.fav_remove_btn { position: absolute; top: 10px; right: 10px; z-index: 5; background: #FBFF83; border: 1px solid rgba(13,13,13,0.14); border-radius: 50%; width: 38px; height: 38px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 1; box-shadow: 0 8px 20px rgba(0,0,0,0.25); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.fav_remove_btn:hover { transform: scale(1.06); box-shadow: 0 10px 24px rgba(0,0,0,0.32); }
+.fav_remove_btn img { width: 17px; height: 17px; filter: brightness(0); }
 .gallery-card { position: relative; }
 </style>
 <script>
